@@ -1,0 +1,38 @@
+set virtualxsize 132
+set virtualysize 43
+set dispmode $100
+
+OPEN MEMORY POSITION 0,1 RESIZE 60,12
+NAME MEMORY Diss
+Diss DYNAMICR PC
+
+OPEN REGISTER POSITION 60,1
+OPEN SYMBOL POSITION 80+25,13 RESIZE 27,9
+OPEN BREAK POSITION 58,13 RESIZE 47,9
+;OPEN CONSOLE POSITION 60+26,1 RESIZE 46,12
+OPEN COMMAND POSITION COMMAND 80,22 RESIZE COMMAND 132-80,15
+
+LOADSYM podtest.SYM
+
+stop
+pcb = 0
+pc = @2($FFFC)
+
+open watch pos 80,37 resize 52,12
+open expression pos 0,13
+
+;bset CartInit
+;bset CartBoot
+;bset TransSpr2Traps
+;watch @2(bLineValid)
+;watch @2(lTrapEnable)
+;bset TransTraps2Spr
+;watch @4(trap1)
+
+OPEN source Pos 0,22 resize 80,27 WLoad podtest.sld
+
+;OPEN MEMORY NAME Stack POSITION 60,6 RESIZE 26,7 BYTE
+;	Stack SYMBOL OFF
+;	DYNAMICRUNNING sp
+
+

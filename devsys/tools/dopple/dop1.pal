@@ -1,0 +1,65 @@
+PAL16L8
+DOP1
+Dopple Board PC Bus Interface PAL
+Scott Statton, Developer Resources,Mtn. View, CA
+
+MEMR MEMW IOR IOW A0 A1 MEQ IOEQ ENAB GND
+A2 WORMRD WORMWR PAGE CTRL RAM DATA R/W STAT VCC
+
+IF (VCC) /STAT =
+	/IOEQ * /IOR * /A0 * /A1 * /A2
+
+IF (VCC) /WORMRD =
+	/IOEQ * /IOR * /A0 * A1 * /A2
+
+IF (VCC) /WORMWR =
+	/IOEQ * /IOW * /A0 * A1 * /A2
+
+IF (VCC) /PAGE =
+	/IOW * /IOEQ * A0 * /A1 * /A2
+
+IF (VCC) /CTRL =
+	/IOW * /IOEQ * /A0 * /A1 * /A2
+
+IF (VCC) /RAM =
+	/MEMR * ENAB * /MEQ +
+	/MEMW * ENAB * /MEQ
+
+IF (VCC) /DATA =
+	/MEMW * ENAB * /MEQ +
+	/MEMR * ENAB * /MEQ +
+	/IOW * /IOEQ +
+	/IOR * /IOEQ
+
+IF (VCC) /R/W =
+	/MEMW * ENAB * /MEQ +
+	/IOW * /IOEQ
+
+
+
+FUNCTION TABLE
+
+MEMR MEMW IOR IOW A0 A1 A2 MEQ IOEQ ENAB WORMWR WORMRD PAGE CTRL 
+STAT RAM DATA R/W
+
+; M  M  I  I  A  A  A  M  I  E | W  W  P  C  S  R  D  R
+; E  E  O  O  0  1  2  E  O  N | O  O  A  T  T  A  A  /
+; M  M  R  W           Q  E  A | W  R  G  R  A  M  T  W
+; R  W                    Q  B | R  D  E  L  T     A
+
+--------------------------------------------------------
+
+  L  L  L  L  X  X  X  H  H  X   H  H  H  H  H  H  H  X
+  H  H  H  L  L  H  L  H  L  X   L  H  H  H  H  H  L  L
+  H  H  L  H  L  H  L  H  L  X   H  L  H  H  H  H  L  H
+  H  H  X  X  H  H  X  H  L  X   H  H  H  H  H  H  X  X
+  H  H  H  L  H  L  L  H  L  X   H  H  L  H  H  H  L  L
+  H  H  H  L  L  L  L  H  L  X   H  H  H  L  H  H  L  L
+  H  H  L  H  L  L  L  H  L  X   H  H  H  H  L  H  L  H
+  X  X  H  H  X  X  X  X  X  L   H  H  H  H  H  H  H  X
+  L  H  H  H  X  X  X  L  H  H   H  H  H  H  H  L  L  H
+  H  L  H  H  X  X  X  L  H  H   H  H  H  H  H  L  L  L
+--------------------------------------------------------
+
+END
+

@@ -1,0 +1,3 @@
+open reg
+pcl = $C00000
+open memory dynamicrunning pcl

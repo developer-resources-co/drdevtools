@@ -1,0 +1,20 @@
+Not checked:
+
+compr
+
+cs vs. cardsave
+
+drmon
+
+monitor
+
+see if reset/snes is newer than sr
+
+rom vs. rom2 vs. romnosh vs. snesrom
+
+sound
+
+spanim
+
+spasm
+

@@ -1,0 +1,42 @@
+PAL16L8
+DOP2E
+Dopple Board Arbitration PAL 8/16 bit
+Scott Statton, Developer Resources,Mtn. View, CA
+
+ROM TWE0 TWE1 NMIIN CLEAR STAT PIN7 PIN8 PIN9 GND
+PIN11 NMIOUT PIN13 Q P D0 WPV PIN18 PIN19 VCC
+
+IF (/STAT)
+	/D0 = /Q
+
+/Q = P * WPV
+
+/P = Q * CLEAR
+
+/NMIOUT = /NMIIN + /WPV
+
+/WPV = /ROM * /TWE1 + /ROM * /TWE0
+
+FUNCTION TABLE
+
+ROM TWE0 TWE1 NMIIN CLEAR STAT WPV NMIOUT Q P D0
+
+; R  T  T  N  C  S | W  N  Q  P  D
+; O  W  W  M  L  T | P  M        0
+; M  0  1  I  R  A | V  I
+------------------------------------
+  H  H  H  H  L  H   X  X  X  X  X
+  H  H  H  H  H  H   H  H  H  L  Z
+  H  H  H  H  H  L   H  H  H  L  H
+  L  H  H  H  H  H   H  H  H  L  Z
+  L  L  H  H  H  H   L  X  X  X  Z
+  L  L  H  H  H  H   L  L  X  X  Z
+  H  H  H  H  H  H   H  H  L  H  Z
+  H  H  H  H  H  L   H  H  L  H  L
+  H  H  H  H  L  H   H  H  X  X  Z
+  H  H  H  H  H  H   H  H  H  L  Z
+------------------------------------
+
+END
+
+

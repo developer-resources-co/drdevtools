@@ -1,0 +1,47 @@
+PAL12L6
+DOP6B
+DoppleBoard Genesis Version Address Decode
+Scott Statton, Developer Resources, Mtn. View, CA
+
+DEBUG A16 A17 A18 A19 A20 A21 CE WE GND
+OE A22 ROM RAM WORMRD WORMWR TCRSEL PIN18 A23 VCC
+
+;LOW A16 A17 A18 A19 A20 A21 CE WE GND
+;OE PIN12 ROM WORM PIN15 PIN16 PIN17 PIN18 PIN19 VCC
+
+; RAM		0XXXXX
+; ROM		20XXXX / 21XXXX
+; CRAM		22XXXX
+; WORM		23XXXX
+
+/ROM =	/A23 * /A22 * A21 * /A20 * /A19 * /A18 * /A17 * /CE +
+	/DEBUG * /CE
+
+/TCRSEL = /A23 * /A22 * A21 * /A20 * /A19 * /A18 * A17 * /A16 * /CE * DEBUG
+
+/RAM =	/A23 * /A22 * /A21 * /A20 * /CE * DEBUG +
+	/A23 * /A22 *  A21 * /A20 * /A19 * /A18 * A17 * /A16 * /CE * DEBUG
+
+/WORMWR =
+	A16 * A17 * /A18 * /A19 * /A20 * A21 * /A22 * /A23 * /CE * /WE * DEBUG
+
+/WORMRD =
+	A16 * A17 * /A18 * /A19 * /A20 * A21 * /A22 * /A23 * /CE * /OE * DEBUG
+
+FUNCTION TABLE
+
+DEBUG A23 A22 A21 A20 RAM ROM TCRSEL WORMWR WORMRD A18 A17 A16 CE WE OE A19
+---------------------------
+H H H X X H H X X X X X X L X X X
+H L L L X L H X X X X X X L X X X
+H L L H X H L X X X X X X L X X X
+L X X X X H L X X X X X X L X X X
+
+
+H L L L L L H H H H L L L L H L L
+
+-----------------------------
+END
+
+
+

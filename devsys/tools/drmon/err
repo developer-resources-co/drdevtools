@@ -1,0 +1,4 @@
+QDPMI: Nested Page Fault in QDPMI Kernel [PTE=0000-0100h] 
+       [CR2=3246-0200h at 0020h:0000-0652h] 
+
+QDPMI: Unrecoverable Exception: 000Eh at 0020h:0000-0652h.  Error Code = 0000h 

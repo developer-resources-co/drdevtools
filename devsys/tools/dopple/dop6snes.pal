@@ -1,0 +1,29 @@
+PAL12L6
+SM2_DOP6
+DoppleBoard snes Adress Decoder(2 megabyte version)
+modified back to 1 megabyte to allow DSP addressing
+
+PIN1 A15 A16 A17 A18 A19 A20 CE WE GND
+OE A21 ROM RAM WORMRD WORMWR TCRSEL PIN18 A22 VCC
+
+; RAM BANK 0	0XXXXX
+; RAM BANK 1	1XXXXX
+; ROM		20XXXX
+; CRAM		21XXXX
+; WORM		22XXXX
+
+/ROM =	/A22 * A21 * /A20 * /A19 * /A18 * /A17 * /A16 * /CE
+
+/TCRSEL = /A22 * A21 * /A20 * /A19 * /A18 * /A17 * A16 * /CE
+
+/RAM =	/A21 * /A20 * /CE +
+        /A22 *  A21 * /A20 * /A19 * /A18 * /A17 * A16 * /CE
+
+/WORMWR =
+	/A22 * A21 * /A20 * /A19 * /A18 * A17 * /A16 * /CE * /WE
+
+/WORMRD =
+	/A22 * A21 * /A20 * /A19 * /A18 * A17 * /A16 * /CE * /OE
+
+
+

@@ -1,0 +1,63 @@
+PAL16L8
+DOP2E
+Dopple Board Arbitration PAL 8/16 bit
+Scott Statton, Developer Resources,Mtn. View, CA
+
+HCE HWE HOE TCE TWE0 TWE1 TOE WHO WP GND
+PIN11 RAMCE HADDR TADDR HDATA TDATA R/W RAMWE RAMOE VCC
+
+IF (VCC) /HADDR =
+	 /HCE * WHO
+
+IF (VCC) /HDATA =
+	 /HCE * /HOE * WHO +
+	 /HCE * /HWE * WHO
+
+IF (VCC) /TADDR =
+	 /WHO
+
+IF (VCC) /TDATA =
+	 /TCE * /TOE * /WHO +
+	 /TCE * /TWE0 * /WP * /WHO +
+	 /TCE * /TWE1 * /WP * /WHO
+
+IF (VCC) /R/W =
+	/HCE * /HWE * WHO +
+	/TCE * /TWE0*/WP*/WHO +
+	/TCE * /TWE1*/WP*/WHO
+
+IF (VCC) /RAMWE =
+	 /HCE * /HWE * WHO +
+	 /TCE * /TWE0 * /WP * /WHO +
+	 /TCE * /TWE1 * /WP * /WHO
+
+IF (VCC) /RAMCE =
+	 /HCE * WHO +
+	 /TCE * /WHO +
+	 /TCE * /TWE0 * /WHO * /WP +
+	 /TCE * /TWE1 * /WHO * /WP
+
+IF (VCC) /RAMOE =
+	 /HCE * /HOE * WHO +
+	 /TOE * /WHO
+
+FUNCTION TABLE
+
+
+HCE HWE HOE TCE TWE0 TWE1 TOE WHO WP HADDR
+HDATA TADDR TDATA R/W RAMWE RAMCE RAMOE
+
+;             T  T          | H  H  T  T     R  R  R
+; H  H  H  T  W  W  T  W    | A  D  A  D  R  A  A  A
+; C  W  O  C  E  E  O  H  W | D  A  D  A  /  W  C  O
+; E  E  E  E  0  1  E  O  P | R  T  R  T  W  E  E  E
+--------------------------------------------------------
+  H  X  X  H  X  X  X  H  X   X  X  X  X  X  X  H  X
+  H  X  X  H  X  X  X  L  X   X  X  X  X  X  X  H  X
+  L  H  L  L  L  L  L  H  X   L  L  H  H  H  H  L  L
+  L  L  H  L  L  L  L  H  X   L  L  H  H  L  L  L  H
+  L  L  L  L  H  H  L  L  X   H  H  L  L  H  H  L  L
+  L  L  L  L  L  L  H  L  L   H  H  L  L  L  L  L  H
+--------------------------------------------------------
+END
+

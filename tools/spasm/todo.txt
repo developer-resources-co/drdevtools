@@ -1,0 +1,173 @@
+
+û  = done
+
++ = partially complete
+
+65816
+--------------------------------------------------------------------------------
+
+Note: there is an uppercase table in cam816, this should be reconciled with the
+case tables in symbol.asm(symboltranslation)
+
+û Opcode timings
+
+û assume (data bank/direct page)  (Version 1.4)
+
+û dec/inc imply accumulator (Version 1.4.2)
+
+  add switches disabling d-page & data bank accesses
+	(force all abs or long addressing)
+
+  add switches to control default forward reference size
+	(dpage vs. absolute vs. long)
+
+  args (automatic stack tracking)
+
+û 32-bit symbols (Version 1.5!)
+
+  flag tracking for jsr/jmp/etc.
+
+û rep/sep automatically affect longa/longi (Version 2.0)
+
+û spool file (see Both--continue merging)
+
+û assemble to Dopple Board
+	(verify code >512K)
+
+û dd
+
+û print number of bytes by for "out of range error"
+
+68000
+--------------------------------------------------------------------------------
+
+  print number of bytes by for "out of range error"
+
+SPC700
+--------------------------------------------------------------------------------
+
+û print number of bytes by for "out of range error"
+
+Both
+--------------------------------------------------------------------------------
+
+	all pc calculations are now 32 bits, but segments only store 24 bits
+	of data
+
+	llchar needs to patch the symbol character translation tables
+
+	case sense should store a pointer to caseSensitiveSymbolTranslation
+	or caseInsensitiveSymbolTranslation in a variable to load into bx
+
+  Named macro parameters
+
+û Comparions in expression parser
+
+û Binary numbers can have "_" in value (for easy seperation of bits)
+	Hex numbers, too
+
+û << and >> for shifts
+
+  L-to-R parser!
+
+û compile-time ASSERT
+
+  386 only?  Sure--start using 386 registers and opcodes
+
+  REPT is slow.  It empties and reads in an entire new source buffer when
+  it hits an ENDR
+
+  Better framework (esp. for SPC700 and Z80 versions)
+
+  continue merging (esp. board.asm and cint.asm)
+
+û predefined symbols __65816__, __68000__, __SNES__, __GENESIS__ as appropriate
+	(bug manifesting in SPC700 version)
+
+û predefined symbol __SPASM__ containing spasm version number
+	(seems to have bug in SPC700 version)
+
+û print source line on error
+
+û print error in list file
+
++ incbin speed-up
+
+û define symbol record format (symbol.inc)
+
+û REPEAT pseudo-op
+
+  backpatch listing file
+	(define backpatching structure)
+
+û  ERROR,WARNING, SEVERE directives(force error, warning or severe to occur)
+
+û  errlevel directive(control severity of errors)
+
++  other listing file improvements (PAGE, TITL, etc.)
+
+  jsr/bsr functionName PRESERVE <registerList>
+	(only really important for 68000 version)
+
+  jsr/bsr DESTROYS <registerList> or PRESERVES <registerList> ?
+	(only really important for 68000 version)
+
+û consider adding clear with FF's on output (if file gets bigger, pad with FF's)
+
+û merge dc.b, etc. to work in both versions
+
+û merge db, etc. to work in both versions
+
+û Print "spooling backpatch to disk" message
+
+û dc.b to take quoted strings (Accepts either ' or " as the string delimeter)
+
+û nest IFDEF (like IF)  (seemed to already be working)
+
+û nest REPEAT (like IF)
+
+û print starting line number of missing ENDIF-like blocks
+
+Documentation
+--------------------------------------------------------------------------------
+
+  Let's get some
+
+Bugs
+--------------------------------------------------------------------------------
+
+  lda #'.'	-> lda #''
+
+û  Symbol, debug, listing files not writing to correct file !!
+
+û lda	#
+
+û move	#,		crash and burn
+
+û rept no work inside of include file
+
+û rept eats 1st tab
+
+û rept has line numbers incorrect
+
+û REPT goes one too many times
+
+û incorrect error upon spooling backpatch file to disk
+
++ errors during backpatching do not print source line(garbage)
+
+line #'s on line with include and first line after include incorrect
+
+û jsr macroname should give error
+
+
+jmp 0 no work(because param_last points to last char, not past last char,
+	and Erik assumes if they point to the same spot, the string
+	is empty), param_last needs to be changed(no fun)
+
+û cnop
+
+  Problems handling totally empty files (size of 0 bytes)
+
+see bug1.asm
+

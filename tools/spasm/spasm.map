@@ -1,0 +1,431 @@
+
+ Start  Stop   Length Name               Class
+
+ 00000H 07A7FH 07A80H _TEXT              CODE
+ 07A80H 07A80H 00000H _FARDATA           FAR_DATA
+ 07A80H 07A80H 00000H _FARBSS            FAR_BSS
+ 07A80H 07A80H 00000H _OVERLAY_          OVRINFO
+ 07A80H 07A80H 00000H _1STUB_            STUBSEG
+ 07A80H 081B3H 00734H _DATA              DATA
+ 081C0H 0C92CH 0476DH DATA               DATA
+ 0C92EH 0C92FH 00002H _CVTSEG            DATA
+ 0C930H 0C935H 00006H _SCNSEG            DATA
+ 0C936H 0C936H 00000H _CONST             CONST
+ 0C936H 0C94DH 00018H _INIT_             INITDATA
+ 0C94EH 0C94EH 00000H _INITEND_          INITDATA
+ 0C94EH 0C94EH 00000H _EXIT_             EXITDATA
+ 0C94EH 0C94EH 00000H _EXITEND_          EXITDATA
+ 0C94EH 0CB9DH 00250H _BSS               BSS
+ 0CB9EH 0CB9EH 00000H _BSSEND            BSSEND
+ 0CBA0H 0CC1FH 00080H _STACK             STACK
+
+  Address         Publics by Name
+
+ 0000:011FF       addconst(unsigned char near*near*,char near*near*)
+ 0000:012D7       addlong(unsigned char near*near*,long)
+ 0000:0157D       addptr(unsigned char near*near*,long far*)
+ 0000:011EA       addtoken(unsigned char near*near*,unsigned char)
+ 0000:0149B       addvar(unsigned char near*near*,char near*near*)
+ 0000:012B0       addword(unsigned char near*near*,long)
+ 0000:0136A       asciilong(char near*near*,int near*)
+ 0000:01303       binlong(char near*near*)
+ 0000:00933       cleanup(int)
+ 0000:013C7       declong(char near*near*)
+ 0000:008F6       doexpr()
+ 0000:00354       dofilename(unsigned char near*,unsigned char far*,unsigned char near*)
+ 0000:00ED1       evalconst(unsigned long near*,unsigned char near*near*)
+ 0000:0095A       evalexpression(unsigned long near*,unsigned char near*near*)
+ 0000:00B7F       evalfactor(unsigned long near*,unsigned char near*near*)
+ 0000:00CF7       evalnumber(unsigned long near*,unsigned char near*near*)
+ 0000:008AE       evalvar(unsigned long near*,unsigned char near*near*)
+ 0000:01416       hexlong(char near*near*)
+ 0000:00325       initslaveio(int,unsigned char far*)
+ 0000:002C2       loadenvvariables()
+ 0000:00879       lookupvar(char near*)
+ 0000:0086A       memread(long,char)
+ 0000:00955       restoresnesvectors()
+ 0000:00F82       tokenizeexpression(unsigned char near*near*,char near*near*)
+ 07A8:00000       DATASEG@
+ 0000:002BE       DGROUP@
+ 0000:0554B       F_LXLSH@
+ 0000:0556C       F_PADD@
+ 0000:055CC       F_PSBP@
+ 0000:0559B       F_PSUB@
+ 0000:0554B       LXLSH@
+ 0000:05548       N_LXLSH@
+ 0000:05710       N_LXMUL@
+ 0000:05569       N_PADD@
+ 0000:05727       N_PCMP@
+ 0000:055C9       N_PSBP@
+ 0000:05598       N_PSUB@
+ 0000:0556C       PADD@
+ 0000:055CC       PSBP@
+ 0000:0559B       PSUB@
+ 0000:002A9       _ABORT
+ 07A8:050D6       _ANSWER
+ 0000:0549B       _ATEXIT
+ 07A8:03A3E       _BBACKPATCHLISTINGFILE
+ 07A8:01B6E       _BCASESENSITIVE
+ 0000:06399       _BRK
+ 0000:03FFC       _CHECKSLAVEALIVE
+ 07A8:0030E       _DATESTR
+ 0000:06410       _DELAY
+ 07A8:0072C       _ENVIRON
+ 07A8:00094       _ERRNO
+ 07A8:02CA9       _ERRORLEVEL
+ 0000:0550D       _EXIT
+ 07A8:04EDC       _EXPBUFFER
+ 0000:069CB       _FARCORELEFT
+ 0000:065B1       _FARFREE
+ 0000:066BB       _FARMALLOC
+ 0000:06815       _FARREALLOC
+ 0000:06E2C       _FFLUSH
+ 0000:027D7       _FINDSYMBOL
+ 0000:06EA9       _FLUSHALL
+ 0000:06EE1       _FNMERGE
+ 0000:06EFB       _FNSPLIT
+ 0000:06F15       _FPRINTF
+ 0000:071D5       _FPUTC
+ 0000:072FC       _FPUTCHAR
+ 0000:06A1B       _FREE
+ 0000:06F88       _FSEEK
+ 0000:06FEC       _FTELL
+ 0000:070AD       _GETENV
+ 0000:0563C       _ISATTY
+ 07A8:050D4       _ISPTR
+ 07A8:01B66       _LINES_ASSEMBLED
+ 07A8:039FE       _LIST_FILE
+ 0000:056E7       _LSEEK
+ 0000:00399       _MAIN
+ 0000:06AEA       _MALLOC
+ 07A8:01CD5       _MAPFLAG
+ 07A8:01CD6       _MAP_FILE
+ 07A8:000AA       _MEMCHUNK
+ 0000:07188       _MEMCPY
+ 07A8:050DA       _MEMSIZESEG
+ 0000:071A7       _PRINTF
+ 0000:043CF       _READMEMFROMC
+ 0000:06C41       _REALLOC
+ 0000:063A5       _SBRK
+ 0000:06DB9       _SETBLOCK
+ 0000:074A2       _SETVBUF
+ 07A8:04ED0       _SLAVEBANK
+ 07A8:000AE       _SLAVEBASE
+ 07A8:000B0       _SLAVEBUFFER
+ 07A8:04ED4       _SLAVEBUFFERCMD
+ 07A8:04ED8       _SLAVEBUFFERDATA
+ 07A8:04ECE       _SLAVECTRL
+ 07A8:04ED2       _SLAVEWORM
+ 07A8:01B65       _SLDFLAG
+ 07A8:01B25       _SLD_FILE
+ 0000:01A22       _SPASM
+ 07A8:01CCF       _SPASM_MAJOR
+ 07A8:01CD1       _SPASM_MINOR
+ 07A8:01CD3       _SPASM_REV
+ 07A8:01AE5       _SRC_FILE
+ 0000:077B7       _SSCANF
+ 0000:077F2       _STRCPY
+ 0000:07814       _STRLEN
+ 0000:0782E       _STRLWR
+ 0000:0784E       _STRNCPY
+ 07A8:01BB2       _SYMFLAG
+ 07A8:01BB3       _SYM_FILE
+ 07A8:01B6F       _SYSTEMTYPE
+ 07A8:01B70       _SYSTEM_FILE
+ 07A8:0031A       _TIMESTR
+ 07A8:04FD7       _TOKENSTREAM
+ 0000:05E2A       _TOUPPER
+ 07A8:050D2       _TSPTR
+ 0000:077D5       _VSSCANF
+ 0000:01000  Abs  __AHINCR
+ 0000:0000C  Abs  __AHSHIFT
+ 07A8:0071E       __ARGC
+ 07A8:00720       __ARGV
+ 07A8:00324       __ATEXITCNT
+ 07A8:050DC       __ATEXITTBL
+ 0000:06901       __BRK
+ 07A8:000A2       __BRKLVL
+ 07A8:00084       __C0ARGC
+ 07A8:00086       __C0ARGV
+ 07A8:00088       __C0ENVIRON
+ 0000:0552E       __CEXIT
+ 0000:00172       __CHECKNULL
+ 0000:0015F       __CLEANUP
+ 07A8:00326       __CTYPE
+ 0000:00000  Abs  __CVTFAK
+ 0000:0553C       __C_EXIT
+ 07A8:0059A       __DOSERRNO
+ 0000:0562A       __DOSERROR
+ 07A8:0059C       __DOSERRORTOSV
+ 07A8:0008A       __ENVLNG
+ 07A8:0008C       __ENVSEG
+ 07A8:0008E       __ENVSIZE
+ 0000:0551C       __EXIT
+ 07A8:00428       __EXITBUF
+ 07A8:0042A       __EXITFOPEN
+ 07A8:0042C       __EXITOPEN
+ 07A8:00718       __FIRST
+ 0000:075FE       __FNSPLIT
+ 0000:071BE       __FPUTC
+ 0000:0730D       __FPUTN
+ 0000:079DB       __FSTRCAT
+ 0000:07A1A       __FSTRCHR
+ 0000:07A57       __FSTRCPY
+ 07A8:0009E       __HEAPBASE
+ 07A8:00598       __HEAPLEN
+ 07A8:000A6       __HEAPTOP
+ 07A8:00074       __INT0VECTOR
+ 07A8:00078       __INT4VECTOR
+ 07A8:0007C       __INT5VECTOR
+ 07A8:00080       __INT6VECTOR
+ 0000:055F1       __IOERROR
+ 07A8:0071A       __LAST
+ 0000:0564D       __LONGTOA
+ 0000:0710C       __MAKEPATH
+ 0000:002C0       __MMODEL
+ 07A8:0056E       __NFILE
+ 07A8:00570       __OPENFD
+ 07A8:00092       __OSMAJOR
+ 07A8:00093       __OSMINOR
+ 07A8:00092       __OSVERSION
+ 07A8:00090       __PSP
+ 0000:06C92       __REALCVT
+ 07A8:04EAE       __REALCVTVECTOR
+ 0000:001EF       __RESTOREZERO
+ 07A8:0071C       __ROVER
+ 0000:06940       __SBRK
+ 0000:05748       __SCANNER
+ 0000:06C9E       __SCANPOP
+ 0000:06C9A       __SCANRSLT
+ 0000:06C96       __SCANTOD
+ 07A8:04EB0       __SCANTODVECTOR
+ 0000:05C0E       __SCANTOL
+ 0000:00000  Abs  __SETARGV__
+ 0000:00000  Abs  __SETENVP__
+ 0000:05D8D       __SETUPIO
+ 0000:07772       __SPLITPATH
+ 07A8:00096       __STARTTIME
+ 07A8:00676       __STKLEN
+ 0000:06321       __STPCPY
+ 07A8:0042E       __STREAMS
+ 0000:0019A       __TERMINATE
+ 0000:056CA       __UTOA
+ 07A8:00092       __VERSION
+ 0000:05E6E       __VPRINTER
+ 0000:07980       __WRITE
+ 0000:079BA       __XFFLUSH
+ 0000:06346       ___BRK
+ 07A8:0009C       ___BRKLVL
+ 0000:06471       ___FIRST
+ 07A8:0009A       ___HEAPBASE
+ 0000:06473       ___LAST
+ 0000:06475       ___ROVER
+ 0000:06368       ___SBRK
+ 0000:0787A       ___WRITE
+
+  Address         Publics by Value
+
+ 0000:01000  Abs  __AHINCR
+ 0000:0000C  Abs  __AHSHIFT
+ 0000:00000  Abs  __SETARGV__
+ 0000:00000  Abs  __CVTFAK
+ 0000:00000  Abs  __SETENVP__
+ 0000:07A57       __FSTRCPY
+ 0000:07A1A       __FSTRCHR
+ 0000:079DB       __FSTRCAT
+ 0000:079BA       __XFFLUSH
+ 0000:07980       __WRITE
+ 0000:0787A       ___WRITE
+ 0000:0784E       _STRNCPY
+ 0000:0782E       _STRLWR
+ 0000:07814       _STRLEN
+ 0000:077F2       _STRCPY
+ 0000:077D5       _VSSCANF
+ 0000:077B7       _SSCANF
+ 0000:07772       __SPLITPATH
+ 0000:075FE       __FNSPLIT
+ 0000:074A2       _SETVBUF
+ 0000:0730D       __FPUTN
+ 0000:072FC       _FPUTCHAR
+ 0000:071D5       _FPUTC
+ 0000:071BE       __FPUTC
+ 0000:071A7       _PRINTF
+ 0000:07188       _MEMCPY
+ 0000:0710C       __MAKEPATH
+ 0000:070AD       _GETENV
+ 0000:06FEC       _FTELL
+ 0000:06F88       _FSEEK
+ 0000:06F15       _FPRINTF
+ 0000:06EFB       _FNSPLIT
+ 0000:06EE1       _FNMERGE
+ 0000:06EA9       _FLUSHALL
+ 0000:06E2C       _FFLUSH
+ 0000:06DB9       _SETBLOCK
+ 0000:06C9E       __SCANPOP
+ 0000:06C9A       __SCANRSLT
+ 0000:06C96       __SCANTOD
+ 0000:06C92       __REALCVT
+ 0000:06C41       _REALLOC
+ 0000:06AEA       _MALLOC
+ 0000:06A1B       _FREE
+ 0000:069CB       _FARCORELEFT
+ 0000:06940       __SBRK
+ 0000:06901       __BRK
+ 0000:06815       _FARREALLOC
+ 0000:066BB       _FARMALLOC
+ 0000:065B1       _FARFREE
+ 0000:06475       ___ROVER
+ 0000:06473       ___LAST
+ 0000:06471       ___FIRST
+ 0000:06410       _DELAY
+ 0000:063A5       _SBRK
+ 0000:06399       _BRK
+ 0000:06368       ___SBRK
+ 0000:06346       ___BRK
+ 0000:06321       __STPCPY
+ 0000:05E6E       __VPRINTER
+ 0000:05E2A       _TOUPPER
+ 0000:05D8D       __SETUPIO
+ 0000:05C0E       __SCANTOL
+ 0000:05748       __SCANNER
+ 0000:05727       N_PCMP@
+ 0000:05710       N_LXMUL@
+ 0000:056E7       _LSEEK
+ 0000:056CA       __UTOA
+ 0000:0564D       __LONGTOA
+ 0000:0563C       _ISATTY
+ 0000:0562A       __DOSERROR
+ 0000:055F1       __IOERROR
+ 0000:055CC       PSBP@
+ 0000:055CC       F_PSBP@
+ 0000:055C9       N_PSBP@
+ 0000:0559B       F_PSUB@
+ 0000:0559B       PSUB@
+ 0000:05598       N_PSUB@
+ 0000:0556C       F_PADD@
+ 0000:0556C       PADD@
+ 0000:05569       N_PADD@
+ 0000:0554B       LXLSH@
+ 0000:0554B       F_LXLSH@
+ 0000:05548       N_LXLSH@
+ 0000:0553C       __C_EXIT
+ 0000:0552E       __CEXIT
+ 0000:0551C       __EXIT
+ 0000:0550D       _EXIT
+ 0000:0549B       _ATEXIT
+ 0000:043CF       _READMEMFROMC
+ 0000:03FFC       _CHECKSLAVEALIVE
+ 0000:027D7       _FINDSYMBOL
+ 0000:01A22       _SPASM
+ 0000:0157D       addptr(unsigned char near*near*,long far*)
+ 0000:0149B       addvar(unsigned char near*near*,char near*near*)
+ 0000:01416       hexlong(char near*near*)
+ 0000:013C7       declong(char near*near*)
+ 0000:0136A       asciilong(char near*near*,int near*)
+ 0000:01303       binlong(char near*near*)
+ 0000:012D7       addlong(unsigned char near*near*,long)
+ 0000:012B0       addword(unsigned char near*near*,long)
+ 0000:011FF       addconst(unsigned char near*near*,char near*near*)
+ 0000:011EA       addtoken(unsigned char near*near*,unsigned char)
+ 0000:00F82       tokenizeexpression(unsigned char near*near*,char near*near*)
+ 0000:00ED1       evalconst(unsigned long near*,unsigned char near*near*)
+ 0000:00CF7       evalnumber(unsigned long near*,unsigned char near*near*)
+ 0000:00B7F       evalfactor(unsigned long near*,unsigned char near*near*)
+ 0000:0095A       evalexpression(unsigned long near*,unsigned char near*near*)
+ 0000:00955       restoresnesvectors()
+ 0000:00933       cleanup(int)
+ 0000:008F6       doexpr()
+ 0000:008AE       evalvar(unsigned long near*,unsigned char near*near*)
+ 0000:00879       lookupvar(char near*)
+ 0000:0086A       memread(long,char)
+ 0000:00399       _MAIN
+ 0000:00354       dofilename(unsigned char near*,unsigned char far*,unsigned char near*)
+ 0000:00325       initslaveio(int,unsigned char far*)
+ 0000:002C2       loadenvvariables()
+ 0000:002C0       __MMODEL
+ 0000:002BE       DGROUP@
+ 0000:002A9       _ABORT
+ 0000:001EF       __RESTOREZERO
+ 0000:0019A       __TERMINATE
+ 0000:00172       __CHECKNULL
+ 0000:0015F       __CLEANUP
+ 07A8:050DC       __ATEXITTBL
+ 07A8:050DA       _MEMSIZESEG
+ 07A8:050D6       _ANSWER
+ 07A8:050D4       _ISPTR
+ 07A8:050D2       _TSPTR
+ 07A8:04FD7       _TOKENSTREAM
+ 07A8:04EDC       _EXPBUFFER
+ 07A8:04ED8       _SLAVEBUFFERDATA
+ 07A8:04ED4       _SLAVEBUFFERCMD
+ 07A8:04ED2       _SLAVEWORM
+ 07A8:04ED0       _SLAVEBANK
+ 07A8:04ECE       _SLAVECTRL
+ 07A8:04EB0       __SCANTODVECTOR
+ 07A8:04EAE       __REALCVTVECTOR
+ 07A8:03A3E       _BBACKPATCHLISTINGFILE
+ 07A8:039FE       _LIST_FILE
+ 07A8:02CA9       _ERRORLEVEL
+ 07A8:01CD6       _MAP_FILE
+ 07A8:01CD5       _MAPFLAG
+ 07A8:01CD3       _SPASM_REV
+ 07A8:01CD1       _SPASM_MINOR
+ 07A8:01CCF       _SPASM_MAJOR
+ 07A8:01BB3       _SYM_FILE
+ 07A8:01BB2       _SYMFLAG
+ 07A8:01B70       _SYSTEM_FILE
+ 07A8:01B6F       _SYSTEMTYPE
+ 07A8:01B6E       _BCASESENSITIVE
+ 07A8:01B66       _LINES_ASSEMBLED
+ 07A8:01B65       _SLDFLAG
+ 07A8:01B25       _SLD_FILE
+ 07A8:01AE5       _SRC_FILE
+ 07A8:0072C       _ENVIRON
+ 07A8:00720       __ARGV
+ 07A8:0071E       __ARGC
+ 07A8:0071C       __ROVER
+ 07A8:0071A       __LAST
+ 07A8:00718       __FIRST
+ 07A8:00676       __STKLEN
+ 07A8:0059C       __DOSERRORTOSV
+ 07A8:0059A       __DOSERRNO
+ 07A8:00598       __HEAPLEN
+ 07A8:00570       __OPENFD
+ 07A8:0056E       __NFILE
+ 07A8:0042E       __STREAMS
+ 07A8:0042C       __EXITOPEN
+ 07A8:0042A       __EXITFOPEN
+ 07A8:00428       __EXITBUF
+ 07A8:00326       __CTYPE
+ 07A8:00324       __ATEXITCNT
+ 07A8:0031A       _TIMESTR
+ 07A8:0030E       _DATESTR
+ 07A8:000B0       _SLAVEBUFFER
+ 07A8:000AE       _SLAVEBASE
+ 07A8:000AA       _MEMCHUNK
+ 07A8:000A6       __HEAPTOP
+ 07A8:000A2       __BRKLVL
+ 07A8:0009E       __HEAPBASE
+ 07A8:0009C       ___BRKLVL
+ 07A8:0009A       ___HEAPBASE
+ 07A8:00096       __STARTTIME
+ 07A8:00094       _ERRNO
+ 07A8:00093       __OSMINOR
+ 07A8:00092       __OSVERSION
+ 07A8:00092       __OSMAJOR
+ 07A8:00092       __VERSION
+ 07A8:00090       __PSP
+ 07A8:0008E       __ENVSIZE
+ 07A8:0008C       __ENVSEG
+ 07A8:0008A       __ENVLNG
+ 07A8:00088       __C0ENVIRON
+ 07A8:00086       __C0ARGV
+ 07A8:00084       __C0ARGC
+ 07A8:00080       __INT6VECTOR
+ 07A8:0007C       __INT5VECTOR
+ 07A8:00078       __INT4VECTOR
+ 07A8:00074       __INT0VECTOR
+ 07A8:00000       DATASEG@
+
+Program entry point at 0000:0000
+

@@ -1,0 +1,25 @@
+PAL16L8
+SNESDOP3
+Dopple Board RAM Array Control PAL
+Phil Torre,Utopia Engineering, Seattle
+
+RAMW RAMO TA0 HA0 HDATA TDATA TW0 TW1 PIN9 GND
+EIGHTBIT XBUS W0 W1 O0 O1 PIN17 PIN18 PIN19 VCC
+
+/XBUS =		/TDATA * TA0 +
+		/HDATA * HA0
+
+/W0 = 		/RAMW * /TDATA * /TA0 +
+		/RAMW * /HDATA * /HA0
+
+/W1 =		/RAMW * /TDATA *  TA0 +
+		/RAMW * /HDATA *  HA0
+
+/O0 =		/RAMO * /TDATA * /TA0 +
+		/RAMO * /HDATA * /HA0
+
+/O1 =		/RAMO * /TDATA *  TA0 +
+		/RAMO * /HDATA *  HA0
+
+
+END

@@ -1,0 +1,22 @@
+
+	IFNDEF	SNES_LIB_BIN_MAC
+SNES_LIB_BIN_MAC
+
+SPRINC MACRO
+{1}SprData:     INCBIN  {3}{1}.{2}
+	ENDM
+
+MAPINC MACRO
+{1}Map:     INCBIN  {3}{1}.{2}
+{1}MapLen	EQU	(PC - {1}Map)
+	ENDM
+
+CHRINC MACRO
+{1}Tiles:	INCBIN  {3}{1}.{2}
+{1}TilesLen	EQU	(PC - {1}Tiles)
+	ENDM
+
+	ENDIF
+
+	END
+

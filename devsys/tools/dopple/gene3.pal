@@ -1,0 +1,62 @@
+PAL16L8
+GENE1
+Genesis Interrupt PAL
+Scott Statton, Developer Resources,Mtn. View, CA
+
+NMI FC0 FC1 FC2 A1 A2 A3 PIN8 PIN9 GND
+PIN11 IPL0 Q NOTQ S R PIN17 IPL1 IPL2 VCC
+
+/S = FC0 * FC1 * FC2 * A1 * A2 * A3
+
+/R = /NMI * /NOTQ
+
+/Q = NOTQ * S
+
+/NOTQ = Q * R
+
+IF ( VCC ) /IPL0 = /Q
+
+IF ( /Q ) /IPL1 = VCC
+
+IF ( /Q ) /IPL2 = VCC
+
+
+FUNCTION TABLE
+
+NMI FC0 FC1 FC2 A1 A2 A3 IPL0 IPL1 IPL2 S R Q NOTQ
+; N  F  F  F          | I  I  I
+; M  C  C  C  A  A  A | P  P  P       N
+; I  0  1  2  1  2  3 | 0  1  2 S R Q Q
+
+
+; test s,r,ipl's,Q,NOTQ
+;  H  X  X  X  X  X  X   X  X  X X H L H
+;  L  X  X  X  X  X  X   X  X  X X H L H
+;  L  X  X  X  X  X  X   X  X  X X L H L
+;  H  X  X  X  X  X  X   X  X  X X H H L
+;
+;  X  X  X  X  X  X  X   H  Z  Z X X H L
+;  X  X  X  X  X  X  X   L  L  L X X L H
+;
+;  X  X  X  X  X  X  X   X  X  X L X H L
+;  X  X  X  X  X  X  X   X  X  X H X H L
+;  X  X  X  X  X  X  X   X  X  X L X L H
+;
+;  X  X  X  X  X  X  X   X  X  X X L H L
+;  X  X  X  X  X  X  X   X  X  X X H L H
+;  X  X  X  X  X  X  X   X  X  X X L H L
+
+
+----------------------------------------------------
+  X  L  X  X  X  X  X   X  X  X H X X X
+  X  X  L  X  X  X  X   X  X  X H X X X
+  X  X  X  L  X  X  X   X  X  X H X X X
+  X  X  X  X  L  X  X   X  X  X H X X X
+  X  X  X  X  X  L  X   X  X  X H X X X
+  X  X  X  X  X  X  L   X  X  X H X X X
+  X  H  H  H  H  H  H   X  X  X L X X X
+
+-----------------------------------------------------
+
+END
+

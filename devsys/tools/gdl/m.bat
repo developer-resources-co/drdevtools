@@ -1,0 +1,2 @@
+bcc -v gdl.c
+

@@ -1,0 +1,72 @@
+################################################################################
+#
+#   drmon.mak makefile for snesmon & genmon
+#
+###############################################################################
+
+.EXTENSIONS: .cpp
+
+#DEBUGTYPE = DEBUGCOFF
+DEBUGTYPE = DEBUGDR
+
+!ifdef EMUL
+MONEMUL = EMUL
+!endif
+
+CC = wpp386
+#INCLUDE = c:\watcom\h;s:\\
+CFLAGS = -oo -d2 -D$(DEBUGTYPE) -DSYSTEM$(SYSTEM) -D$(MONEMUL)
+
+EXENAME = $(SYSTEM)$(EMUL)$(OS).exe
+
+###############################################################################
+# order of execution
+
+#ALL:    bin\$(EXENAME) bin\$(SYSTEM)mon.hlp bin\$(SYSTEM)mon.prc
+
+###############################################################################
+
+OBJS = \
+$(SYSTEM)$(EMUL)io.obj \
+profile.obj \
+shell.obj \
+listrect.obj \
+menu.obj \
+object.obj \
+layer.obj \
+app.obj \
+info.obj drmon.obj display.obj screen.obj  \
+list.obj memory.obj reg.obj mouse.obj window.obj gadget.obj \
+input.obj \
+macro.obj manager.obj \
+menubar.obj message.obj memops.obj eval.obj token.obj break.obj \
+expr.obj control.obj textview.obj console.obj help.obj \
+command.obj error.obj cmdmacro.obj charts.obj \
+source.obj watch.obj search.obj \
+mem.obj \
+sld.obj coff.obj \
+symbol.obj monmenu.obj \
+about.obj \
+general.obj config.obj \
+filereq.obj board.obj which.obj 
+
+
+bin\$(EXENAME): $(OBJS) drmon.mak
+	wlink @drmon.lnk
+
+bin\$(SYSTEM)mon.hlp: $(SYSTEM)mon.hlp
+	copy $. bin
+
+bin\$(SYSTEM)mon.prc: $(SYSTEM)mon.prc
+	copy $. bin
+
+###############################################################################
+
+.cpp.obj:
+	 $(CC) $(CFLAGS) $<
+
+.asm.obj:
+    tasm /zi $*.asm,$*.obj
+
+###############################################################################
+

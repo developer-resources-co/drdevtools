@@ -1,0 +1,276 @@
+=========================================================
+===		 GenMon Help        		      ===
+=========================================================
+
+             -- Key Reference --
+
+Globals:
+	F1:	Next window
+
+	F2:	Run
+	F3:	Stop/Break
+	F4:	Run No Update
+	F6:	Next Window
+	F7:	Trace(Step Into)(+alt=src,+ctrl=asm)
+
+	F8:  	Step Over  	(+alt=src,+ctrl=asm)
+	F9:  	Enter Window Movement Mode
+	F10: 	Activate Global Menu Bar
+	Ctrl-F10: Activate local memu.
+
+	alt-Z:  Zoom current window(if resizable)
+	alt-P:  Print current window to log file
+	alt-D:  Enter dos shell
+	alt-Q:	Close Window
+	alt-X:	exit program
+
+Windows:
+	alt-M:	Open Memory Window
+	alt-R:	Open Register Window*
+	alt-O:	Open Console Window*
+	alt-E:	Open Expression Parser Window*
+	alt-B:	Open BreakPoint Window*
+	alt-S:	Open Symbol Window*
+	alt-K:	Open Command Window*
+	alt-T:	Open Text View Window
+	alt-H:	Open This Help Window
+	alt-W:  Open Watch Window
+	alt-L:	Open source Level debug window*
+	alt-I:	Open Info window(About)*
+	alt-Y:  Open ASCII Chart
+
+	* can only have one open at a time
+
+String Requesters:
+	alt-A:	Cut
+	alt-C:	Copy
+	alt-P:	Paste
+
+	shift+left mouse click begins global copying,
+	hold down and drag to the right to highlight
+	text, then release, text will be copied to the
+	clipboard(paste buffer).
+
+Movement Mode:
+	up,down,left,right moves window
+	shift + up,down,left,right resizes window
+	esc leaves movement mode
+
+=========================================================
+=========================================================
+	     Window specific help:
+=========================================================
+
+Memory:
+	The memory window is used to examine memory
+	in a variety of formats, includeing bytes,
+	words, long words, ASCII or dissasembled code.
+
+	Keyboard shortcuts:
+	    ctrl-h: Run to cursor(set break once, and run)
+	    ctrl-m: Modify memory under cursor
+	    ctrl-s: Set Breakpoint at cursor
+	    ctrl-o: Set break Once at cursor
+	    ctrl-n: Set break with count at cursor
+	    ctrl-a: Clear all breakpoints
+            ctrl-g: Set the dynamic running address.
+            ctrl-b: Display hex bytes
+            ctrl-w: Display hex words
+            ctrl-l: Display hex long words
+            ctrl-d: Display as disassembly
+            ctrl-y: Display as ascii
+
+=========================================================
+
+Register:
+	The register window is used to set and view the
+	current	68000 registers. To change a register,
+	simply click on the desired register, and an
+	expression window will ask for the new value.
+
+	The registers are shown in hex, and the
+	flags are shown individually.
+
+=========================================================
+
+BreakPoint:
+	The Breakpoint window is used to set and clear a
+	variety of breakpoints. To set a breakpoint,
+	choose set in the menu (or press ctrl-s) and
+	enter the address at which you wish to set the
+	breakpoint. To clear a breakpoint, position the
+	cursor over the desired breakpoint and select
+	clear from the menu(or press ctrl-c). Break Once
+	creates a breakpoint which will clear itself
+	after breaking once. Break with count will break
+	count times, then clear itself.
+
+	Keyboard shortcuts:
+
+	    ctrl-s/Insert: Set breakpoint
+	    ctrl-o: Set break Once
+	    ctrl-n: Set break with count
+	    ctrl-c/Delete: Clear break under cursor
+	    ctrl-a: Clear all breakpoints
+
+=========================================================
+
+Console:
+	The console window is a debugging tool used by
+	your program as an easy way to communicate with
+	the developer. By using print routines provided
+	in the developer package, your program can send
+	messages to the console window. 68000 exceptions
+	are also printed here. There can only be one
+	console window in GenMon.
+
+=========================================================
+
+Symbol:
+	The Symbol window is used to create, delete and
+	load symbols. To load symbols, choose
+	"load symbols" in the menu(or press ctrl-l),
+	then select the correct symbol file. To create
+	a symbol, choose "Create Symbol" in the menu
+	(or press ctrl-s) and enter the value you wish
+	to set the symbol to. To delete a symbol,
+	position the cursor over the desired symbol and
+	select "Delete Symbol" from the menu(or press
+	ctrl-c).
+
+	Keyboard shortcuts:
+
+	    ctrl-b: Set Breakpoint at symbol under cursor
+	    ctrl-o: Set Break Once at symbol under cursor
+	    ctrl-l: Load Symbol File
+	    ctrl-s/Insert: Set Symbol(define new symbol)
+	    ctrl-c/Delete: Clear symbol under cursor(delete symbol)
+	    ctrl-a: Clear all symbols
+
+	    (save symbols is not implemented, but does
+	    anyone actually need it?)
+
+=========================================================
+
+Expression:
+	The expression window is provided as a
+	convenience for the developer. It provides a
+	way for symbols and other expressions to be
+	evaluated. It can be used a calculator or for
+	resolving complicated expressions. Answers are
+	given in hex, decimal, and binary. The first
+	symbol(if any) matching the result is also
+	displayed. Answers can be cut or copied to the
+	cut/paste buffer and then pasted into onter
+	input fields. There can be only one expression
+	window in GenMon open at a time and it has
+	no menus.
+
+=========================================================
+
+Command:
+	The command window allows users to enter command
+	line input to GenMon. GenMon's responses are
+	also given in the command window. The command
+	line has powerful scripting capabilities, more so
+	than the keyboard macros. There can only be one
+	command window open at a time.
+
+	Keyboard shortcuts:
+	    Up:   access previous command from history
+	    Down: access previous command from history
+
+=========================================================
+
+Watch:
+	The watch window is useful for keeping track of
+	variables or expressions while the code is
+	running. To set a watch, choose "Set Watch" in
+	the menu (or press ctrl-s) and enter the
+	expression you wish to watch. To clear a watch,
+	position the cursor over the desired watch and
+	select "Clear Watch" from the menu(or press
+	ctrl-c).
+
+	The expression will be updated every frame,
+	displaying the result of the expression, a
+	colon(':'), and then the original expression.
+
+	Keyboard shortcuts:
+	    ctrl-s/Insert: Set watch
+	    ctrl-c/Delete: Clear watch under cursor
+	    ctrl-a: Clear all watches
+
+=========================================================
+
+TextView:
+	The text viewer allows you to examine the
+	contents of any text file.
+
+	up/down/left/right is used to position the
+	cursor in the file(cursor coordinates are
+	shown in the bottom right)
+
+	pgup/pgdown moves up and down in the file
+	by one page.
+
+	ctrl-pgup/ctrl-pgdown moves to the top and bottom
+	of the file.
+
+	Keyboard shortcuts:
+	    ctrl-l: Load text file
+	    ctrl-f: Find text string in text file
+	    ctrl-n: Find next occurance of text string
+	    ctrl-g: Goto specified line in file
+
+=========================================================
+
+Help:
+	The help window(your looking at it!) is a
+	TextView window with a text file named
+	'genmon.hlp' loaded into it. This file shows
+	keyboard commands and some basic instructions
+	in the usage of GenMon. It is meant to be an
+	on-line reference. You may edit and add to
+	this file with any text editor.
+	(Also, check here and the readme for new commands
+	that may not have made it into the manual).
+
+=========================================================
+
+Source:
+	The source level debugging window allows you to
+	see what file the code you are tracing was
+	assembled from. To activate source level
+	debuggging, you must load a .SLD file into
+	this window.
+
+	Keyboard shortcuts:
+	    ctrl-l: Load .SLD file
+	    ctrl-f: Find text string in current file
+	    ctrl-n: Find next occurance of text string
+	    ctrl-g: Goto specified line in file
+	    ctrl-s: Set breakpoint at current line
+	    ctrl-o: Set break once at current line
+	    ctrl-c: Clear breakpoint at current line
+	    ctrl-a: Clear all breakpoints
+	    ctrl-h: Run to current line
+	    ctrl-y: Goto given symbol
+
+=========================================================
+
+About:
+	Programmer credits & Company info goes here.
+
+=========================================================
+
+Information:
+	Memory and symbols free are also listed.
+
+=========================================================
+
+ASCII:
+	This is just an ASCII chart. Not much can be
+	said about it.
+
+=========================================================

@@ -1,0 +1,45 @@
+PAL16L8
+2M_DOP4
+DoppleBoard RAM Address Decoder(2 megabyte version)
+Scott Statton, Developer Resources, Mountain View, CA
+
+A18 A17 CE INHIB HCRSEL TCRSEL WHO HA20 TA20 GND
+PIN11 O0 O1 O2 O3 CRAM ERAMSEL BANK0 BANK1 VCC
+
+IF (VCC) /O0 =
+	/CE * /A18 * /A17 * TCRSEL * /WHO +
+	/CE * /A18 * /A17 * /HCRSEL * WHO
+
+IF (VCC) /O1 =
+	/CE *  A18 * /A17 * TCRSEL * /WHO +
+	/CE *  A18 * /A17 * /HCRSEL * WHO
+
+IF (VCC) /O2 =
+	/CE * /A18 *  A17 *  TCRSEL * /WHO +
+	/CE * /A18 *  A17 * /HCRSEL * WHO
+
+IF (VCC) /O3 =
+	/CE *  A18 *  A17 *  TCRSEL * /WHO +
+	/CE *  A18 *  A17 * /HCRSEL * WHO
+
+IF (VCC) /CRAM =
+	/CE * HCRSEL * WHO +
+	/CE * /TCRSEL * /WHO
+
+
+IF (VCC) /ERAMSEL =
+	/CE * TCRSEL * /WHO
+
+IF (VCC) /BANK0 =
+	/CE * TCRSEL * /WHO
+
+IF (VCC) /BANK0 =
+	/CE * /HA20 * WHO +
+	/CE * /TA20 * /WHO
+
+IF (VCC) /BANK1 =
+	/CE * HA20 * WHO +
+	/CE * TA20 * /WHO
+
+
+END

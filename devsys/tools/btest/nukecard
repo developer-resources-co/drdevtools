@@ -1,0 +1,40 @@
+o 318 f3
+o 319 0
+f d000:0 ffff 30
+o 319 1
+f d000:0 ffff 31
+o 319 2
+f d000:0 ffff 32
+o 319 3
+f d000:0 ffff 33
+o 319 4
+f d000:0 ffff 34
+o 319 5
+f d000:0 ffff 35
+o 319 6
+f d000:0 ffff 36
+o 319 7
+f d000:0 ffff 37
+o 319 8
+f d000:0 ffff 38
+o 319 9
+f d000:0 ffff 39
+o 319 a
+f d000:0 ffff 41
+o 319 b
+f d000:0 ffff 42
+o 319 c
+f d000:0 ffff 43
+o 319 d
+f d000:0 ffff 44
+o 319 e
+f d000:0 ffff 45
+o 319 f
+f d000:0 ffff 46
+o 319 80
+f d000:0 ffff cb
+
+q
+
+
+

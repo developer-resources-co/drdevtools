@@ -1,0 +1,135 @@
+
+;============================================================================
+;
+; File:    waldo.mac
+;
+; Project: Where's Waldo? (SNES)
+;
+; History: 
+;       5 Apr 92        WBNIV   Created
+;
+;
+;============================================================================
+
+
+TRUE    EQU     -1
+FALSE   EQU     0
+
+
+ZPAGE   SEGMENT
+fn_call         ds      3               ; Be sure to initialize fn_call 
+					; to $4C (opcode for JMP addr)
+
+
+ST      MACRO
+	lda     #TRUE
+	sta     {1}
+	ENDM
+
+SF      MACRO
+	lda     #0
+	sta     {1}
+	ENDM
+
+yCMP    MACRO
+	ldy     {2}
+	cmp     {1},y
+	ENDM
+
+ySBC    MACRO
+	ldy     {2}
+	sbc     {1},y
+	ENDM
+
+yADC    MACRO
+	ldy     {2}
+	adc     {1},y
+	ENDM
+
+yLDA    MACRO
+	ldy     {2}
+	lda     {1},y
+	ENDM
+
+ySTA    MACRO
+	ldy     {2}
+	sta     {1},y
+	ENDM
+
+yST     MACRO
+	lda     #TRUE
+	ldy     {2}
+	sta     {1},y
+	ENDM
+
+ySF     MACRO
+	lda     #0
+	ldy     {2}
+	sta     {1},y
+	ENDM
+
+ySTZ    MACRO
+	lda     #0
+	ldy     {2}
+	sta     {1},y
+	ENDM
+
+yJSR    MACRO
+	php
+	a8
+	lda     #$4C
+	sta     fn_call
+	a16
+	ldy     {2}
+	lda     {1},y
+	sta     fn_call+1
+	jsr     fn_call
+	plp
+	ENDM
+
+
+DOWNLOAD_TILES  MACRO
+		lda     #{1}
+		sta     START
+		lda     #>{1}
+		sta     START+1
+		lda     {3}
+		sta     LENGTH
+		lda     {2}
+		sta     VMADDL
+		jsr     VDPCopy
+		ENDM
+
+
+BG_COLOR        MACRO
+		php
+
+		a8
+		lda     #0
+		sta     CGADDR
+
+		a16
+		lda     {1}
+		asl     a
+		asl     a
+		asl     a
+		asl     a
+		asl     a
+		ora     {2}
+		asl     a
+		asl     a
+		asl     a
+		asl     a
+		asl     a
+		ora     {3}
+		a8
+		sta     $2122
+		xba
+		sta     $2122
+
+		plp
+		ENDM
+
+
+	END
+

@@ -1,0 +1,45 @@
+
+06 Mar 94
+	KTS
+		Added conditionals to expresion parser
+			<,>,<=,>=,==,!=, now shifts are << and >>
+		Fixed source level debugging file validation code
+		Added conditional breakpoints(ctrl-e on break window)
+		Fixed all command line parameters which were sub-sets
+			of other commands(see WBNIV fix of 15 dec)
+		Added first matching symbol to the watch window
+
+21 Feb 94
+	WBNIV	* Console window only stores 25 lines
+		Memory read too slow on SNES version
+		Symbols crash under PharLap; recode to use binary tree anyway
+		* "." as a valid symbol character
+		* Disassembly shows more labels
+		* Uper byte of A gets trashed to $FF (on rep?)
+		New version doesn't single-step (and various other problems)
+		* Add "Fill Memory"
+
+4 Apr 93
+	KTS	Added path for source code
+
+
+15 Dec 92  1337
+	WBNIV	Fixed problem with setting Accumulator in SNES version.
+		Basically, the command parser would find the first match
+		of an input string against the list of commands.  Since
+		there were commands that started with "A", it matched with
+		the first one.  I changed the code to return a command if
+		there is one and only one match.  Not only does this fix
+		the problem with the Accumulator, it is also more correct
+		and eliminates ambigious commands.  Although this works,
+		it still doesn't address the most basic issue: determining
+		whether something is an assignment or a command...
+
+
+11-04-92 03:38am
+	KTS	Added INI file support
+		and general cleanup
+
+18 Sep 92
+	WBNIV	Enabled all 16-colors for backgrounds
+

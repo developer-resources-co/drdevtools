@@ -1,0 +1,12 @@
+set dispmode $100
+
+open memory position 0,1 size 54,29 dynamicrunning pcl
+
+open command position 0,30 size 54,19
+
+open register position 54,1
+
+pcl=@2($FFFC)
+
+loadsym 256.sym
+

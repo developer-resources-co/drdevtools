@@ -1,0 +1,18 @@
+
+land Version 2.0:
+-----------------
+
+* supports stdin as input
+* supports multiple files to print, including wildcards
+* source cleaned up (but I don't think any of you care)
+* supports output to specified file (which of course includes "stdprn" which
+  is the default)
+* sets errorcode correctly upon exit
+* supports embedded formfeed's
+
+
+Version 2.0.3
+-------------
+* Changed all messages to Cave Logic Studios
+* Added reading environment variable "COPYRIGHT" to set message in upper-
+  right corner of printed page

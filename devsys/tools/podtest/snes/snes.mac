@@ -1,0 +1,308 @@
+;==============================================================================
+;===    Macros.asm: some useful macros                                      ===
+;===	(c)1991,92 Developer Resources					    ===
+;==============================================================================
+
+
+
+PUSH_ALL	MACRO
+	pha
+	phx
+	phy
+	php
+	ENDM
+
+PULL_ALL	MACRO
+	plp
+	ply
+	plx
+	pla
+	ENDM
+
+
+
+mode16	macro
+	rep	#$30
+	longa	on
+	longi	on
+	endm
+
+mode8	macro
+	sep	#$30
+	longa	off
+	longi	off
+	endm
+
+A16	macro
+	rep	#LONGA
+	longa	on
+	endm
+
+A8	macro
+	sep	#LONGA
+	longa	off
+	endm
+
+X16	macro
+	rep	#LONGI
+	longi	on
+	endm
+
+X8	macro
+	sep	#LONGI
+	longi	off
+	endm
+
+asm16	macro
+	longa	on
+	longi	on
+	endm
+
+asm8	macro
+	longa	off
+	longi	off
+	endm
+
+blank	macro
+	pha
+	LONGA	PUSH
+	php
+	A8
+	lda	#$80
+	sta	$2100
+	plp
+	LONGA	POP
+	pla
+
+	endm
+
+unblank	macro
+	pha
+	LONGA	PUSH
+	php
+	A8
+	lda	#$0f
+	sta	$2100
+	plp
+	LONGA	POP
+	pla
+
+	endm
+waitvb	macro
+	pha
+	LONGA	PUSH
+	php
+	A8
+.{L}loop1
+	lda	$4210
+	and	#$80
+	bne	.{L}loop1
+.{L}loop2
+	lda	$4210
+	and	#$80
+	beq	.{L}loop2
+	lda	$4210
+	plp
+	LONGA	POP
+	pla
+	endm
+
+
+;==============================================================================
+; gfx macros
+;------------------------------------------------------------------------------
+
+spriteinc	MACRO
+{1}SPRCHR:
+	incbin	{1}.chr
+{1}SIZE		equ	pc-{1}SPRCHR
+{1}spr:
+	incbin	{1}.spr
+	ENDM
+
+;------------------------------------------------------------------------------
+;	1 = palette filename
+;	2 = directory (optional)
+
+palinc	macro
+
+	IFNOT	{n}-2
+	INCDIR	{2}
+	ENDIF
+
+{1}Pal:
+	incbin	{1}.pal
+{1}NumColors	EQU	(PC-{1}Pal)/2
+
+	IFNOT	{n}-2
+	INCDIR
+	ENDIF
+
+	endm
+
+;------------------------------------------------------------------------------
+;	1 = tile filename
+;	2 = directory (optional)
+
+chrinc	macro
+	
+	IFNOT	{n}-2
+	INCDIR	{2}
+	ENDIF
+
+{1}Chr:
+	incbin	{1}.chr
+	even
+{1}Size	equ	pc-{1}Chr
+
+	IFNOT	{n}-2
+	INCDIR
+	ENDIF
+
+	endm
+
+;------------------------------------------------------------------------------
+;	1 = tile filename
+;	2 = directory (optional)
+
+chrrleinc	macro
+	
+	IFNOT	{n}-2
+	INCDIR	{2}
+	ENDIF
+
+{1}Chr:
+	incbin	{1}.ccr
+	even
+{1}Size	equ	pc-{1}Chr
+
+	IFNOT	{n}-2
+	INCDIR
+	ENDIF
+
+	endm
+
+;------------------------------------------------------------------------------
+;	1 = map filename
+;	2 = directory (optional)
+
+mapinc	macro
+
+	IFNOT	{n}-2
+	INCDIR	{2}
+	ENDIF
+
+{1}Map:
+	incbin	{1}.map
+
+	IFNOT	{n}-2
+	INCDIR
+	ENDIF
+
+	endm
+
+;------------------------------------------------------------------------------
+;	1 = map filename
+;	2 = directory (optional)
+
+maprleinc	macro
+
+	IFNOT	{n}-2
+	INCDIR	{2}
+	ENDIF
+
+{1}Map:
+	incbin	{1}.cmm
+
+	IFNOT	{n}-2
+	INCDIR
+	ENDIF
+
+	endm
+
+;------------------------------------------------------------------------------
+; 	1 = starting palette #
+;	2 = name of palette
+
+SetPal	macro
+	php
+	mode16
+
+	IF	{n}-2
+	ldy	#0
+	ENDIF
+
+	IFNOT	{n}-2
+	ldy	{2}
+	ENDIF
+
+	ldx	#{1}NumColors
+
+	lda	#{1}Pal
+
+	jsr	|SetPalette
+
+	plp
+	endm
+
+
+;------------------------------------------------------------------------------
+;	1 = tile filename
+;	2 = directory (optional)
+
+SPRINC	MACRO
+
+	IFNOT	{n}-2
+	INCDIR	{2}
+	ENDIF
+
+{1}SprData:
+	incbin	{1}.chr
+
+	IFNOT	{n}-2
+	INCDIR
+	ENDIF
+
+	ENDM
+
+
+;==============================================================================
+;	1 = name of gfx
+; 	2 = vdp starting address
+;------------------------------------------------------------------------------
+
+LoadChr	macro
+	lda	{2}
+	sta	VMADDL
+	lda	#{1}Chr
+	sta	START
+	lda	#>{1}Chr
+	sta	START+1
+	lda	#{1}Size
+	sta	LENGTH
+	jsr	|VDPCopy
+	endm
+
+;==============================================================================
+;
+;
+;------------------------------------------------------------------------------
+
+LoadMap	macro
+	lda	#{1}
+	sta	mapPtrL
+	lda	#>{1}
+	sta	mapPtrL+1
+
+	lda	
+
+	move.w	#{2},d0
+	move.w	#{3},d1
+	move.w	#{4},d2
+	lea	{5}Map,a0
+	jsr	|PlotMap{1}
+	endm
+
+
+	END
+

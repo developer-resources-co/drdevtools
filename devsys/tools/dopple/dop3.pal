@@ -1,0 +1,61 @@
+PAL16L8
+DOP3
+Dopple Board RAM Array Control PAL
+Scott Statton, Developer Resources, Mtn. View, CA
+
+RAMW RAMO TA0 HA0 HDATA TDATA TW0 TW1 PIN9 GND
+EIGHTBIT XBUS W0 W1 O0 O1 PIN17 PIN18 PIN19 VCC
+
+/XBUS =		EIGHTBIT * /TDATA * TA0 +
+		/HDATA * HA0
+
+/W0 = 		/RAMW * /TDATA * /TA0 * /TW0 * EIGHTBIT +
+		/RAMW * /TDATA * /TW0 * /EIGHTBIT +
+		/RAMW * /HDATA * /HA0
+
+/W1 =		/RAMW * /TDATA *  TA0 * /TW0 * EIGHTBIT +
+		/RAMW * /TDATA * /TW1 * /EIGHTBIT +
+		/RAMW * /HDATA *  HA0
+
+/O0 =		/RAMO * /TDATA * /TA0 * EIGHTBIT +
+		/RAMO * /TDATA * /EIGHTBIT +
+		/RAMO * /HDATA * /HA0
+
+/O1 =		/RAMO * /TDATA *  TA0 * EIGHTBIT +
+		/RAMO * /TDATA * /EIGHTBIT +
+		/RAMO * /HDATA *  HA0
+
+
+FUNCTION TABLE
+
+RAMW RAMO TDATA TA0 TW0 TW1 HDATA HA0 EIGHTBIT W0 W1 O0 O1 XBUS
+
+; R  R  T           H     8 |             X
+; A  A  D  T  T  T  D  H  B |             B
+; M  M  A  A  W  W  A  A  I | W  W  O  O  U
+; W  O  T  0  0  1  T  0  T | 0  1  0  1  S
+
+-----------------------------------------------------
+
+  X  X  L  L  X  X  X  X  H   X  X  X  X  H
+  X  X  L  H  X  X  X  X  H   X  X  X  X  L
+  X  X  L  X  X  X  X  X  L   X  X  X  X  H
+  X  X  X  X  X  X  L  L  X   X  X  X  X  H
+  X  X  X  X  X  X  L  H  X   X  X  X  X  L
+  L  X  L  L  L  X  H  X  H   L  H  X  X  H
+  L  X  L  H  L  X  H  X  H   H  L  X  X  L
+  L  X  L  X  H  H  H  X  L   H  H  X  X  H
+  L  X  L  X  L  H  H  X  L   L  H  X  X  H
+  L  X  L  X  H  L  H  X  L   H  L  X  X  H
+  L  X  L  X  L  L  H  X  L   L  L  X  X  H
+  L  X  H  X  X  X  L  L  X   L  H  X  X  H
+  L  X  H  X  X  X  L  H  X   H  L  X  X  L
+  X  L  L  L  X  X  H  X  H   X  X  L  H  H
+  X  L  L  H  X  X  H  X  H   X  X  H  L  L
+  X  L  L  X  X  X  H  X  L   X  X  L  L  H
+  X  L  H  X  X  X  L  L  X   X  X  L  H  H
+  X  L  H  X  X  X  L  H  X   X  X  H  L  L
+
+-----------------------------------------------------
+
+END

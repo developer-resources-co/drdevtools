@@ -1,0 +1,104 @@
+;============================================================================
+;
+; File:    256.mac
+;
+; Project:
+;
+; History:
+;	5 Apr 92	WBNIV	Created
+;
+;
+;============================================================================
+
+CURSOR	MACRO
+	LONGA	PUSH
+	LONGI	PUSH
+	pha
+	php
+	mode16
+	ldx	{1}
+	ldy	{2}
+	jsr	MoveCursor
+	plp
+	pla
+	LONGI	POP
+	LONGA	POP
+	ENDM
+
+PRINT_STRING	MACRO
+	LONGA	PUSH
+	LONGI	PUSH
+	php
+	mode16
+	lda	#{1}
+	sta	textPtr
+	lda	#>{1}
+	sta	textPtr+1
+	jsr	PrintString
+	plp
+	LONGI	POP
+	LONGA	POP
+	ENDM
+
+;============================================================================
+
+yLDA	MACRO
+	ldy	{2}
+	lda	{1},y
+	ENDM
+
+ySTA	MACRO
+	ldy	{2}
+	sta	{1},y
+	ENDM
+
+yADC	MACRO
+	ldy	{2}
+	adc	{1},y
+	ENDM
+
+
+BG_COLOR        MACRO
+
+	LONGA	PUSH
+	LONGI	PUSH
+
+		pha
+		php
+
+		blank
+
+		a8
+		lda     #0
+		sta     CGADDR
+
+		a16
+		lda     {3}
+		asl     a
+		asl     a
+		asl     a
+		asl     a
+		asl     a
+		ora     {2}
+		asl     a
+		asl     a
+		asl     a
+		asl     a
+		asl     a
+		ora     {1}
+		a8
+		sta     $2122
+		xba
+		sta     $2122
+
+		plp
+		pla
+
+	LONGI	POP
+	LONGA	POP
+		ENDM
+
+
+
+	END
+

@@ -1,0 +1,196 @@
+Version 2.0.42
+--------------------------------------------------------------------------------
+06-12-94 fixed out of macro space error to not print junk
+06-12-94 begun work on haveing multiple incdir's
+Version 2.0.41
+--------------------------------------------------------------------------------
+06-11-94 fixed symbol length inconsistencies(error on 25 or 26 chars long)
+
+Version 2.0.39
+--------------------------------------------------------------------------------
+05-17-94 made assert inc error count, and set error level
+05-17-94 made "sta #100" give an invalid addressing mode
+
+Version 2.0.38
+--------------------------------------------------------------------------------
+05-17-94 fixed so data segments are not output as symbols
+05-17-94 made all hard-coded severe references use DOS_RETURNCODE_SEVERE
+
+
+Version 2.0.37
+--------------------------------------------------------------------------------
+05-10-94 made warnings return errorlevel 0, errors 10, and severe's 20
+
+Version 2.0.36
+--------------------------------------------------------------------------------
+04-30-94 fixed eof in macro error
+
+
+Version 2.0.35
+--------------------------------------------------------------------------------
+04-30-94 Fixed set to work on local symbols
+
+
+; reversed from here on down
+04-29-94  Fixed set pseudo-op to work if symbols used in expression
+04-29-94  Added 'Forward ref not allowed' error to assert
+--------------------------------------------------------------------------------
+Version 2.0.34
+
+24 Apr 94 @@LineNo in macro expansion needed to clear direction flag
+--------------------------------------------------------------------------------
+Version 2.0.33
+
+Expanded number of macro parameters to 16
+--------------------------------------------------------------------------------
+Version 2.0.31
+
+Added '$' as valid symbol character
+--------------------------------------------------------------------------------
+Version 2.0.30
+
+19 Apr 94 macros {N,U,L,etc} now work if lower case
+--------------------------------------------------------------------------------
+Version 2.0.28
+
+19 Apr 94 nested macro parameters finaly work
+19 Apr 94 lots of cleanup
+19 Apr 94 Macro names may now be 27 chars long
+19 Apr 94 Macro references now use macro structure
+19 Apr 94 Macro parameters may now be up to 64 characters long
+19 Apr 94 Macro parameter references now use equates
+--------------------------------------------------------------------------------
+Version 2.0.27
+
+
+18 Apr 94 Map file prints RAM and ROM segments correctly.  Added DATA segment
+--------------------------------------------------------------------------------
+Version 2.0.26
+
+
+	 (CODE segments are the same as ROM)
+05-16-94 Added DATA and CODE types to defseg, DATA segments cannot assemble code
+	 from LINE directly so that macros are case sensitive as well
+05-16-94 Undid above macro upper caseing, and made ExecuteMac read macro name
+05-16-94 Fixed rept count one too large, and added an error on rept 0
+	 are upper-cased(so that macros work with case sensitivity on)
+05-16-94 Made macro definition code upper-case the macro name, since all op-codes
+--------------------------------------------------------------------------------
+Version 2.0.14
+
+
+05-15-94 fixed bug in WriteByteFile where IOPAGE was not incremented correctly(or at all, for that matter)
+05-15-94 moved xlatb code in parse.asm to occur before the write in @@SymbolIn
+--------------------------------------------------------------------------------
+Version 2.0.13
+
+10 Mar 94 Added "_" in hex numbers
+10 Mar 94 Made {L} print in decimal
+10 Mar 94 Fixed bug in {F} not handling nested files
+--------------------------------------------------------------------------------
+Version 2.0.12
+
+
+10 Mar 94 Fixed bug in macros using quoted strings
+10 Mar 94 Added "_" in binary numbers
+09 Mar 94 Fixed pei and per for forward references
+09 Mar 94 Added {F} to macros, used to indicate file name
+		and {L{ represents line # in file of macro invocation
+09 Mar 94 Renamed {L} to {U} and added {L}. U now represents a unique number,
+--------------------------------------------------------------------------------
+Version 2.0.11
+
+
+09 Mar 94 Added else directive
+09 Mar 94 Added if starting line # to no matching endif error
+09 Mar 94 Fixed ifndef detection in TurboScan (allows infndef's inside of if's)
+--------------------------------------------------------------------------------
+Version 2.0.10
+
+		nop's based on the addressing mode)
+		filling in NOP's anyway (FILL_HOLES does the correct # of
+09 Mar 94 Fixed bug in cint where FILL_HOLES was getting called, but it was
+09 Mar 94 Fixed bug in PEI to handle forward references
+		references are now consistent
+09 Mar 94 Removed all references to SDB2,4, so local and global forward
+--------------------------------------------------------------------------------
+Version 2.0.9
+
+
+07 Mar 94 Added new expression parser, which does conditionals
+--------------------------------------------------------------------------------
+Version 2.0.8
+
+
+25 Feb 94 Added "free" column in map file
+13 Feb 94 Added warning for "ds" crossing a page boundary (65816 only)
+12 Feb 94 Opocode cycle timings (65816 only)
+07 Feb 94 Added compile-time ASSERT
+	  assembles the last line correctly all the time)
+06 Feb 94 No longer required to type "END" at end of file (plus it now
+06 Feb 94 dc.b takes quoted character strings (' or " as string delimeter)
+06 Feb 94 REP / SEP automatically set/clear LONGA / LONGI
+06 Feb 94 Fixed backpatch entry bug -- assembler was way broken
+06 Feb 94 Increased line size from 95 characters to 255 characters
+--------------------------------------------------------------------------------
+Version 2.0.0
+
+18 Jan 93 CNOP added
+
+17 Jan 93 detects macros used as symbols and gives error
+17 Jan 93 Macro.asm created to contain macro handling code
+17 Jan 93 Lots more local labels throughout
+17 Jan 93 error now prints mnemonic & param fields on backpatch error
+17 Jan 93 fixed spooling to file warning message(printed wrong one)
+17 Jan 93 balanced backpatch table so that forward references work
+16 Jan 93 (errl)evel command added, format is errl err#,newErrLevel
+16 Jan 93 fixed rept command and 'lda #' bug
+15 Jan 93 added warning, error & severe commands
+
+11 Jan 93  "File not found" error on command-line fixed
+11 Jan 93  Added error levels (warning, error, severe)
+REPT command added (check if ok inside include's)
+Prints "spooling backpatch to disk" message
+(65816) backpatch spooling to disk works for 816 version
+(68000) db,dw,dl,dd now work in the 68000 version
+dd pseudo-op (4-byte data)
+12-24-92 fill on|off directive added, causes unnused portions of the disk file to be filled with $ff
+12-24-92 store_bin changed to store_byte, store_bin now takes a count & a pointer
+12-23-92 errors now print entire file hierarchy(instead of just the file with the error)
+on-screen errors now show source line
+listing file shows total # of errors at end of listing
+listing file now shows errors (on line BEFORE they occur)
+listing file & error printing code now calling string routines
+string printing routines added to print
+errors merged
+common variables moved from spaz.asm to assemble.asm
+common variables moved from opcode* to assemble.asm
+assemble_line moved from opcode* to assemble.asm
+assemble.asm created to contain general assembler stuff
+Compiled with C++
+--------------------------------------------------------------------------------
+Version 1.6
+
+
+	Opcode order is opposite source order
+(65816) MVN/MVP opcodes fixed.  Format is: mvn srcBlk,dstBlk
+	(and contains version number -- major.b,minor.b,rev.w)
+Predefined symbol __SPASM__ defined
+(65816) Assembles to Dopple Board
+Predefined symbols __65816__/__SNES__ or __68000__/__GENESIS__
+(65816) dc.? works in 65816 assembler (default size is byte, not word as per 68000)
+(65816) 32-bit symbols now available on 65816 just like 68000
+--------------------------------------------------------------------------------
+Version 1.5
+
+
+(65816) dec/inc without operand implies accumulator
+(65816) ASSUME directive added, handles data bank (DB) and direct page (DP)
+(68000) local macros (code merged from 65816)
+(68000) ERRORLEVEL set (code merged from 65816)
+Many subtle (potential) bugs revealed when merging source files
+Differences have been isolated with ifdef SNES/GENESIS
+Assembler source has been split into many files for better managment
+--------------------------------------------------------------------------------
+Version 1.4
+

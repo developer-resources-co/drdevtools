@@ -1,0 +1,3 @@
+spasm test
+sr
+exit

@@ -1,0 +1,17 @@
+stop
+pcl=@2($FFFC)
+
+set dispmode $100
+open command posit 0,39 size 80,10
+open register posit 0,1
+open source posit 0,15 size 80,24
+loadsym test.sym
+
+source 
+	test.sld
+
+open console posit 26,1 size 54,5
+
+open memory 
+	posit 0,6 size 40,9
+	dynamicr pcl

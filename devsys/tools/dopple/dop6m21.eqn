@@ -1,0 +1,33 @@
+;PAL12L6
+;DOP6_SNES_MODE21
+;DoppleBoard snes Adress Decoder(2 megabyte version)
+;Mode 21 version
+
+CHIP dop6m21 GAL16V8
+
+A23 NC A16 A17 A18 A19 A20 CE WE GND
+OE A21 ROM RAM WORMRD WORMWR TCRSEL NC A22 VCC
+
+; RAM BANK 0	0XXXXX
+; RAM BANK 1	1XXXXX
+; ROM		40XXXX-41XXXX
+; CRAM		42XXXX-43XXXX
+; WORM		44XXXX
+
+@UES 0000000000000000
+
+EQUATIONS
+
+/TCRSEL = /A23 * A22 * A17 * /A18 * /A19 * /A20 * /CE * /A21
+
+/WORMWR = /A23 * /A16 * A22 * /A17 * A18 * /A19 * /A20 * /CE * /A21 * /WE
+
+/WORMRD = /A23 * /A16 * A22 * /A17 * A18 * /A19 * /A20 * /CE * /A21 * /OE
+
+;/RAM = /A23 + /A22 * A21 + A19 * A18 + /A17 + A16 + /CE * /WE
+
+/RAM =	/A23 * /A22 * /CE +
+	A23 * /CE +
+	/A23 *  A22 * /A21 * /A20 * /A19 * /A18 * A17 * /CE
+
+/ROM = /A23 * A22 * /A17 * /A18 * /A19 * /A20 * /CE * /A21

@@ -1,0 +1,43 @@
+PAL16L8
+SNESDOP2
+Dopple Board Arbitration PAL 8/16 bit
+Phil Torre,Utopia Engineering, Seattle
+
+HCE HWE HOE TCE TWE0 TWE1 TOE WHO WP GND
+TCRSEL RAMCE HADDR TADDR HDATA TDATA R/W RAMWE RAMOE VCC
+
+IF (VCC) /HADDR =
+	 /HCE * WHO
+
+IF (VCC) /HDATA =
+	 /HCE * /HOE * WHO +
+	 /HCE * /HWE * WHO
+
+IF (VCC) /TADDR =
+	 /WHO
+
+IF (VCC) /TDATA =
+	 /TCE * /TOE * /WHO +
+	 /TCE * /TWE0 * /WHO +
+	 /TCE * /TWE0 * /TCRSEL
+
+IF (VCC) /R/W =
+	/HCE * /HWE * WHO +
+	/TCE * /TWE0 * /WHO +
+	/TCE * /TWE0 * /TCRSEL
+
+IF (VCC) /RAMWE =
+	 /HCE * /HWE * WHO +
+	 /TCE * /TWE0 * /WHO +
+	 /TCE * /TWE0 * /TCRSEL
+
+IF (VCC) /RAMCE =
+	 /HCE * WHO +
+	 /TCE * /WHO
+
+IF (VCC) /RAMOE =
+	 /HCE * /HOE * WHO +
+	 /TOE * /WHO
+
+
+END

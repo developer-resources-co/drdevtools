@@ -1,0 +1,7 @@
+  Segment Name    Type   Start     End    Length 
+----------------  ----  -------  -------  -------
+SRAM              RAM   $FFFFFF  $000000  $000002
+INIT              ROM   $00A000  $00A679  $00067A
+CODE              ROM   $000200  $0005B4  $0003B5
+ZPAGE             RAM   $000001  $000027  $000027
+VECTOR            ROM   $00FFE8  $00FFFF  $000018

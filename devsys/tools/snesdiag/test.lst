@@ -1,0 +1,174 @@
+00A40C                            86     LIST ON
+00A40C                            87    RAMSTART:
+00A40C  20 EA EA                  88        JSR INITSFX
+00A40F                            89    
+00A40F                            90     MODE16
+00A40F  C2 30                     90     REP #$30
+00A411                            90     LONGA ON
+00A411                            90     LONGI ON
+00A411                            90     ENDM
+00A411  A9 EA EA                  91     LDA #LASTBYTE-CODEBASE
+00A414  A2 00 82                  92     LDX #$8200
+00A417  A0 00 02                  93     LDY #$200
+00A41A                            94    
+00A41A  54 00 00                  95     MVN $20,0
+00A41D                            96    
+00A41D                            97    
+00A41D                            98    
+00A41D                            99    
+00A41D                            100    ; IN THIS TEST, I've used BG mode 2 ( two 4-bit planes ) to
+00A41D                            101    ; BE AS SIMILAR TO THE GENESIS AS POSSIBLE.
+00A41D                            102    ; CHANGED TO BG MODE 1 ( TWO 4-BIT PLANES, PLUS A 2-BIT PLANE
+00A41D                            103    ; FOR DIAGNOSTIC TEXT )
+00A41D                            104   
+00A41D                            105   ; NOW, I'll set up the VDP memory map.  I'LL PUT BG1 AND BG2 MAP AT 16K
+00A41D                            106   
+00A41D                            107    MODE8
+00A41D  E2 30                     107    SEP #$30
+00A41F                            107    LONGA OFF
+00A41F                            107    LONGI OFF
+00A41F                            107    ENDM
+00A41F  A9 39                     108    LDA #$38+1
+00A421                            109   
+00A421  8D 07 21                  110    STA $2107 ; BG1 MAPBASE + SIZE
+00A424  A9 79                     111    LDA #$78+1
+00A426  8D 08 21                  112    STA $2108 ; BG2 MAPBASE + SIZE
+00A429  A9 78                     113    LDA #$78
+00A42B  8D 09 21                  114    STA $2109 ; BG3 MAPBASE + SIZE
+00A42E                            115   
+00A42E  A9 01                     116    LDA #1 ; MODE 1 = 4 + 4 + 2
+00A430  8D 05 21                  117    STA $2105 ; SET BG MODE
+00A433                            118   
+00A433  A9 04                     119    LDA #4 ; TURN ON ONLY BG3 [DIAGNOSTIC TEXT PLANE]
+00A435  8D 2C 21                  120    STA $212C ;
+00A438                            121   
+00A438  A9 40                     122    LDA #$40 ; BG2 CHARBASE / BG1 CHARBASE
+00A43A  8D 0B 21                  123    STA BG12NBA
+00A43D                            124   
+00A43D  A9 00                     125    LDA #$0
+00A43F  8D 0C 21                  126    STA BG34NBA ; PUT IT ON TOP OF BG1's chars for now
+00A442                            127   
+00A442                            128   ; LET's copy the charset into vidram at zero
+00A442                            129   
+00A442                            130    BLANK
+00A442  48                        130    PHA
+00A443                            130    LONGA PUSH
+00A443  08                        130    PHP
+00A444                            130    A8
+00A444  E2 20                     130    SEP #LONGA
+00A446                            130    LONGA OFF
+00A446                            130    ENDM
+00A446  A9 80                     130    LDA #$80
+00A448  8D 00 21                  130    STA $2100
+00A44B  28                        130    PLP
+00A44C                            130    LONGA POP
+00A44C  68                        130    PLA
+00A44D                            130   
+00A44D                            130    ENDM
+00A44D                            131    MODE16
+00A44D  C2 30                     131    REP #$30
+00A44F                            131    LONGA ON
+00A44F                            131    LONGI ON
+00A44F                            131    ENDM
+00A44F                            132   
+00A44F  20 EA EA                  133    JSR CLEARVDPMEM
+00A452                            134   
+00A452                            135    MODE16
+00A452  C2 30                     135    REP #$30
+00A454                            135    LONGA ON
+00A454                            135    LONGI ON
+00A454                            135    ENDM
+00A454                            136   
+00A454                            137    IF NEEDCHARSET
+00A454  A9 00 A0                  138    LDA #CHARSET  ; GET CHARSET POINTER
+00A457  85 12                     139    STA START
+00A459                            140   
+00A459                            141    A8
+00A459  E2 20                     141    SEP #LONGA
+00A45B                            141    LONGA OFF
+00A45B                            141    ENDM
+00A45B  A9 00                     142    LDA #^CHARSET
+00A45D  85 14                     143    STA START+2
+00A45F                            144    A16
+00A45F  C2 20                     144    REP #LONGA
+00A461                            144    LONGA ON
+00A461                            144    ENDM
+00A461  A9 00 02                  145    LDA #$200  ; LENGTH
+00A464  85 15                     146    STA LENGTH
+00A466                            147   
+00A466  A9 00 00                  148    LDA #$0
+00A469  8D 16 21                  149    STA VMADDL
+00A46C                            150   
+00A46C  20 B5 02                  151    JSR VDPCOPY  ; DO IT!
+00A46F                            152    ENDIF
+00A46F  5C EA EA EA               153    JML MAINLOOP
+00A473                            154   
+00A473                            155   CODE SEGMENT
+000491                            156   
+000491                            157   MAINLOOP:
+000491                            158   
+000491                            159    A16
+000491  C2 20                     159    REP #LONGA
+000493                            159    LONGA ON
+000493                            159    ENDM
+000493  A9 EA EA                  160    LDA #TESTPAL
+000496  85 04                     161    STA PALPTR
+000498  A2 40 00                  162    LDX #$40
+00049B  A0 00 00                  163    LDY #$0
+00049E  20 00 02                  164    JSR SETPAL
+0004A1                            165   
+0004A1                            166    UNBLANK
+0004A1  48                        166    PHA
+0004A2                            166    LONGA PUSH
+0004A2  08                        166    PHP
+0004A3                            166    A8
+0004A3  E2 20                     166    SEP #LONGA
+0004A5                            166    LONGA OFF
+0004A5                            166    ENDM
+0004A5  A9 0F                     166    LDA #$0F
+0004A7  8D 00 21                  166    STA $2100
+0004AA  28                        166    PLP
+0004AB                            166    LONGA POP
+0004AB  68                        166    PLA
+0004AC                            166   
+0004AC                            166    ENDM
+0004AC                            167   
+0004AC                            168    WAITVB
+0004AC  48                        168    PHA
+0004AD                            168    LONGA PUSH
+0004AD  08                        168    PHP
+0004AE                            168    A8
+0004AE  E2 20                     168    SEP #LONGA
+0004B0                            168    LONGA OFF
+0004B0                            168    ENDM
+0004B0                            168   00A8LOOP1
+0004B0  AD 10 42                  168    LDA $4210
+0004B3  29 80                     168    AND #$80
+0004B5  D0 F9                     168    BNE ?00A8LOOP1
+0004B7                            168   00A8LOOP2
+0004B7  AD 10 42                  168    LDA $4210
+0004BA  29 80                     168    AND #$80
+0004BC  F0 F9                     168    BEQ ?00A8LOOP2
+0004BE  AD 10 42                  168    LDA $4210
+0004C1  28                        168    PLP
+0004C2                            168    LONGA POP
+0004C2  68                        168    PLA
+0004C3                            168    ENDM
+0004C3                            169   
+0004C3                            170    MODE16
+0004C3  C2 30                     170    REP #$30
+0004C5                            170    LONGA ON
+0004C5                            170    LONGI ON
+0004C5                            170    ENDM
+0004C5  A9 00 00                  171    LDA #$0
+0004C8  8F EA EA EA               172    STA CURMEM
+0004CC                            173    A8
+0004CC  E2 20                     173    SEP #LONGA
+0004CE                            173    LONGA OFF
+0004CE                            173    ENDM
+0004CE  8F EA EA EA               174    STA CURBANK
+0004D2                            175    A16
+0004D2  C2 20                     175    REP #LONGA
+0004D4                            175    LONGA ON
+0004D4                            175    ENDM
+0004D4                            176   

@@ -1,0 +1,12 @@
+PAL16L8
+DOP5SNES
+Dopple Board Arbitration PAL 8/16 bit
+This version only passes NMI through!!
+
+ROM TWE0 TWE1 NMIIN CLEAR STAT PIN7 PIN8 PIN9 GND
+PIN11 NMIOUT PIN13 Q P D0 WPV PIN18 PIN19 VCC
+
+
+/NMIOUT = /NMIIN
+
+
