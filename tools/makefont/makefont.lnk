@@ -1,0 +1,2 @@
+t:\lib\c0h.obj grabber.obj general.obj gfx.obj grabinpt.obj compilbm.obj+
+,lbm2raw.exe,,t:\lib\ch.lib

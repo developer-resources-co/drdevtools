@@ -1,0 +1,7 @@
+/c t:\lib\c0h.obj GUI.obj GUIinit.obj GUIdefs.obj mapfunc.obj gfx.obj +
+mouse.obj general.obj t.obj render.obj +
+guifunc.obj maped.obj sgtools.obj +
+mapinpt.obj font6.obj input.obj print.obj iff.obj writepic.obj closemsg.obj +
+,maped.exe,,+
+t:\lib\ch.lib
+

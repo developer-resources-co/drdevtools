@@ -1,0 +1,2 @@
+bcc -v diss.c
+

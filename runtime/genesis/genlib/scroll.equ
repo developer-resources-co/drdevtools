@@ -1,0 +1,29 @@
+;==============================================================================
+; scroll.equ: structure definitions for the scrolling library
+;==============================================================================
+; scroll library equates
+
+;------------------------------------------------------------------------------
+
+scrollSeg	defs	ram
+scrollSeg	segment
+	org	0
+	even
+Scroll_Field		ds.b	Field_Size
+Scroll_XPos		ds.w	1	; left edge of map visible on screen(pixel)
+Scroll_YPos		ds.w	1	; top edge of map visible on screen(pixel for 4way)
+Scroll_MapPtr		ds.l	1	; pointer to map in memory
+Scroll_CharBase		ds.w	1	; character address in the vdp
+Scroll_MapWidth		ds.w	1	; width of map(chars)
+Scroll_MapWidthPixel	ds.w	1	; width of map(in pixels)
+Scroll_MapHeight	ds.w	1	; height of map(chars)
+Scroll_MapHeightPixel	ds.w	1	; height of map(in pixels)
+Scroll_RightLimit	ds.w	1	; width of map(filled in by init code)(actually, width - width of screen)(pixel)
+Scroll_BotLimit		ds.w	1       ; height of map(filled in by init code)(actually, height - height of screen)(pixel)
+Scroll_ScreenAddrRout	ds.l	1
+Scroll_Size
+
+;==============================================================================
+	end
+;==============================================================================
+

@@ -1,0 +1,38 @@
+;==============================================================================
+; scroll.equ: structure definitions for the scrolling library
+;==============================================================================
+; scroll library equates
+
+;------------------------------------------------------------------------------
+
+SCROLL_PREVD_LEFT	equ	0
+SCROLL_PREVD_RIGHT	equ	$ffff
+
+	OFFSET	0
+
+Scroll_Field		ds.b	Field_Size
+Scroll_XPos		ds.w	1	; left edge of map visible on screen (pixel)
+Scroll_YPos		ds.w	1	; top edge of map visible on screen (pixel)
+Scroll_MapPtr		ds.l	1	; pointer to map in memory
+Scroll_CharBase		ds.w	1	; character address in the vdp
+Scroll_MapWidth		ds.w	1	; width of map (chars)
+Scroll_MapWidthPixel	ds.w	1	; width of map (in pixels)
+Scroll_MapHeight	ds.w	1	; height of map (chars)
+Scroll_MapHeightPixel	ds.w	1	; height of map (in pixels)
+Scroll_RightLimit	ds.w	1	; width of map (actually, width - width of screen)(pixel)
+Scroll_BotLimit		ds.w	1       ; height of map (actually, height - height of screen)(pixel)
+Scroll_ScreenAddrRout	ds.l	1
+Scroll_PrevDirection	ds.w	1	; 0 = left, -1 = right
+Scroll_MetaMap		ds.l	1	; pointer to meta map
+Scroll_CompTileTbl	ds.l	1	; pointer to tile translation table
+Scroll_MetaWidth	ds.w	1	; width of meta map
+Scroll_MetaHeight	ds.w	1	; height of meta map
+Scroll_MapWidthMask	ds.w	1	; map width -1 (chars)
+Scroll_MapWidthSh	ds.w	1	; map width (product of 2) (chars)
+Scroll_MetaWidthSh	ds.w	1	; meta map width (product of 2)
+Scroll_MapHeightMask	ds.w	1	; map height -1 (in chars)_
+Scroll_Size
+
+;==============================================================================
+	end
+;==============================================================================

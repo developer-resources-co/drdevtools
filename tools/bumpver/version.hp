@@ -1,0 +1,5 @@
+// version.hpp
+
+extern char szVersion[];
+extern char szDate[];
+extern char szTime[];

@@ -1,0 +1,4 @@
+PROTMODE
+STUB      'gorun286.exe'
+EXPORTS   BCC286_EXE 
+

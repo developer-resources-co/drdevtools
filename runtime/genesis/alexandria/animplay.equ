@@ -1,0 +1,27 @@
+;==============================================================================
+; animplay.equ: header file for the animation player
+;==============================================================================
+
+ANIM_FIELDA	EQU	0		; which field for init code
+ANIM_FIELDB	EQU	2
+
+;==============================================================================
+
+	OFFSET	0
+
+
+Anim_Field	ds.b	Field_Size	; by putting this at the top, we can use the same pointer for both
+Anim_Base	ds.l	1		; pointer to array of map ptr's
+Anim_Frame	ds.w	1		; current animation frame
+Anim_Delay	ds.w	1		; # of ticks to delay between frames
+Anim_DelayCounter	ds.w	1	; # of ticks left before playing the next frame
+Anim_XPos	ds.w	1		; x coordinate to plot anim
+Anim_YPos	ds.w	1		; y coordinate to plot anim
+Anim_CharBase	ds.w	1		; starting character in VDP
+Anim_PlayCount	ds.w	1		; # of times to play anim(0 = forever)
+Anim_Size
+
+;==============================================================================
+	end
+;==============================================================================
+

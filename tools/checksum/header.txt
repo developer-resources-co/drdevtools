@@ -1,0 +1,52 @@
+
+
+       123456789012345678901
+     +---------------------+
+Game |		           |
+     +---------------------+
+
+MapMode:
+	Mode 20
+	Mode 21
+
+Cartridge Type:
+	ROM
+	ROM + RAM
+	ROM + Backup RAM
+	ROM + DSP
+	ROM + DSP + RAM
+	ROM + DSP + Backup RAM
+
+ROM Size
+	512K, etc.
+
+RAM Size
+	0K, etc.
+
+Destination Code
+	SHVC
+	SNS
+	SPAL
+	SSWE, etc.
+
+Maker Code:
+	??
+
+Mask ROM Version Number:
+	00
+
+Complement Check:
+	Calculated value
+
+
+
+Game
+XXXXXXXXXXXXXXXXXXXXX
+
+MapMode
+Mode 20
+
+Cartridge Type
+
+
+

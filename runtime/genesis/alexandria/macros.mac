@@ -1,0 +1,276 @@
+;==============================================================================
+;===    Macros.asm: some useful macros                                     ===
+;===    (c)1991,92 Developer Resources                                     ===
+;==============================================================================
+
+; erk: temp fix to finish port, must be fixed later...
+
+ifdef   macro
+
+	endm
+
+endif   macro
+
+	endm
+
+;==============================================================================
+; macros cause the assembler sux
+
+string  macro
+	dt      \1
+	dc.b    0
+	endm
+
+;==============================================================================
+; gfx macros
+;------------------------------------------------------------------------------
+
+spriteinc       MACRO
+\1SPRCHR:
+;        incbin  \1.chr
+	INCLUDE "\1.cr"
+\1SIZE          equ     *-\1SPRCHR
+\1spr:
+;        incbin  \1.spr
+	INCLUDE "\1.sr"
+	ENDM
+
+;------------------------------------------------------------------------------
+
+palinc  macro
+\1Pal
+;        incbin  \1.pal
+	INCLUDE "\1.pl"
+;        even
+	ds.w    1       ;even
+
+\1NumCols       equ     (*-\1Pal)/2
+	endm
+
+;------------------------------------------------------------------------------
+
+chrinc  macro
+\1Chr
+;        incbin  \1.chr
+	INCLUDE "\1.cr"
+;        even
+	ds.w    1       ;even
+\1Size equ     *-\1Chr
+	endm
+
+;------------------------------------------------------------------------------
+
+rlechrinc       macro
+\1RLEChr
+;        incbin  \1.rle
+	INCLUDE "\1.re"
+\1Size equ     @2(\1RLEChr)
+;        even
+	ds.w    1       ;even
+	endm
+
+
+rleinc  macro
+\1RLE
+;        incbin  \1.rle
+	INCLUDE "\1.re"
+;        even
+	ds.w    1       ;even
+	endm
+
+;------------------------------------------------------------------------------
+
+mapinc  macro
+\1Map
+;        incbin  \1.map
+	INCLUDE "\1.mp"
+;        even
+	ds.w    1       ;even
+	endm
+
+;------------------------------------------------------------------------------
+;       1 = name of palette
+;       2 = starting palette #(optional, default = 0)
+
+SetPal  macro
+	lea     \1Pal,a0
+	ifnot   {N}-2
+	move.w  \2,d0
+	endif
+	if      {N}-2
+	clr.w   d0
+	endif
+	move.w  #\1NumCols,d1
+	jsr     SetPalette
+	endm
+
+;==============================================================================
+;       1 = name of gfx
+;       2 = vdp starting address
+;------------------------------------------------------------------------------
+
+LoadChr macro
+;                                ; copy the graphics into VRAM
+	lea     \1Chr,a0               ; address of chars in ROM
+	move.l  #\2,d0                 ; location in VDP to place chars
+	move.l  #\1Size/2,d1           ; # of chars
+	jsr     DMACopy                 ; dma the char definitions
+	endm
+
+;==============================================================================
+;       1 = name of gfx
+;       2 = vdp starting address
+;------------------------------------------------------------------------------
+
+LoadRLEChr      macro
+;                                ; copy the graphics into VRAM
+	move.w  \2,d0                 ; location in VDP to place chars
+	jsr     VDPAddress
+	lea     \1RLEChr,a0            ; address of chars in ROM
+	jsr     DecompressToVDP
+	endm
+
+;==============================================================================
+;       1 = name of gfx
+;       2 = vdp starting address
+;------------------------------------------------------------------------------
+
+LoadSprite      macro
+;                                ; copy the graphics into VRAM
+	lea     \1sprChr,a0            ; address of chars in ROM
+	move.l  #\2,d0                 ; location in VDP to place chars
+	move.l  #\1Size/2,d1           ; # of chars
+	jsr     DMACopy                 ; dma the char definitions
+	endm
+
+;==============================================================================
+; 1 = playfield to plot into
+; 2 = x pos
+; 3 = y pos
+; 4 = starting char
+; 5 = name of map
+;------------------------------------------------------------------------------
+
+PlotMap macro
+	move.w  #\2,d0
+	move.w  #\3,d1
+	move.w  #\4,d2
+	lea     \5Map,a0
+	jsr     PlotMap\1
+	endm
+
+;==============================================================================
+; pseudo-ops
+
+COLORCYCLE      MACRO
+	move.l #VDP_MODE_CRW,VDP_CMD    ; self-explanatory
+	move.w VDP_HVCOUNT,VDP_DATA
+		ENDM
+
+SETBACKCOLOR        MACRO                   ; set background color to input
+	move.l #VDP_MODE_CRW,VDP_CMD
+	move.w #\1,VDP_DATA
+	ENDM
+
+FREEZE  MACRO                           ; just lock up
+.Loop\@:
+	COLORCYCLE
+	BRA.S   .Loop\@
+	ENDM
+
+;==============================================================================
+;
+;PUSH    MACRO                     ; hanven't decided what to do about {x},erk
+;        MOVEM{X} \1,-(SP)
+;        ENDM
+;
+;POP     MACRO
+;        MOVEM{X} (SP)+,\1
+;        ENDM
+;
+;==============================================================================
+
+pushw   MACRO                     ; sierra version
+	MOVEM.W \1,-(SP)
+	ENDM
+
+popw    MACRO
+	MOVEM.W (SP)+,\1
+	ENDM
+
+;==============================================================================
+
+pushl   MACRO                     ; sierra version
+	MOVEM.L \1,-(SP)
+	ENDM
+
+popl    MACRO
+	MOVEM.L (SP)+,\1
+	ENDM
+
+;==============================================================================
+
+PUSHALL MACRO
+	movem.l d0-d7/a0-a6,-(sp)
+	ENDM
+
+POPALL  MACRO
+	movem.l (sp)+,d0-d7/a0-a6
+	ENDM
+
+;============================================================================
+
+;;COLORVBI        macro
+;;	move.l  #VDP_MODE_CRW,VDP_CMD
+;;	move.w  RASTER,VDP_DATA
+;;	endm
+
+EI      macro
+	andi    #%1111100011111111,SR
+	endm
+
+DI      macro
+	ori     #%0000011100000000,SR
+	endm
+
+
+;;VIDEO_ON macro
+;;	move.w  #$8174,VDP_CMD
+;;	endm
+
+;;VIDEO_OFF macro
+;;	move.w  #$8134,VDP_CMD
+;;	endm
+
+
+;==============================================================================
+;==============================================================================
+; wait for vblank to start
+
+WAITVB  macro
+	IFNE SEGA_CD
+	nop			; temp until implemented
+	ELSEC
+.Loop\@
+	cmpi.b  #VBRAST,VDP_RASTER
+	bcc.s   .Loop\@                   ; first insure we are not already there
+.Loop2\@
+	cmpi.b  #VBRAST,VDP_RASTER
+	bcs.s   .Loop2\@
+	ENDC
+
+	endm
+
+;==============================================================================
+
+WAITVBSOUND     macro
+	WAITVB
+	endm
+
+;------------------------------------------------------------------------------
+
+	end
+
+;==============================================================================
+
+

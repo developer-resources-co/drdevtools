@@ -1,0 +1,1198 @@
+
+ Start         Length Name               Class
+
+  0001:0000    5F0AH  _TEXT              CODE
+  0002:0000    1656H  ANIM_TEXT          CODE
+  0002:1656    0461H  WRITEPIC_TEXT      CODE
+  0003:0000    0612H  GRABINPT_TEXT      CODE
+  0003:0612    0260H  QUIT_TEXT          CODE
+  0003:0872    027AH  ABMSPLIT_TEXT      CODE
+  0003:0AEC    0000H  VERSION_TEXT       CODE
+  0003:0AEC    005EH  CTRLBRK_TEXT       CODE
+  0003:0B4A    0056H  STRCHR_TEXT        CODE
+  0003:0BA0    00AFH  DELAY_TEXT         CODE
+  0003:0C4F    1168H  IFF_TEXT           CODE
+  0004:0000    0673H  IFFANIM_TEXT       CODE
+  0004:0673    0190H  IFFPBM_TEXT        CODE
+  0004:0803    06F2H  IFFILBM_TEXT       CODE
+  0004:0EF5    072CH  PROFILE_TEXT       CODE
+  0004:1621    00F7H  ERROR_TEXT         CODE
+  0004:1718    0077H  GENERAL_TEXT       CODE
+  0004:178F    00B2H  FILEIO_TEXT        CODE
+  0005:0000    15E4H  GRPHPORT_TEXT      CODE
+  0005:15E4    03E4H  COLOR_TEXT         CODE
+  0006:0000    0000H  _FARDATA           FAR_DATA
+  0006:0000    0000H  _FARBSS            FAR_BSS
+  0006:0000    0000H  _OVERLAY_          OVRINFO
+  0006:0000    0000H  _1STUB_            STUBSEG
+  0006:0000    164EH  _DATA              DATA
+  0006:164E    0002H  _CVTSEG            DATA
+  0006:1650    0006H  _SCNSEG            DATA
+  0006:1656    0000H  _CONST             CONST
+  0006:1656    0030H  _INIT_             INITDATA
+  0006:1686    0000H  _INITEND_          INITDATA
+  0006:1686    0012H  _EXIT_             EXITDATA
+  0006:1698    0000H  _EXITEND_          EXITDATA
+  0006:1698    219CH  _BSS               BSS
+  0006:3834    0000H  _BSSEND            BSSEND
+  0007:0000    0080H  _STACK             STACK
+
+  Address         Publics by Name
+
+ 0001:0271       operator delete(void far*)
+ 0004:0000       operator <<(ostream far&,animanhd far&)
+ 0001:0636       operator new(unsigned int)
+ 0001:0678       operator new(unsigned long)
+ 0002:13EE       __tpdsc__[fstreambase]
+ 0002:0D7A       __tpdsc__[colorpalette]
+ 0003:06CD       __tpdsc__[rastgraphport]
+ 0003:0AA2       __tpdsc__[screengraphport]
+ 0002:1547       __tpdsc__[list<iffchunk>]
+ 0002:14B2       __tpdsc__[nodeinterface<iffchunk>]
+ 0003:05EC       __tpdsc__[ini]
+ 0002:147C       __tpdsc__[ios]
+ 0002:1376       __tpdsc__[node]
+ 0002:1591       __tpdsc__[filebuf]
+ 0002:13AE       __tpdsc__[iffread]
+ 0002:143A       __tpdsc__[istream]
+ 0003:1D2A       __tpdsc__[iffchunk]
+ 0002:0FE1       __tpdsc__[ifstream]
+ 0002:133A       __tpdsc__[ilbmcmap]
+ 0003:0715       __tpdsc__[graphport]
+ 0002:161A       __tpdsc__[streambuf]
+ 0005:12C7       __tpdsc__[colorpalette far*]
+ 0003:06B3       __tpdsc__[rastgraphport far*]
+ 0003:0A86       __tpdsc__[screengraphport far*]
+ 0003:05DC       __tpdsc__[ini far*]
+ 0002:1329       __tpdsc__[node far*]
+ 0002:1035       __tpdsc__[iffread far*]
+ 0003:18EC       __tpdsc__[iffchunk far*]
+ 0002:1181       list<iffchunk>::list<iffchunk>()
+ 0002:0F66       list<iffchunk>::~list<iffchunk>()
+ 0006:0113       list<iffchunk>::
+ 0002:11ED       list<iffchunk>::deleteall()
+ 0002:1504       nodeinterface<iffchunk>::~nodeinterface<iffchunk>()
+ 0006:0107       nodeinterface<iffchunk>::
+ 0003:1A2F       nodeinterface<iffchunk>::getnext()
+ 0003:18D3       nodeinterface<iffchunk>::insert(iffchunk far*)
+ 0002:0B6B       animanhd::animanhd()
+ 0004:01F1       animanhd::read(iffread far*)
+ 0004:02F1       animanhd::write(iffwrite far*)
+ 0002:0B91       animdlta::animdlta(animanhd far*)
+ 0004:041B       animdlta::read(iffread far*,int(far*)(unsigned char far*))
+ 0004:160C       atoi(const char far*)
+ 0004:1718       beep()
+ 0002:0F37       boolean::operator =(int)
+ 0003:05BB       boolean::operator =(const boolean far&)
+ 0002:0E2C       boolean::boolean(int)
+ 0002:0DBA       boolean::operator int() const
+ 0002:11D1       boolean::set(int)
+ 0004:17EE       changeextension(char far*,const char far*)
+ 0003:0872       check_ctrl_break()
+ 0002:0CE4       color::color(unsigned int,unsigned int,unsigned int)
+ 0005:1977       color::operator ==(const color far&) const
+ 0005:176A       color::converttohsv()
+ 0005:15E4       color::converttorgb()
+ 0005:1491       color::getblue() const
+ 0005:1483       color::getgreen() const
+ 0005:1476       color::getred() const
+ 0002:107A       color::setrgb(unsigned int,unsigned int,unsigned int)
+ 0002:0BC2       colorpalette::colorpalette()
+ 0002:0C2E       colorpalette::~colorpalette()
+ 0002:0D21       colorpalette::create(const color far&)
+ 0005:133E       colorpalette::getcolor(unsigned char) const
+ 0005:1469       colorpalette::getcolorcount() const
+ 0005:1286       colorpalette::getmapindex(const color far&)
+ 0005:1429       colorpalette::getversion() const
+ 0005:1912       colorpalette::lookup(const color far&) const
+ 0003:1708       createchunk(file far*,unsigned long,(far*)(),...)
+ 0003:0636       ctrlbreakhandler()
+ 0004:1621       error(int)
+ 0004:1667       error(int,const char far*,...)
+ 0004:178F       ffilesize(file far*)
+ 0001:36B8       filebuf::filebuf(int)
+ 0001:3798       filebuf::~filebuf()
+ 0001:3612       filebuf::close()
+ 0006:0880       filebuf::openprot
+ 0001:3800       filebuf::overflow(int)
+ 0001:3A0D       filebuf::seekoff(long,seek_dir,int)
+ 0001:3951       filebuf::setbuf(char far*,int)
+ 0001:3BC2       filebuf::sync()
+ 0001:3D5C       filebuf::underflow()
+ 0005:0E69       findgfxmode(unsigned int,unsigned int,unsigned int)
+ 0001:3F12       fstreambase::~fstreambase()
+ 0005:0EBF       getibmscreenaddr(unsigned int)
+ 0003:0179       getinput(int,char far*far*)
+ 0004:11CF       getprivateprofileint(char far*,char far*,int,char far*)
+ 0004:126F       getprivateprofilestring(char far*,char far*,char far*,char far*,int,char far*)
+ 0004:1561       getprofileint(char far*,char far*,int)
+ 0004:1582       getprofilestring(char far*,char far*,char far*,char far*,int)
+ 0005:12E0       graphport::graphport(graphport far&)
+ 0005:0000       graphport::graphport(unsigned int,unsigned int,const color far&)
+ 0003:0751       graphport::~graphport()
+ 0006:0393       graphport::
+ 0003:0811       graphport::getcolor()
+ 0005:13A9       graphport::getheight()
+ 0003:07A4       graphport::getpixel()
+ 0005:13F4       graphport::getwidth()
+ 0003:07C7       graphport::move(const point far&)
+ 0003:0784       graphport::putpixel()
+ 0003:07F4       graphport::setcolor(const color far&)
+ 0003:07E4       graphport::where()
+ 0002:02DD       handleanhd(iffread far*)
+ 0002:012E       handlebmhd(iffread far*)
+ 0002:028F       handlebody(iffread far*)
+ 0002:01D9       handlecamg(iffread far*)
+ 0002:001C       handlecmap(iffread far*)
+ 0002:030F       handledlta(iffread far*)
+ 0002:02B6       handlepbmbody(iffread far*)
+ 0003:186B       iffchunk::iffchunk(unsigned long,int(far*)(iffread far*))
+ 0003:1D6E       iffchunk::~iffchunk()
+ 0006:124C       iffchunk::
+ 0003:1A56       iffchunk::callproc(iffread far*)
+ 0003:1A44       iffchunk::getname() const
+ 0002:0EB8       iffread::iffread(istream far&)
+ 0002:15D3       iffread::~iffread()
+ 0004:07E4       iffread::chunkwordalign()
+ 0003:0F71       iffread::findchunk(unsigned long)
+ 0003:0F05       iffread::findform(unsigned long)
+ 0003:19BA       iffread::getchunk() const
+ 0003:0FD8       iffread::getchunkbyte()
+ 0003:10CD       iffread::getchunkdata(unsigned char far*)
+ 0003:112C       iffread::getchunkdata(unsigned char far*,unsigned long)
+ 0004:0EE3       iffread::getchunklen() const
+ 0003:1076       iffread::getchunklong()
+ 0003:1027       iffread::getchunkword()
+ 0002:0F55       iffread::getform() const
+ 0003:19A8       iffread::getformbytesleft() const
+ 0003:0E22       iffread::nextchunk()
+ 0003:0CF0       iffread::nextform()
+ 0003:1187       iffread::parsechunks()
+ 0003:197C       iffread::readifflength(istream far&)
+ 0003:195E       iffread::readifftag(istream far&)
+ 0003:0C73       iffread::registerchunk(unsigned long,int(far*)(iffread far*))
+ 0003:1901       iffread::skipbytes(istream far&,unsigned long)
+ 0003:1B27       iffwrite::chunkwordalign()
+ 0003:144F       iffwrite::endchunk()
+ 0003:138B       iffwrite::endform()
+ 0003:12DF       iffwrite::newchunk(unsigned long)
+ 0003:1232       iffwrite::newform(unsigned long)
+ 0003:150F       iffwrite::writechunkbyte(unsigned char)
+ 0003:15C9       iffwrite::writechunkdata(unsigned char far*,unsigned long)
+ 0003:158D       iffwrite::writechunklong(unsigned long)
+ 0003:1552       iffwrite::writechunkword(unsigned int)
+ 0003:1AF9       iffwrite::writeifflength(ostream far&,unsigned long)
+ 0003:1ACB       iffwrite::writeifftag(ostream far&,unsigned long)
+ 0001:3F85       ifstream::~ifstream()
+ 0002:0A59       ilbmbmhd::ilbmbmhd()
+ 0004:0943       ilbmbmhd::read(iffread far*)
+ 0004:0A55       ilbmbmhd::write(iffwrite far*)
+ 0002:0B3A       ilbmbody::ilbmbody(ilbmbmhd far*)
+ 0004:0CE3       ilbmbody::decompline(iffread far*,unsigned char far*)
+ 0004:0BB2       ilbmbody::decompplaneline(iffread far*,unsigned char far*,int,unsigned char)
+ 0004:0E08       ilbmbody::read(iffread far*,int(far*)(unsigned char far*))
+ 0002:0AD8       ilbmcamg::ilbmcamg()
+ 0002:0DD1       ilbmcamg::read(iffread far*)
+ 0002:09DB       ilbmcmap::ilbmcmap()
+ 0002:0A1B       ilbmcmap::~ilbmcmap()
+ 0002:0CB9       ilbmcmap::blue(unsigned int) const
+ 0002:0C59       ilbmcmap::getnumcolors() const
+ 0002:0C90       ilbmcmap::green(unsigned int) const
+ 0004:0803       ilbmcmap::read(iffread far*)
+ 0002:0C68       ilbmcmap::red(unsigned int) const
+ 0004:08A5       ilbmcmap::write(iffwrite far*)
+ 0003:0000       ini::ini(char far*)
+ 0003:00AB       ini::boolean(char far*,boolean)
+ 0003:0124       ini::int(char far*,int)
+ 0001:5403       ios::ios()
+ 0001:543E       ios::~ios()
+ 0002:0E69       ios::operator void far*()
+ 0006:0998       ios::adjustfield
+ 0006:0994       ios::basefield
+ 0002:10E4       ios::fail()
+ 0006:099C       ios::floatfield
+ 0001:5484       ios::init(streambuf far*)
+ 0006:09A0       ios::nextbit
+ 0003:199A       ios::rdstate()
+ 0001:54D8       ios::setf(long)
+ 0001:559C       ios::setstate(int)
+ 0006:3824       ios::stdioflush
+ 0001:55C2       ios::tie(ostream far*)
+ 0006:09A4       ios::usercount
+ 0001:3522       iostream_delete()
+ 0001:403A       istream::istream()
+ 0001:4277       istream::~istream()
+ 0001:4129       istream::do_get()
+ 0001:4342       istream::eatwhite()
+ 0001:4410       istream::get(unsigned char far&)
+ 0001:41BC       istream::ipfx(int)
+ 0003:1A11       istream::read(unsigned char far*,int)
+ 0001:401A       istream_withassign::operator =(streambuf far*)
+ 0001:40AD       istream_withassign::istream_withassign()
+ 0001:42D4       istream_withassign::~istream_withassign()
+ 0002:12DD       node::node()
+ 0002:1260       node::~node()
+ 0006:00FB       node::
+ 0003:1C8C       node::getnextnode()
+ 0003:1C3F       node::nodeinsert(node far*)
+ 0002:0306       nullroutine(unsigned char far*)
+ 0001:452E       ostream::ostream()
+ 0001:4614       ostream::~ostream()
+ 0004:063B       ostream::operator <<(int)
+ 0001:4807       ostream::operator <<(long)
+ 0002:0FBD       ostream::operator <<(const char far*)
+ 0004:16F4       ostream::operator <<(const unsigned char far*)
+ 0004:0657       ostream::operator <<(unsigned int)
+ 0001:4993       ostream::operator <<(unsigned long)
+ 0001:4AB7       ostream::do_opfx()
+ 0001:4AEA       ostream::do_osfx()
+ 0001:46EC       ostream::flush()
+ 0001:4B40       ostream::outstr(const char far*,const char far*)
+ 0003:1C9E       ostream::put(char)
+ 0003:1B50       ostream::put(unsigned char)
+ 0001:4E5A       ostream::tellp()
+ 0003:1C21       ostream::write(const unsigned char far*,int)
+ 0001:450E       ostream_withassign::operator =(streambuf far*)
+ 0001:4598       ostream_withassign::ostream_withassign()
+ 0001:467E       ostream_withassign::~ostream_withassign()
+ 0002:01F4       parseline(unsigned char far*)
+ 0002:0B09       pbmbody::pbmbody(ilbmbmhd far*)
+ 0004:0673       pbmbody::read(iffread far*,int(far*)(unsigned char far*))
+ 0002:191A       pictwriter(file far*)
+ 0002:19A8       pictwriterpbm(file far*)
+ 0003:0821       point::operator =(const point far&)
+ 0002:0DF2       point::point(int,int)
+ 0005:135A       point::point(const point far&)
+ 0005:1251       point::point()
+ 0005:1402       point::operator +=(const point far&)
+ 0002:10C4       point::move(unsigned int,unsigned int)
+ 0005:13D6       point::x(unsigned int)
+ 0003:0857       point::x() const
+ 0005:13B7       point::y(unsigned int)
+ 0003:0864       point::y() const
+ 0004:177F       quit(int)
+ 0005:031E       rastgraphport::rastgraphport(rastgraphport far&)
+ 0005:0259       rastgraphport::rastgraphport(unsigned char far*far*,unsigned int,unsigned int,const color far&)
+ 0005:015B       rastgraphport::rastgraphport(unsigned int,unsigned int,const color far&)
+ 0005:04FF       rastgraphport::~rastgraphport()
+ 0006:15ED       rastgraphport::
+ 0005:0CA4       rastgraphport::box(const point far&,const point far&)
+ 0005:00AE       rastgraphport::construct(const color far&)
+ 0005:0151       rastgraphport::erase()
+ 0005:059F       rastgraphport::getpixel(const point far&)
+ 0005:14F4       rastgraphport::getpixelindex(const point far&)
+ 0005:1531       rastgraphport::getpixelindex()
+ 0005:097A       rastgraphport::hline(const point far&,int)
+ 0005:07BD       rastgraphport::line(const point far&,const point far&)
+ 0005:157B       rastgraphport::palette(colorpalette far&)
+ 0005:05F8       rastgraphport::plotonport(rastgraphport far&)
+ 0005:149F       rastgraphport::putpixel(const point far&)
+ 0005:14E1       rastgraphport::putpixel()
+ 0005:0B32       rastgraphport::rectangle(const point far&,const point far&)
+ 0005:0E21       rastgraphport::setcolor(const color far&)
+ 0005:0E5A       rastgraphport::setcolorindex(int)
+ 0005:0A8E       rastgraphport::vline(const point far&,int)
+ 0005:0156       rastgraphport::xor(unsigned char)
+ 0005:0D61       rastgraphport::xorbox(const point far&,const point far&,unsigned char)
+ 0005:0A02       rastgraphport::xorhline(const point far&,int,unsigned char)
+ 0002:03AC       readanim(const char far*,char far*)
+ 0002:0EA3       readifflength(istream far&)
+ 0002:10F5       readifflong(istream far&)
+ 0002:0E8E       readifftag(istream far&)
+ 0003:19CC       readiffword(istream far&)
+ 0005:0F31       screengraphport::screengraphport(unsigned int,unsigned int,unsigned int,const color far&)
+ 0005:1038       screengraphport::~screengraphport()
+ 0006:158D       screengraphport::
+ 0005:1125       screengraphport::forcepaletteupdate()
+ 0005:1554       screengraphport::palette(colorpalette far&)
+ 0005:10C8       screengraphport::paletteupdate()
+ 0005:108D       screengraphport::setcolor(const color far&)
+ 0005:10B3       screengraphport::setibmpalette(int,int,screengraphport::_rgbcolor far*)
+ 0001:060C       set_new_handler(void(far*)())
+ 0001:5E64       strchr(char far*,int)
+ 0001:5E64       strchr(const char far*,int)
+ 0001:4F12       streambuf::streambuf()
+ 0001:50FD       streambuf::~streambuf()
+ 0001:4EC8       streambuf::doallocate()
+ 0001:4FAD       streambuf::do_sgetn(char far*,int)
+ 0001:505C       streambuf::do_sputn(const char far*,int)
+ 0001:5140       streambuf::overflow(int)
+ 0001:5148       streambuf::pbackfail(int)
+ 0001:52E1       streambuf::seekoff(long,seek_dir,int)
+ 0001:52EC       streambuf::seekpos(long,int)
+ 0001:517C       streambuf::setb(char far*,char far*,int)
+ 0001:5150       streambuf::setbuf(char far*,int)
+ 0001:522B       streambuf::setg(char far*,char far*,char far*)
+ 0001:5295       streambuf::setp(char far*,char far*)
+ 0003:1CDC       streambuf::sputc(int)
+ 0001:530F       streambuf::sputn(const char far*,int)
+ 0001:5384       streambuf::sync()
+ 0001:53D0       streambuf::underflow()
+ 0005:144A       version::operator =(const version far&)
+ 0002:1049       version::version(const unsigned long)
+ 0002:10AA       version::operator ++(int)
+ 0005:1439       version::operator unsigned long() const
+ 0003:1805       wftype(file far*)
+ 0002:16CD       writebmhd(file far*)
+ 0002:17F9       writebody(file far*)
+ 0003:161A       writebytesiff(void far*,unsigned int,file far*)
+ 0002:1656       writecmap(file far*)
+ 0003:1838       writefileiff(file far*,unsigned long,(far*)(),...)
+ 0003:1A9C       writeifflength(ostream far&,unsigned long)
+ 0003:1BAD       writeifflong(ostream far&,unsigned long)
+ 0003:1A6D       writeifftag(ostream far&,unsigned long)
+ 0003:1B68       writeiffword(ostream far&,unsigned int)
+ 0003:168D       writelongiff(unsigned long,file far*)
+ 0002:18A2       writepbmbody(file far*)
+ 0002:1A36       writepict(char far*)
+ 0004:150B       writeprivateprofileint(char far*,char far*,int,char far*)
+ 0004:133B       writeprivateprofilestring(char far*,char far*,char far*,char far*)
+ 0004:15DF       writeprofileint(char far*,char far*,int)
+ 0004:15AF       writeprofilestring(char far*,char far*,char far*)
+ 0003:1648       writewordiff(unsigned int,file far*)
+ 0001:0EFA       _vector_new_(void far*,unsigned int,unsigned long,unsigned int,...)
+ 0006:005B       BCC286_EXE
+ 0006:0000       DATASEG@
+ 0001:0240       DGROUP@
+ 0000:0000       DOSALLOCHUGE
+ 0000:0000       DOSALLOCSEG
+ 0000:0000       DOSCREATEDSALIAS
+ 0000:0000       DOSFREESEG
+ 0000:0000       DOSGETHUGESHIFT
+ 0000:0000       DOSMAPREALSEG
+ 0000:0000       DOSREALLOCHUGE
+ 0000:0000       DOSREALLOCSEG
+ 0000:0000       DOSSETSIGHANDLER
+ 0000:0000       DOSSETVEC
+ 0001:03AE       F_LDIV@
+ 0001:03BD       F_LMOD@
+ 0001:03B5       F_LUDIV@
+ 0001:03C5       F_LUMOD@
+ 0001:0378       F_LXMUL@
+ 0001:045C       F_LXURSH@
+ 0001:5E6E       F_PADD@
+ 0001:5E92       F_PSUB@
+ 0001:038F       F_SCOPY@
+ 0001:03AE       LDIV@
+ 0001:03BD       LMOD@
+ 0001:03B5       LUDIV@
+ 0001:03C5       LUMOD@
+ 0001:0378       LXMUL@
+ 0001:045C       LXURSH@
+ 0001:03AB       N_LDIV@
+ 0001:03BA       N_LMOD@
+ 0001:03B2       N_LUDIV@
+ 0001:03C2       N_LUMOD@
+ 0001:06C9       N_LXMUL@
+ 0001:0459       N_LXURSH@
+ 0001:5E69       N_PADD@
+ 0001:5E8D       N_PSUB@
+ 0001:06E0       N_SCOPY@
+ 0001:5E6E       PADD@
+ 0001:5E92       PSUB@
+ 0001:038F       SCOPY@
+ 0001:57E8       spmhalloc
+ 0001:5856       spmhexpand
+ 0001:5746       spmhfree
+ 0001:578B       spmhinit
+ 0001:590D       spmhmove
+ 0006:3620       _AnimName
+ 0001:0244       _atexit
+ 0001:18B5       _atoi
+ 0001:1840       _atol
+ 0006:36C3       _bClipLbmSize
+ 0006:36C0       _bDisplay
+ 0006:36C2       _bMultipleLbm
+ 0006:013C       _bPause
+ 0006:36C1       _bPbm
+ 0001:16CD       _calloc
+ 0006:37C0       _cerr
+ 0006:3766       _cin
+ 0006:37EC       _clog
+ 0001:18E3       _close
+ 0006:3794       _cout
+ 0003:0B21       _ctrlbrk
+ 0006:0405       _DateStr
+ 0003:0BEC       _delay
+ 0006:36CA       _display
+ 0001:1929       _eof
+ 0006:0083       _errno
+ 0006:13F6       _errorText
+ 0001:033D       _exit
+ 0001:5B09       _expand
+ 0001:5972       _farfree
+ 0001:5A3B       _farmalloc
+ 0001:5BD3       _farrealloc
+ 0001:19A0       _fclose
+ 0001:1A58       _fflush
+ 0001:21BC       _fgetc
+ 0001:22AA       _fgetchar
+ 0001:1B25       _fgets
+ 0001:1BC1       _flushall
+ 0001:1C03       _fnmerge
+ 0001:1C2E       _fnsplit
+ 0001:1E30       _fopen
+ 0001:1E65       _fprintf
+ 0001:2610       _fputc
+ 0001:27A5       _fputchar
+ 0001:5972       _free
+ 0001:1F03       _fseek
+ 0003:0B72       _fstrchr
+ 0001:1F83       _ftell
+ 0001:2063       _fwrite
+ 0001:17BD       _gettextinfo
+ 0006:1476       _ibmGfxModes
+ 0006:1698       _image
+ 0001:5E19       _ioctl
+ 0001:047A       _isatty
+ 0001:1749       _kbhit
+ 0001:052D       _lseek
+ 0003:08DC       _main
+ 0001:59B9       _malloc
+ 0001:2387       _memcpy
+ 0001:23CF       _memset
+ 0006:35F5       _myANHD
+ 0006:35DE       _myBMHD
+ 0006:35F1       _myCAMG
+ 0006:35D8       _myCMAP
+ 0006:009E       _myDLTA
+ 0006:009A       _myilbmBODY
+ 0006:0096       _mypbmBODY
+ 0001:1797       _nosound
+ 0006:36C4       _nSpacing
+ 0001:241B       _open
+ 0006:2638       _output_image
+ 0001:25D9       _printf
+ 0001:2A8D       _read
+ 0001:5B65       _realloc
+ 0001:2A90       _rename
+ 0001:2AAD       _rewind
+ 0001:23AB       _setmem
+ 0001:2AD3       _setvbuf
+ 0001:176B       _sound
+ 0001:2F09       _sprintf
+ 0001:2F7F       _sscanf
+ 0001:2FC6       _strcat
+ 0003:0B4A       _strchr
+ 0001:3005       _strcpy
+ 0001:302E       _stricmp
+ 0001:306F       _strlen
+ 0001:308E       _strlwr
+ 0001:30B2       _strncpy
+ 0001:30E3       _strnicmp
+ 0006:3670       _szPictName
+ 0006:13BA       _szSystemIni
+ 0006:0400       _szVersion
+ 0001:179E       _textmode
+ 0006:0411       _TimeStr
+ 0001:3127       _tmpfile
+ 0001:3170       _tmpnam
+ 0001:0EE2       _unlink
+ 0001:2F2B       _vsprintf
+ 0001:2FA2       _vsscanf
+ 0001:181E       _wherex
+ 0001:182D       _wherey
+ 0001:3310       _write
+ 0006:36C6       _xLbmSize
+ 0006:00A2       _xOutputPos
+ 0006:36C8       _yLbmSize
+ 0006:00A4       _yOutputPos
+ 0000:0000       __AHINCR
+ 0000:0000       __AHSHIFT
+ 0006:09AA       __argc
+ 0006:09AC       __argv
+ 0006:041A       __atexitcnt
+ 0006:36CE       __atexittbl
+ 0006:008D       __brklvl
+ 0006:006D       __C0argc
+ 0006:006F       __C0argv
+ 0001:5CE7       __c0crtinit
+ 0006:0073       __C0environ
+ 0006:0849       __cChar
+ 0001:035E       __cexit
+ 0006:0848       __cFlag
+ 0001:0166       __checknull
+ 0001:18C6       __chmod
+ 0001:0153       __cleanup
+ 0001:190B       __close
+ 0001:5D08       __crtinit
+ 0006:0077       __CSalias
+ 0006:041C       __ctype
+ 0000:0000  Abs  __cvtfak
+ 0001:036C       __c_exit
+ 0006:11E3       __directvideo
+ 0006:11F0       __doserrno
+ 0001:5EF6       __DOSERROR
+ 0006:11F2       __dosErrorToSV
+ 0001:0283       __dos_getfileattr
+ 0001:02A3       __dos_setfileattr
+ 0006:0079       __envLng
+ 0006:007B       __envseg
+ 0006:007D       __envSize
+ 0006:0085       __Exception_list
+ 0001:034C       __exit
+ 0006:051E       __exitbuf
+ 0006:0522       __exitfopen
+ 0006:0526       __exitopen
+ 0001:21A4       __fgetc
+ 0006:06E4       __fmode
+ 0001:2CA9       __fnsplit
+ 0001:071A       __fpure_error_
+ 0001:25F4       __fputc
+ 0001:27B9       __FPUTN
+ 0003:0B89       __fstrchr
+ 0001:1DE6       __GETFP
+ 0006:0089       __heapbase
+ 0006:0091       __heaptop
+ 0006:005D       __Int0Vector
+ 0006:0061       __Int4Vector
+ 0006:0065       __Int5Vector
+ 0006:0069       __Int6Vector
+ 0001:5EB1       __IOERROR
+ 0001:048B       __LONGTOA
+ 0001:22B6       __makepath
+ 0006:11D1       __maxfarrealloc
+ 0001:0556       __MKNAME
+ 0001:0242       __MMODEL
+ 0006:375C       __new_handler
+ 0001:21B9       __Nfgetc
+ 0006:06BA       __nfile
+ 0006:06E6       __notUmask
+ 0001:06FC       __npure_error_
+ 0001:258A       __open
+ 0006:06BC       __openfd
+ 0001:1D15       __OPENFP
+ 0006:0081       __osmajor
+ 0006:0082       __osminor
+ 0006:0081       __osversion
+ 0006:007F       __psp
+ 0001:0738       __read
+ 0001:175B       __REALCVT
+ 0006:164E       __RealCvtVector
+ 0001:0189       __restorezero
+ 0001:0767       __scanner
+ 0001:1767       __scanpop
+ 0001:1763       __scanrslt
+ 0001:175F       __scantod
+ 0006:1650       __ScanTodVector
+ 0001:0C86       __scantol
+ 0000:0000  Abs  __setargv__
+ 0001:0E28       __setupio
+ 0001:2E9F       __splitpath
+ 0006:07AC       __stklen
+ 0001:166D       __stpcpy
+ 0006:052A       __streams
+ 0001:0167       __terminate
+ 0001:05B3       __TMPNAM
+ 0006:3764       __tmpnum
+ 0000:0000  Abs  __turboCrt
+ 0001:050D       __UTOA
+ 0006:0081       __version
+ 0006:11D4       __video
+ 0001:5C5E       __VideoInt
+ 0001:11AA       __VPRINTER
+ 0001:1814       __wherexy
+ 0001:32D4       __write
+ 0001:3313       __xfclose
+ 0001:3350       __xfflush
+ 0001:16A1       ___assertfail
+ 0006:09C9       ___avl
+ 0006:09BC       ___base
+ 0006:0087       ___brklvl
+ 0001:02C0       ___ErrorMessage
+ 0006:09C5       ___hincr
+ 0001:29BC       ___read
+ 0006:09C2       ___size
+ 0006:3820       ___stderr_streambuf
+ 0006:3818       ___stdin_streambuf
+ 0006:381C       ___stdout_streambuf
+ 0006:09C0       ___top
+ 0001:3183       ___write
+
+  Address         Publics by Value
+
+ 0000:0000  Abs  __setargv__
+ 0000:0000  Abs  __cvtfak
+ 0000:0000  Abs  __turboCrt
+ 0000:0000       DOSCREATEDSALIAS
+ 0000:0000       DOSFREESEG
+ 0000:0000       DOSREALLOCSEG
+ 0000:0000       DOSALLOCSEG
+ 0000:0000       DOSSETVEC
+ 0000:0000       DOSSETSIGHANDLER
+ 0000:0000       DOSALLOCHUGE
+ 0000:0000       DOSGETHUGESHIFT
+ 0000:0000       DOSREALLOCHUGE
+ 0000:0000       DOSMAPREALSEG
+ 0000:0000       __AHSHIFT
+ 0000:0000       __AHINCR
+ 0001:0153       __cleanup
+ 0001:0166       __checknull
+ 0001:0167       __terminate
+ 0001:0189       __restorezero
+ 0001:0240       DGROUP@
+ 0001:0242       __MMODEL
+ 0001:0244       _atexit
+ 0001:0271       operator delete(void far*)
+ 0001:0283       __dos_getfileattr
+ 0001:02A3       __dos_setfileattr
+ 0001:02C0       ___ErrorMessage
+ 0001:033D       _exit
+ 0001:034C       __exit
+ 0001:035E       __cexit
+ 0001:036C       __c_exit
+ 0001:0378       LXMUL@
+ 0001:0378       F_LXMUL@
+ 0001:038F       F_SCOPY@
+ 0001:038F       SCOPY@
+ 0001:03AB       N_LDIV@
+ 0001:03AE       LDIV@
+ 0001:03AE       F_LDIV@
+ 0001:03B2       N_LUDIV@
+ 0001:03B5       F_LUDIV@
+ 0001:03B5       LUDIV@
+ 0001:03BA       N_LMOD@
+ 0001:03BD       F_LMOD@
+ 0001:03BD       LMOD@
+ 0001:03C2       N_LUMOD@
+ 0001:03C5       LUMOD@
+ 0001:03C5       F_LUMOD@
+ 0001:0459       N_LXURSH@
+ 0001:045C       LXURSH@
+ 0001:045C       F_LXURSH@
+ 0001:047A       _isatty
+ 0001:048B       __LONGTOA
+ 0001:050D       __UTOA
+ 0001:052D       _lseek
+ 0001:0556       __MKNAME
+ 0001:05B3       __TMPNAM
+ 0001:060C       set_new_handler(void(far*)())
+ 0001:0636       operator new(unsigned int)
+ 0001:0678       operator new(unsigned long)
+ 0001:06C9       N_LXMUL@
+ 0001:06E0       N_SCOPY@
+ 0001:06FC       __npure_error_
+ 0001:071A       __fpure_error_
+ 0001:0738       __read
+ 0001:0767       __scanner
+ 0001:0C86       __scantol
+ 0001:0E28       __setupio
+ 0001:0EE2       _unlink
+ 0001:0EFA       _vector_new_(void far*,unsigned int,unsigned long,unsigned int,...)
+ 0001:11AA       __VPRINTER
+ 0001:166D       __stpcpy
+ 0001:16A1       ___assertfail
+ 0001:16CD       _calloc
+ 0001:1749       _kbhit
+ 0001:175B       __REALCVT
+ 0001:175F       __scantod
+ 0001:1763       __scanrslt
+ 0001:1767       __scanpop
+ 0001:176B       _sound
+ 0001:1797       _nosound
+ 0001:179E       _textmode
+ 0001:17BD       _gettextinfo
+ 0001:1814       __wherexy
+ 0001:181E       _wherex
+ 0001:182D       _wherey
+ 0001:1840       _atol
+ 0001:18B5       _atoi
+ 0001:18C6       __chmod
+ 0001:18E3       _close
+ 0001:190B       __close
+ 0001:1929       _eof
+ 0001:19A0       _fclose
+ 0001:1A58       _fflush
+ 0001:1B25       _fgets
+ 0001:1BC1       _flushall
+ 0001:1C03       _fnmerge
+ 0001:1C2E       _fnsplit
+ 0001:1D15       __OPENFP
+ 0001:1DE6       __GETFP
+ 0001:1E30       _fopen
+ 0001:1E65       _fprintf
+ 0001:1F03       _fseek
+ 0001:1F83       _ftell
+ 0001:2063       _fwrite
+ 0001:21A4       __fgetc
+ 0001:21B9       __Nfgetc
+ 0001:21BC       _fgetc
+ 0001:22AA       _fgetchar
+ 0001:22B6       __makepath
+ 0001:2387       _memcpy
+ 0001:23AB       _setmem
+ 0001:23CF       _memset
+ 0001:241B       _open
+ 0001:258A       __open
+ 0001:25D9       _printf
+ 0001:25F4       __fputc
+ 0001:2610       _fputc
+ 0001:27A5       _fputchar
+ 0001:27B9       __FPUTN
+ 0001:29BC       ___read
+ 0001:2A8D       _read
+ 0001:2A90       _rename
+ 0001:2AAD       _rewind
+ 0001:2AD3       _setvbuf
+ 0001:2CA9       __fnsplit
+ 0001:2E9F       __splitpath
+ 0001:2F09       _sprintf
+ 0001:2F2B       _vsprintf
+ 0001:2F7F       _sscanf
+ 0001:2FA2       _vsscanf
+ 0001:2FC6       _strcat
+ 0001:3005       _strcpy
+ 0001:302E       _stricmp
+ 0001:306F       _strlen
+ 0001:308E       _strlwr
+ 0001:30B2       _strncpy
+ 0001:30E3       _strnicmp
+ 0001:3127       _tmpfile
+ 0001:3170       _tmpnam
+ 0001:3183       ___write
+ 0001:32D4       __write
+ 0001:3310       _write
+ 0001:3313       __xfclose
+ 0001:3350       __xfflush
+ 0001:3522       iostream_delete()
+ 0001:3612       filebuf::close()
+ 0001:36B8       filebuf::filebuf(int)
+ 0001:3798       filebuf::~filebuf()
+ 0001:3800       filebuf::overflow(int)
+ 0001:3951       filebuf::setbuf(char far*,int)
+ 0001:3A0D       filebuf::seekoff(long,seek_dir,int)
+ 0001:3BC2       filebuf::sync()
+ 0001:3D5C       filebuf::underflow()
+ 0001:3F12       fstreambase::~fstreambase()
+ 0001:3F85       ifstream::~ifstream()
+ 0001:401A       istream_withassign::operator =(streambuf far*)
+ 0001:403A       istream::istream()
+ 0001:40AD       istream_withassign::istream_withassign()
+ 0001:4129       istream::do_get()
+ 0001:41BC       istream::ipfx(int)
+ 0001:4277       istream::~istream()
+ 0001:42D4       istream_withassign::~istream_withassign()
+ 0001:4342       istream::eatwhite()
+ 0001:4410       istream::get(unsigned char far&)
+ 0001:450E       ostream_withassign::operator =(streambuf far*)
+ 0001:452E       ostream::ostream()
+ 0001:4598       ostream_withassign::ostream_withassign()
+ 0001:4614       ostream::~ostream()
+ 0001:467E       ostream_withassign::~ostream_withassign()
+ 0001:46EC       ostream::flush()
+ 0001:4807       ostream::operator <<(long)
+ 0001:4993       ostream::operator <<(unsigned long)
+ 0001:4AB7       ostream::do_opfx()
+ 0001:4AEA       ostream::do_osfx()
+ 0001:4B40       ostream::outstr(const char far*,const char far*)
+ 0001:4E5A       ostream::tellp()
+ 0001:4EC8       streambuf::doallocate()
+ 0001:4F12       streambuf::streambuf()
+ 0001:4FAD       streambuf::do_sgetn(char far*,int)
+ 0001:505C       streambuf::do_sputn(const char far*,int)
+ 0001:50FD       streambuf::~streambuf()
+ 0001:5140       streambuf::overflow(int)
+ 0001:5148       streambuf::pbackfail(int)
+ 0001:5150       streambuf::setbuf(char far*,int)
+ 0001:517C       streambuf::setb(char far*,char far*,int)
+ 0001:522B       streambuf::setg(char far*,char far*,char far*)
+ 0001:5295       streambuf::setp(char far*,char far*)
+ 0001:52E1       streambuf::seekoff(long,seek_dir,int)
+ 0001:52EC       streambuf::seekpos(long,int)
+ 0001:530F       streambuf::sputn(const char far*,int)
+ 0001:5384       streambuf::sync()
+ 0001:53D0       streambuf::underflow()
+ 0001:5403       ios::ios()
+ 0001:543E       ios::~ios()
+ 0001:5484       ios::init(streambuf far*)
+ 0001:54D8       ios::setf(long)
+ 0001:559C       ios::setstate(int)
+ 0001:55C2       ios::tie(ostream far*)
+ 0001:5746       spmhfree
+ 0001:578B       spmhinit
+ 0001:57E8       spmhalloc
+ 0001:5856       spmhexpand
+ 0001:590D       spmhmove
+ 0001:5972       _free
+ 0001:5972       _farfree
+ 0001:59B9       _malloc
+ 0001:5A3B       _farmalloc
+ 0001:5B09       _expand
+ 0001:5B65       _realloc
+ 0001:5BD3       _farrealloc
+ 0001:5C5E       __VideoInt
+ 0001:5CE7       __c0crtinit
+ 0001:5D08       __crtinit
+ 0001:5E19       _ioctl
+ 0001:5E64       strchr(char far*,int)
+ 0001:5E64       strchr(const char far*,int)
+ 0001:5E69       N_PADD@
+ 0001:5E6E       F_PADD@
+ 0001:5E6E       PADD@
+ 0001:5E8D       N_PSUB@
+ 0001:5E92       F_PSUB@
+ 0001:5E92       PSUB@
+ 0001:5EB1       __IOERROR
+ 0001:5EF6       __DOSERROR
+ 0002:001C       handlecmap(iffread far*)
+ 0002:012E       handlebmhd(iffread far*)
+ 0002:01D9       handlecamg(iffread far*)
+ 0002:01F4       parseline(unsigned char far*)
+ 0002:028F       handlebody(iffread far*)
+ 0002:02B6       handlepbmbody(iffread far*)
+ 0002:02DD       handleanhd(iffread far*)
+ 0002:0306       nullroutine(unsigned char far*)
+ 0002:030F       handledlta(iffread far*)
+ 0002:03AC       readanim(const char far*,char far*)
+ 0002:09DB       ilbmcmap::ilbmcmap()
+ 0002:0A1B       ilbmcmap::~ilbmcmap()
+ 0002:0A59       ilbmbmhd::ilbmbmhd()
+ 0002:0AD8       ilbmcamg::ilbmcamg()
+ 0002:0B09       pbmbody::pbmbody(ilbmbmhd far*)
+ 0002:0B3A       ilbmbody::ilbmbody(ilbmbmhd far*)
+ 0002:0B6B       animanhd::animanhd()
+ 0002:0B91       animdlta::animdlta(animanhd far*)
+ 0002:0BC2       colorpalette::colorpalette()
+ 0002:0C2E       colorpalette::~colorpalette()
+ 0002:0C59       ilbmcmap::getnumcolors() const
+ 0002:0C68       ilbmcmap::red(unsigned int) const
+ 0002:0C90       ilbmcmap::green(unsigned int) const
+ 0002:0CB9       ilbmcmap::blue(unsigned int) const
+ 0002:0CE4       color::color(unsigned int,unsigned int,unsigned int)
+ 0002:0D21       colorpalette::create(const color far&)
+ 0002:0D7A       __tpdsc__[colorpalette]
+ 0002:0DBA       boolean::operator int() const
+ 0002:0DD1       ilbmcamg::read(iffread far*)
+ 0002:0DF2       point::point(int,int)
+ 0002:0E2C       boolean::boolean(int)
+ 0002:0E69       ios::operator void far*()
+ 0002:0E8E       readifftag(istream far&)
+ 0002:0EA3       readifflength(istream far&)
+ 0002:0EB8       iffread::iffread(istream far&)
+ 0002:0F37       boolean::operator =(int)
+ 0002:0F55       iffread::getform() const
+ 0002:0F66       list<iffchunk>::~list<iffchunk>()
+ 0002:0FBD       ostream::operator <<(const char far*)
+ 0002:0FE1       __tpdsc__[ifstream]
+ 0002:1035       __tpdsc__[iffread far*]
+ 0002:1049       version::version(const unsigned long)
+ 0002:107A       color::setrgb(unsigned int,unsigned int,unsigned int)
+ 0002:10AA       version::operator ++(int)
+ 0002:10C4       point::move(unsigned int,unsigned int)
+ 0002:10E4       ios::fail()
+ 0002:10F5       readifflong(istream far&)
+ 0002:1181       list<iffchunk>::list<iffchunk>()
+ 0002:11D1       boolean::set(int)
+ 0002:11ED       list<iffchunk>::deleteall()
+ 0002:1260       node::~node()
+ 0002:12DD       node::node()
+ 0002:1329       __tpdsc__[node far*]
+ 0002:133A       __tpdsc__[ilbmcmap]
+ 0002:1376       __tpdsc__[node]
+ 0002:13AE       __tpdsc__[iffread]
+ 0002:13EE       __tpdsc__[fstreambase]
+ 0002:143A       __tpdsc__[istream]
+ 0002:147C       __tpdsc__[ios]
+ 0002:14B2       __tpdsc__[nodeinterface<iffchunk>]
+ 0002:1504       nodeinterface<iffchunk>::~nodeinterface<iffchunk>()
+ 0002:1547       __tpdsc__[list<iffchunk>]
+ 0002:1591       __tpdsc__[filebuf]
+ 0002:15D3       iffread::~iffread()
+ 0002:161A       __tpdsc__[streambuf]
+ 0002:1656       writecmap(file far*)
+ 0002:16CD       writebmhd(file far*)
+ 0002:17F9       writebody(file far*)
+ 0002:18A2       writepbmbody(file far*)
+ 0002:191A       pictwriter(file far*)
+ 0002:19A8       pictwriterpbm(file far*)
+ 0002:1A36       writepict(char far*)
+ 0003:0000       ini::ini(char far*)
+ 0003:00AB       ini::boolean(char far*,boolean)
+ 0003:0124       ini::int(char far*,int)
+ 0003:0179       getinput(int,char far*far*)
+ 0003:05BB       boolean::operator =(const boolean far&)
+ 0003:05DC       __tpdsc__[ini far*]
+ 0003:05EC       __tpdsc__[ini]
+ 0003:0636       ctrlbreakhandler()
+ 0003:06B3       __tpdsc__[rastgraphport far*]
+ 0003:06CD       __tpdsc__[rastgraphport]
+ 0003:0715       __tpdsc__[graphport]
+ 0003:0751       graphport::~graphport()
+ 0003:0784       graphport::putpixel()
+ 0003:07A4       graphport::getpixel()
+ 0003:07C7       graphport::move(const point far&)
+ 0003:07E4       graphport::where()
+ 0003:07F4       graphport::setcolor(const color far&)
+ 0003:0811       graphport::getcolor()
+ 0003:0821       point::operator =(const point far&)
+ 0003:0857       point::x() const
+ 0003:0864       point::y() const
+ 0003:0872       check_ctrl_break()
+ 0003:08DC       _main
+ 0003:0A86       __tpdsc__[screengraphport far*]
+ 0003:0AA2       __tpdsc__[screengraphport]
+ 0003:0B21       _ctrlbrk
+ 0003:0B4A       _strchr
+ 0003:0B72       _fstrchr
+ 0003:0B89       __fstrchr
+ 0003:0BEC       _delay
+ 0003:0C73       iffread::registerchunk(unsigned long,int(far*)(iffread far*))
+ 0003:0CF0       iffread::nextform()
+ 0003:0E22       iffread::nextchunk()
+ 0003:0F05       iffread::findform(unsigned long)
+ 0003:0F71       iffread::findchunk(unsigned long)
+ 0003:0FD8       iffread::getchunkbyte()
+ 0003:1027       iffread::getchunkword()
+ 0003:1076       iffread::getchunklong()
+ 0003:10CD       iffread::getchunkdata(unsigned char far*)
+ 0003:112C       iffread::getchunkdata(unsigned char far*,unsigned long)
+ 0003:1187       iffread::parsechunks()
+ 0003:1232       iffwrite::newform(unsigned long)
+ 0003:12DF       iffwrite::newchunk(unsigned long)
+ 0003:138B       iffwrite::endform()
+ 0003:144F       iffwrite::endchunk()
+ 0003:150F       iffwrite::writechunkbyte(unsigned char)
+ 0003:1552       iffwrite::writechunkword(unsigned int)
+ 0003:158D       iffwrite::writechunklong(unsigned long)
+ 0003:15C9       iffwrite::writechunkdata(unsigned char far*,unsigned long)
+ 0003:161A       writebytesiff(void far*,unsigned int,file far*)
+ 0003:1648       writewordiff(unsigned int,file far*)
+ 0003:168D       writelongiff(unsigned long,file far*)
+ 0003:1708       createchunk(file far*,unsigned long,(far*)(),...)
+ 0003:1805       wftype(file far*)
+ 0003:1838       writefileiff(file far*,unsigned long,(far*)(),...)
+ 0003:186B       iffchunk::iffchunk(unsigned long,int(far*)(iffread far*))
+ 0003:18D3       nodeinterface<iffchunk>::insert(iffchunk far*)
+ 0003:18EC       __tpdsc__[iffchunk far*]
+ 0003:1901       iffread::skipbytes(istream far&,unsigned long)
+ 0003:195E       iffread::readifftag(istream far&)
+ 0003:197C       iffread::readifflength(istream far&)
+ 0003:199A       ios::rdstate()
+ 0003:19A8       iffread::getformbytesleft() const
+ 0003:19BA       iffread::getchunk() const
+ 0003:19CC       readiffword(istream far&)
+ 0003:1A11       istream::read(unsigned char far*,int)
+ 0003:1A2F       nodeinterface<iffchunk>::getnext()
+ 0003:1A44       iffchunk::getname() const
+ 0003:1A56       iffchunk::callproc(iffread far*)
+ 0003:1A6D       writeifftag(ostream far&,unsigned long)
+ 0003:1A9C       writeifflength(ostream far&,unsigned long)
+ 0003:1ACB       iffwrite::writeifftag(ostream far&,unsigned long)
+ 0003:1AF9       iffwrite::writeifflength(ostream far&,unsigned long)
+ 0003:1B27       iffwrite::chunkwordalign()
+ 0003:1B50       ostream::put(unsigned char)
+ 0003:1B68       writeiffword(ostream far&,unsigned int)
+ 0003:1BAD       writeifflong(ostream far&,unsigned long)
+ 0003:1C21       ostream::write(const unsigned char far*,int)
+ 0003:1C3F       node::nodeinsert(node far*)
+ 0003:1C8C       node::getnextnode()
+ 0003:1C9E       ostream::put(char)
+ 0003:1CDC       streambuf::sputc(int)
+ 0003:1D2A       __tpdsc__[iffchunk]
+ 0003:1D6E       iffchunk::~iffchunk()
+ 0004:0000       operator <<(ostream far&,animanhd far&)
+ 0004:01F1       animanhd::read(iffread far*)
+ 0004:02F1       animanhd::write(iffwrite far*)
+ 0004:041B       animdlta::read(iffread far*,int(far*)(unsigned char far*))
+ 0004:063B       ostream::operator <<(int)
+ 0004:0657       ostream::operator <<(unsigned int)
+ 0004:0673       pbmbody::read(iffread far*,int(far*)(unsigned char far*))
+ 0004:07E4       iffread::chunkwordalign()
+ 0004:0803       ilbmcmap::read(iffread far*)
+ 0004:08A5       ilbmcmap::write(iffwrite far*)
+ 0004:0943       ilbmbmhd::read(iffread far*)
+ 0004:0A55       ilbmbmhd::write(iffwrite far*)
+ 0004:0BB2       ilbmbody::decompplaneline(iffread far*,unsigned char far*,int,unsigned char)
+ 0004:0CE3       ilbmbody::decompline(iffread far*,unsigned char far*)
+ 0004:0E08       ilbmbody::read(iffread far*,int(far*)(unsigned char far*))
+ 0004:0EE3       iffread::getchunklen() const
+ 0004:11CF       getprivateprofileint(char far*,char far*,int,char far*)
+ 0004:126F       getprivateprofilestring(char far*,char far*,char far*,char far*,int,char far*)
+ 0004:133B       writeprivateprofilestring(char far*,char far*,char far*,char far*)
+ 0004:150B       writeprivateprofileint(char far*,char far*,int,char far*)
+ 0004:1561       getprofileint(char far*,char far*,int)
+ 0004:1582       getprofilestring(char far*,char far*,char far*,char far*,int)
+ 0004:15AF       writeprofilestring(char far*,char far*,char far*)
+ 0004:15DF       writeprofileint(char far*,char far*,int)
+ 0004:160C       atoi(const char far*)
+ 0004:1621       error(int)
+ 0004:1667       error(int,const char far*,...)
+ 0004:16F4       ostream::operator <<(const unsigned char far*)
+ 0004:1718       beep()
+ 0004:177F       quit(int)
+ 0004:178F       ffilesize(file far*)
+ 0004:17EE       changeextension(char far*,const char far*)
+ 0005:0000       graphport::graphport(unsigned int,unsigned int,const color far&)
+ 0005:00AE       rastgraphport::construct(const color far&)
+ 0005:0151       rastgraphport::erase()
+ 0005:0156       rastgraphport::xor(unsigned char)
+ 0005:015B       rastgraphport::rastgraphport(unsigned int,unsigned int,const color far&)
+ 0005:0259       rastgraphport::rastgraphport(unsigned char far*far*,unsigned int,unsigned int,const color far&)
+ 0005:031E       rastgraphport::rastgraphport(rastgraphport far&)
+ 0005:04FF       rastgraphport::~rastgraphport()
+ 0005:059F       rastgraphport::getpixel(const point far&)
+ 0005:05F8       rastgraphport::plotonport(rastgraphport far&)
+ 0005:07BD       rastgraphport::line(const point far&,const point far&)
+ 0005:097A       rastgraphport::hline(const point far&,int)
+ 0005:0A02       rastgraphport::xorhline(const point far&,int,unsigned char)
+ 0005:0A8E       rastgraphport::vline(const point far&,int)
+ 0005:0B32       rastgraphport::rectangle(const point far&,const point far&)
+ 0005:0CA4       rastgraphport::box(const point far&,const point far&)
+ 0005:0D61       rastgraphport::xorbox(const point far&,const point far&,unsigned char)
+ 0005:0E21       rastgraphport::setcolor(const color far&)
+ 0005:0E5A       rastgraphport::setcolorindex(int)
+ 0005:0E69       findgfxmode(unsigned int,unsigned int,unsigned int)
+ 0005:0EBF       getibmscreenaddr(unsigned int)
+ 0005:0F31       screengraphport::screengraphport(unsigned int,unsigned int,unsigned int,const color far&)
+ 0005:1038       screengraphport::~screengraphport()
+ 0005:108D       screengraphport::setcolor(const color far&)
+ 0005:10B3       screengraphport::setibmpalette(int,int,screengraphport::_rgbcolor far*)
+ 0005:10C8       screengraphport::paletteupdate()
+ 0005:1125       screengraphport::forcepaletteupdate()
+ 0005:1251       point::point()
+ 0005:1286       colorpalette::getmapindex(const color far&)
+ 0005:12C7       __tpdsc__[colorpalette far*]
+ 0005:12E0       graphport::graphport(graphport far&)
+ 0005:133E       colorpalette::getcolor(unsigned char) const
+ 0005:135A       point::point(const point far&)
+ 0005:13A9       graphport::getheight()
+ 0005:13B7       point::y(unsigned int)
+ 0005:13D6       point::x(unsigned int)
+ 0005:13F4       graphport::getwidth()
+ 0005:1402       point::operator +=(const point far&)
+ 0005:1429       colorpalette::getversion() const
+ 0005:1439       version::operator unsigned long() const
+ 0005:144A       version::operator =(const version far&)
+ 0005:1469       colorpalette::getcolorcount() const
+ 0005:1476       color::getred() const
+ 0005:1483       color::getgreen() const
+ 0005:1491       color::getblue() const
+ 0005:149F       rastgraphport::putpixel(const point far&)
+ 0005:14E1       rastgraphport::putpixel()
+ 0005:14F4       rastgraphport::getpixelindex(const point far&)
+ 0005:1531       rastgraphport::getpixelindex()
+ 0005:1554       screengraphport::palette(colorpalette far&)
+ 0005:157B       rastgraphport::palette(colorpalette far&)
+ 0005:15E4       color::converttorgb()
+ 0005:176A       color::converttohsv()
+ 0005:1912       colorpalette::lookup(const color far&) const
+ 0005:1977       color::operator ==(const color far&) const
+ 0006:0000       DATASEG@
+ 0006:005B       BCC286_EXE
+ 0006:005D       __Int0Vector
+ 0006:0061       __Int4Vector
+ 0006:0065       __Int5Vector
+ 0006:0069       __Int6Vector
+ 0006:006D       __C0argc
+ 0006:006F       __C0argv
+ 0006:0073       __C0environ
+ 0006:0077       __CSalias
+ 0006:0079       __envLng
+ 0006:007B       __envseg
+ 0006:007D       __envSize
+ 0006:007F       __psp
+ 0006:0081       __osversion
+ 0006:0081       __osmajor
+ 0006:0081       __version
+ 0006:0082       __osminor
+ 0006:0083       _errno
+ 0006:0085       __Exception_list
+ 0006:0087       ___brklvl
+ 0006:0089       __heapbase
+ 0006:008D       __brklvl
+ 0006:0091       __heaptop
+ 0006:0096       _mypbmBODY
+ 0006:009A       _myilbmBODY
+ 0006:009E       _myDLTA
+ 0006:00A2       _xOutputPos
+ 0006:00A4       _yOutputPos
+ 0006:00FB       node::
+ 0006:0107       nodeinterface<iffchunk>::
+ 0006:0113       list<iffchunk>::
+ 0006:013C       _bPause
+ 0006:0393       graphport::
+ 0006:0400       _szVersion
+ 0006:0405       _DateStr
+ 0006:0411       _TimeStr
+ 0006:041A       __atexitcnt
+ 0006:041C       __ctype
+ 0006:051E       __exitbuf
+ 0006:0522       __exitfopen
+ 0006:0526       __exitopen
+ 0006:052A       __streams
+ 0006:06BA       __nfile
+ 0006:06BC       __openfd
+ 0006:06E4       __fmode
+ 0006:06E6       __notUmask
+ 0006:07AC       __stklen
+ 0006:0848       __cFlag
+ 0006:0849       __cChar
+ 0006:0880       filebuf::openprot
+ 0006:0994       ios::basefield
+ 0006:0998       ios::adjustfield
+ 0006:099C       ios::floatfield
+ 0006:09A0       ios::nextbit
+ 0006:09A4       ios::usercount
+ 0006:09AA       __argc
+ 0006:09AC       __argv
+ 0006:09BC       ___base
+ 0006:09C0       ___top
+ 0006:09C2       ___size
+ 0006:09C5       ___hincr
+ 0006:09C9       ___avl
+ 0006:11D1       __maxfarrealloc
+ 0006:11D4       __video
+ 0006:11E3       __directvideo
+ 0006:11F0       __doserrno
+ 0006:11F2       __dosErrorToSV
+ 0006:124C       iffchunk::
+ 0006:13BA       _szSystemIni
+ 0006:13F6       _errorText
+ 0006:1476       _ibmGfxModes
+ 0006:158D       screengraphport::
+ 0006:15ED       rastgraphport::
+ 0006:164E       __RealCvtVector
+ 0006:1650       __ScanTodVector
+ 0006:1698       _image
+ 0006:2638       _output_image
+ 0006:35D8       _myCMAP
+ 0006:35DE       _myBMHD
+ 0006:35F1       _myCAMG
+ 0006:35F5       _myANHD
+ 0006:3620       _AnimName
+ 0006:3670       _szPictName
+ 0006:36C0       _bDisplay
+ 0006:36C1       _bPbm
+ 0006:36C2       _bMultipleLbm
+ 0006:36C3       _bClipLbmSize
+ 0006:36C4       _nSpacing
+ 0006:36C6       _xLbmSize
+ 0006:36C8       _yLbmSize
+ 0006:36CA       _display
+ 0006:36CE       __atexittbl
+ 0006:375C       __new_handler
+ 0006:3764       __tmpnum
+ 0006:3766       _cin
+ 0006:3794       _cout
+ 0006:37C0       _cerr
+ 0006:37EC       _clog
+ 0006:3818       ___stdin_streambuf
+ 0006:381C       ___stdout_streambuf
+ 0006:3820       ___stderr_streambuf
+ 0006:3824       ios::stdioflush
+
+Error: Undefined symbol __abort in module c0p.asm
+Error: Undefined symbol __ExceptInit in module c0p.asm
+Error: Undefined symbol ifstream::ifstream(const char far*,int,int) in module anim.cpp
+Error: Undefined symbol ___InitExceptBlock in module anim.cpp
+Error: Undefined symbol operator delete[](void far*) in module anim.cpp
+Error: Undefined symbol ostream::outstr(const char far*,const char far*) in module anim.cpp
+Error: Undefined symbol __GetPolymorphicDTC(void far*,unsigned int) in module anim.cpp
+Error: Undefined symbol _abort in library file c:\run286\bc4\lib\bcl286.lib in module VNEWF
+Error: Undefined symbol ostream::seekp(long,ios::seek_dir) in library file s:\pclib\pclibbl.lib in module iff
+Error: Undefined symbol istream::read(char far*,int) in library file s:\pclib\pclibbl.lib in module iff
+Error: Undefined symbol ostream::write(const char far*,int) in library file s:\pclib\pclibbl.lib in module iff
+Error: Undefined symbol operator new[](unsigned int) in library file s:\pclib\pclibbl.lib in module iffpbm
+Error: Undefined symbol strrchr(char far*,int) in library file s:\pclib\pclibbl.lib in module profile
+Error: Undefined symbol ostream::operator <<(char) in library file s:\pclib\pclibbl.lib in module error
+

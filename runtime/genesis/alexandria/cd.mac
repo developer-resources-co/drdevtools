@@ -1,0 +1,30 @@
+;=============================================================================
+;
+; cd.mac
+;	Macros for the Sega-CD side of a game used to communicate with
+;	the MAIN-CPU and to call the service routines on the Genesis side.
+;
+; By William B. Norris IV
+;
+; (c) 1993 Alexandria, Inc.  All Rights Reserved.
+;
+;=============================================================================
+
+	INCLUDE x:\cd5\inc\subcpu.inc
+	include x:\cd5\inc\submac.inc
+
+XFER_REGS_TO_MAIN	MACRO
+	movem.l	d0-d7/a0-a3,SUB_1M_REGS
+	ENDM
+
+XFER_REGS_FROM_MAIN	MACRO
+	movem.l	SUB_1M_REGS,d0-d7/a0-a3
+	ENDM
+
+
+MAIN_2M_BASE    equ     $200000         ;word RAM base in 2M bit mode
+MAIN_1M_BASE    equ     $200000         ;word RAM base in 1M bit mode
+MAIN_1M_REGS equ   $200002	; where the registers start
+MAIN_1M_PARAMS equ $200066	; where the data for the service call start
+
+

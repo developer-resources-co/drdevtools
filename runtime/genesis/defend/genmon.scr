@@ -1,0 +1,20 @@
+set dispmode $56
+set writeprotect 0
+OPEN MEMORY POSITION 0,1 RESIZE 80,12
+NAME MEMORY Diss
+Diss DYNAMICR PC
+Diss SYMBOL off
+OPEN REGISTER POSITION 80,1
+OPEN SYMBOL POSITION 80+25,13 RESIZE 27,9
+OPEN BREAK POSITION 58,13 RESIZE 47,9
+OPEN CONSOLE POSITION 80+25,1 RESIZE 27,12
+OPEN COMMAND POSITION COMMAND 80,22 RESIZE COMMAND 132-80,15
+stop
+open watch pos 80,37 resize 52,22
+open expression pos 0,13
+stop pc=@4(4) sp=@4(0)
+;rr: stop pc=@4(4) sp=@4(0)
+;rr
+LOADSYM defend.SYM
+OPEN source Pos 0,22 resize 80,37 WLoad defend.sld
+

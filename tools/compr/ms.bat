@@ -1,0 +1,2 @@
+make -a -DSYSTEM=SNES -DPREFIX=s
+

@@ -1,0 +1,44 @@
+;==============================================================================
+;	68000.equ: 68000 vectors, etc
+;==============================================================================
+
+
+;------------------------------------------------------------------------------
+; condtion code register bits
+
+CCRB_CARRY	equ	0
+CCRF_CARRY	equ	1<CCRB_CARRY
+
+CCRB_OVERFLOW	equ	1
+CCRF_OVERFLOW	equ	1<CCRB_OVERFLOW
+
+
+CCRB_ZERO	equ	2
+CCRF_ZERO	equ	1<CCRB_ZERO
+
+CCRB_NEGATIVE	equ	3
+CCRF_NEGATIVE	equ	1<CCRB_NEGATIVE
+
+CCRB_EXTEND	equ	4
+CCRF_EXTEND	equ	1<CCRB_EXTEND
+
+CCRB_INTLOW	equ	8
+CCRF_INTLOW	equ	1<CCRB_INTLOW		; note: these are 3 bits wide
+
+CCRB_INTMID	equ	9
+CCRF_INTMID	equ	1<CCRB_INTMID		; note: these are 3 bits wide
+
+CCRB_INTHI	equ	$A
+CCRF_INTHI	equ	1<CCRB_INTHI		; note: these are 3 bits wide
+
+CCRF_INT	equ	CCRF_INTLOW|CCRF_INTMID|CCRF_INTHI
+
+CCRB_SUPER	equ	$D
+CCRF_SUPER	equ	1<CCRB_SUPER
+
+;==============================================================================
+
+	end
+
+;==============================================================================
+

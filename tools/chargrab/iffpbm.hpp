@@ -1,0 +1,69 @@
+//==============================================================================
+// pbm.hpp: header for fucked pbm parser built on iff parser
+//==============================================================================
+/*
+
+Documentation:
+
+	Abstract:
+		IFF PBM reader
+	History:
+			Created	? Kevin T. Seghetti
+			First documented 10-19-92 02:16pm
+
+	Class Hierarchy:
+
+	Dependancies:
+		general
+		iff
+		ilbm
+	Restrictions:
+
+	Example:
+
+*/
+//==============================================================================
+
+#ifndef PCLIB_pbm_H
+#define PCLIB_pbm_H
+
+//==============================================================================
+// Dependancies
+
+#include <pclib/general.hpp>
+#include <pclib/iff.hpp>
+#include "iffilbm.hpp"
+
+//==============================================================================
+// globals
+
+const iffTag tagPBM = MakeTag('P','B','M',' ');
+
+//==============================================================================
+// class declaration
+
+class pbmBODY
+{
+	pbmBODY() { };					// cannot create without bmhd pointer
+
+	errorcode Read( iffRead* s );
+	errorcode Write( iffWrite* s );
+
+public:
+	ilbmBMHD *bmhd;
+	rastGraphPort* rp;
+
+	pbmBODY( rastGraphPort* rp );
+	pbmBODY( iffRead* s, ilbmBMHD* bmhd, rastGraphPort* rp );
+	~pbmBODY();
+	friend iffRead& operator>>( iffRead& s, pbmBODY& body )
+		{ body.Read( &s );  return s; }
+	friend iffWrite& operator<<( iffWrite& s, pbmBODY& body )
+		{ body.Write( &s );  return s; }
+};
+
+//==============================================================================
+
+#endif
+
+//==============================================================================

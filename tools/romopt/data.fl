@@ -1,0 +1,74 @@
+* PROJECT
+
+Ballz (SNES Version)
+Copyright 1994 Cave Logic Studios.  All Rights Reserved.
+
+* TABSIZE
+4
+
+* SEGMENTSIZE
+65536
+
+* INCLUDE
+
+* ASSOCIATIONS
+
+* FILENAMES
+
+brucard.bin
+brucard.bin
+brucard.bin
+obj/coff.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/romopt.obj
+obj/version.obj
+
+
+* END

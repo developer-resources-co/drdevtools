@@ -1,0 +1,28 @@
+; genesis.mac -- Genesis Interface Code
+
+WRITE_VDP_CMD	MACRO
+
+	IFNE SEGA_CD
+	move.w	#CMD_WriteVDPCmd\0,SUB_1M_BASE
+	move.\0	\1,SUB_1M_PARAMS
+	WAIT_FOR_1M_SWAPREQ
+	SWAP_1M
+	ELSEC
+	move.\0	\1,VDP_CMD
+	ENDC
+
+		ENDM
+
+
+WRITE_VDP_DATA	MACRO
+
+	IFNE SEGA_CD
+	move.w	#CMD_WriteVDPData,SUB_1M_BASE
+	move.w	\1,SUB_1M_PARAMS
+	WAIT_FOR_1M_SWAPREQ
+	SWAP_1M
+	ELSEC
+	move.w	\1,VDP_DATA
+	ENDC
+
+		ENDM

@@ -1,0 +1,122 @@
+;==============================================================================
+; general.asm: general purpose code
+;==============================================================================
+
+	opt	llbl
+
+	include 'genesis.equ'
+	include 'default.equ'
+	include 'macros.mac'
+	XREF	randSeed
+	XREF	ReadJoy1
+	XREF	ReadJoy2
+
+	TSECTION	.text
+
+	ds.w	1
+
+;==============================================================================
+;===	Wait:
+;=== 	Inputs:
+;===		d0 = # of frames to wait
+;==============================================================================
+
+	xdef	_Wait
+_Wait:
+	move.l	4(sp),d0
+
+Wait:
+	bra	.Entry
+.Loop
+;	ifdef	SOUND
+;	jsr	SoundTick
+;	endif
+	WAITVB
+.Entry:
+	dbra	d0,.Loop
+	rts
+
+;==============================================================================
+;===	WaitJoyRndSeed: Abortable wait
+;=== 	Inputs:
+;===		d0 = # of frames to wait
+;==============================================================================
+
+	xdef	_WaitJoyRndSeed
+_WaitJoyRndSeed:
+	move.l	4(sp),d0
+
+WaitJoyRndSeed:
+	move.w	d0,d2
+	bra.s	.Entry
+
+.Loop:
+	addq.l	#3,randSeed
+	WAITVBSOUND
+.Entry:
+	jsr	ReadJoy1
+	tst.b	d0
+	bne.s	.Done
+	jsr	ReadJoy2
+	tst.b	d0
+	bne.s	.Done
+
+	dbra	d2,.Loop
+.Done:
+	rts
+
+;==============================================================================
+;	Inputs:
+;		a0-> source memory
+;		a1-> destination memory
+;		d0.w  = # of bytes to copy
+;	Destroys:
+;		d0.w
+;		a0->just after source memory
+;		a1->just after dest memory
+;------------------------------------------------------------------------------
+
+	xdef	_MemCopy
+_MemCopy:
+	move.w	6(sp),d0
+	movea.l	8(sp),a0
+	movea.l	12(sp),a1
+	bra	MemCopy
+
+MemCopyLoop:
+	move.b	(a0)+,(a1)+
+MemCopy:
+	dbra	d0,MemCopyLoop
+	rts
+
+;==============================================================================
+;	Inputs:
+;		a0-> source memory
+;		a1-> destination memory
+;		d0.w  = # of bytes to copy
+;	Destroys:
+;		d0.w
+;------------------------------------------------------------------------------
+
+	xdef	_ReverseMemCopy
+_ReverseMemCopy:
+	move.w	6(sp),d0
+	movea.l	8(sp),a0
+	movea.l	12(sp),a1
+
+ReverseMemCopy:
+	add.w	d0,a0
+	add.w	d0,a1
+	bra	.Entry
+.Loop:
+	move.b	-(a0),-(a1)
+.Entry
+	dbra	d0,.Loop
+	rts
+
+;==============================================================================
+
+	END
+
+;==============================================================================
+

@@ -1,0 +1,32 @@
+;==============================================================================
+; sprite.equ: header file for sprite.asm 
+;==============================================================================
+
+	OFFSET	0
+
+hSpriteVPos		ds.w	1	; vertical position relative to top of logical sprite
+hSpriteSize		ds.b	1	; hardware sprite size bits
+hSpriteLink		ds.b	1	; linkage information(null in file)
+hSpriteFlips
+hSpriteChar		ds.w	1	; flip bits and starting char #
+hSpriteHPos		ds.w	1	; horizontal position relative to left of logical sprite
+hSprite_Size
+
+;------------------------------------------------------------------------------
+; logical sprite format
+
+
+	OFFSET	0
+
+lSpriteXOffset		ds.w	1	; x & y offset in iff file sprite
+lSpriteYOffset		ds.w	1	; was cut from(only used by sprite grabber)
+lSpriteXSize		ds.w	1	; logical sprite x & y size
+lSpriteYSize		ds.w	1
+lSpriteHardXOffset	ds.w	1	; offset from logical sprite to upper left edge
+lSpriteHardYOffset	ds.w	1	; of hardware sprites(used for collision detection)
+lSpriteHardXSize	ds.w	1	; x & y size of hardware sprites
+lSpriteHardYSize	ds.w	1	; (used for collision detection)
+lSpriteCount		ds.w	1       ; # of hardware sprites in this logical sprite
+lSprite_Size
+
+;==============================================================================

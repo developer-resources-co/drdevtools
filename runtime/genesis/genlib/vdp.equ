@@ -1,0 +1,23 @@
+;==============================================================================
+; vdp.equ: structures and definitions for vdp.asm
+;==============================================================================
+
+FIELD_A	EQU	0		; which field for init code
+FIELD_B	EQU	2
+
+;------------------------------------------------------------------------------
+
+fieldStruct	defsseg	ram	
+fieldStruct	segment
+	org	0
+Field_Base	ds.w	1		; address of field in vdp
+Field_Num 	ds.w	1		; field #(0 = a, 1 = b)(this is so we can set the scroll registers
+Field_Width	ds.w	1		; width of playfield in vdp
+Field_Height	ds.w	1		; height of playfield in vdp
+
+Field_Size
+
+;==============================================================================
+	end
+;==============================================================================
+

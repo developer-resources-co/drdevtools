@@ -1,0 +1,265 @@
+;============================================================================
+;===    Genesis.equ: equates for genesis 		                  ===
+;===    (c) 1991 Developer Resources                                      ===
+;============================================================================
+
+;==============================================================================
+; joystick equates
+;----------------------------------------------------------------------------
+; Bit 0 = up / Bit 1 = Down / Bit 2 = Left / Bit 3 = Right
+; Bit 4 = B  / Bit 5 = C    / Bit 6 = A    / Bit 7 = START
+
+JOYB_UP         EQU     0
+JOYB_DOWN       EQU     1
+JOYB_LEFT       EQU     2
+JOYB_RIGHT      EQU     3
+JOYB_B          EQU     4
+JOYB_C          EQU     5
+JOYB_A          EQU     6
+JOYB_START      EQU     7
+
+JOYF_UP         EQU     1
+JOYF_DOWN       EQU     2
+JOYF_LEFT       EQU     4
+JOYF_RIGHT      EQU     8
+JOYF_B          EQU     $10
+JOYF_C          EQU     $20
+JOYF_A          EQU     $40
+JOYF_START      EQU     $80
+
+;============================================================================
+; vdp equates
+
+CHARSIZE	EQU     32
+CHARNUMCOLS	EQU	16			; number of colors per character
+VDPSIZE		EQU	$10000
+
+
+VDP_REG0	EQU	$8000
+VDP_REG1	EQU	$8100
+VDP_REG2	EQU	$8200
+VDP_REG3	EQU	$8300
+VDP_REG4	EQU	$8400
+VDP_REG5	EQU	$8500
+VDP_REG6	EQU	$8600
+VDP_REG7	EQU	$8700
+VDP_REG8	EQU	$8800
+VDP_REG9	EQU	$8900
+VDP_REG10	EQU	$8A00
+VDP_REG11	EQU	$8B00
+VDP_REG12	EQU	$8C00
+VDP_REG13	EQU	$8D00
+VDP_REG14	EQU	$8E00
+VDP_REG15	EQU	$8F00
+VDP_REG16	EQU	$9000
+VDP_REG17	EQU	$9100
+VDP_REG18	EQU	$9200
+VDP_REG19	EQU	$9300
+VDP_REG20	EQU	$9400
+VDP_REG21	EQU	$9500
+VDP_REG22	EQU	$9600
+VDP_REG23	EQU	$9700
+
+;------------------------------------------------------------------------------
+
+VDP_REG_MODESET1	EQU	$8000
+VDP_REG_MODESET2       	EQU	$8100
+VDP_REG_FIELDABASE     	EQU	$8200
+VDP_REG_WINDOWBASE     	EQU	$8300
+VDP_REG_FIELDBBASE     	EQU	$8400
+VDP_REG_SPRITEBASE     	EQU	$8500
+VDP_REG_BACKCOLOR      	EQU	$8700
+VDP_REG_HINTERUPT      	EQU	$8A00
+VDP_REG_MODESET3       	EQU	$8B00
+VDP_REG_MODESET4       	EQU	$8C00
+VDP_REG_HSCROLLBASE    	EQU	$8D00
+VDP_REG_AUTOINCSIZE    	EQU	$8F00
+VDP_REG_FIELDSIZE     	EQU	$9000
+VDP_REG_WINDOWHPOS     	EQU	$9100
+VDP_REG_WINDOWVPOS     	EQU	$9200
+VDP_REG_DMALENLOW      	EQU	$9300
+VDP_REG_DMALENHIGH     	EQU	$9400
+VDP_REG_DMASOURCELOW   	EQU	$9500
+VDP_REG_DMASOURCEMID  	EQU	$9600
+VDP_REG_DMASOURCEHIGH  	EQU	$9700
+
+;------------------------------------------------------------------------------
+
+VDP_DMA_START	EQU	$00000080
+
+VDP_MODE_VRW    EQU     $40000000
+VDP_MODE_CRW    EQU     $C0000000
+VDP_MODE_VSW    EQU     $40000010
+VDP_MODE_VRR    EQU     $00000000
+VDP_MODE_CRR    EQU     $00000020
+VDP_MODE_VSR    EQU     $00000010
+
+VDP_STATB_PAL   EQU     $0
+VDP_STATB_DMA   EQU     $1
+VDP_STATB_HB    EQU     $2
+VDP_STATB_VB    EQU     $3
+VDP_STATB_ODD   EQU     $4
+VDP_STATB_C     EQU     $5
+VDP_STATB_SOVR  EQU     $6
+VDP_STATB_F     EQU     $7
+VDP_STATB_FULL  EQU     $8
+VDP_STATB_EMPT  EQU     $9
+
+VDP_STATF_PAL   EQU     $1
+VDP_STATF_DMA   EQU     $2
+VDP_STATF_HB    EQU     $4
+VDP_STATF_VB    EQU     $8
+VDP_STATF_ODD   EQU     $10
+VDP_STATF_C     EQU     $20
+VDP_STATF_SOVR  EQU     $40
+VDP_STATF_F     EQU     $80
+VDP_STATF_FULL  EQU     $100
+VDP_STATF_EMPT  EQU     $200
+
+VDP_R0F_REQ     EQU     $4              ; required on bits
+VDP_R0F_HINT    EQU     $10
+VDP_R0F_HVCOUNT EQU     $2
+
+VDP_R0B_HBLANK  EQU     $4
+VDP_R0B_HVCOUNT EQU     $1
+
+VDP_R1F_REQ     EQU     $4              ; required on bits
+VDP_R1F_DISP    EQU     $40
+VDP_R1F_VINT    EQU     $20
+VDP_R1F_DMAEN   EQU     $10
+VDP_R1F_30CELL  EQU     $80
+
+VDP_R1B_DISP    EQU     $7
+VDP_R1B_VINT    EQU     $6
+VDP_R1B_DMAEN   EQU     $5
+VDP_R1B_30CELL  EQU     $4
+
+VDP_R11F_EXINT  EQU     $8
+VDP_R11F_VSCR   EQU     $4
+VDP_R11F_HFULL  EQU     $0
+VDP_R11F_H1CELL EQU     $2
+VDP_R11F_H1LINE EQU     $3
+
+VDP_R11B_IE2    EQU     $3
+VDP_R11B_VSCR   EQU     $2
+
+VDP_R12F_STE    EQU     $4
+VDP_R12F_LACE   EQU     $2
+VDP_R12F_DLACE  EQU     $6
+VDP_R12F_H32    EQU     $0
+VDP_R12F_H40    EQU     $81
+VDP_R12B_STE    EQU     $3
+
+VDP_R16F_SCRV32 EQU     $0
+VDP_R16F_SCRV64 EQU     $10
+VDP_R16F_SCRV128 EQU    $30
+VDP_R16F_SCRH32 EQU     $0
+VDP_R16F_SCRH64 EQU     $1
+VDP_R16F_SCRH128 EQU    $3
+
+VDP_R16F_SCRY32 EQU     $0
+VDP_R16F_SCRY64 EQU     $10
+VDP_R16F_SCRY128 EQU    $30
+VDP_R16F_SCRX32 EQU     $0
+VDP_R16F_SCRX64 EQU     $1
+VDP_R16F_SCRX128 EQU    $3
+
+VDP_R17F_WINRIGT EQU    $80
+VDP_R17B_WINRIGT EQU    $7
+
+VDP_R18F_WINDOWN EQU    $80
+VDP_R18B_WINDOWN EQU    $7
+
+VDP_R23F_DMACOPY EQU     $0
+VDP_R23F_DMAFILL EQU    $80
+VDP_R23F_DMAVDPVDP EQU     $C0
+
+;----------------------------------------------------------------------------
+
+VDP_DATA        EQU	$C00000
+VDP_CMD         EQU	$C00004
+VDP_HVCOUNT     EQU	$C00008
+VDP_RASTER      EQU	VDP_HVCOUNT
+
+;VDP_HSCROLL_SIZE	EQU	2*2*224
+
+;----------------------------------------------------------------------------
+; character equates
+
+CHARF_XFLIP	EQU	$0800
+CHARB_XFLIP	EQU	$b
+CHARF_HFLIP	EQU	$0800
+CHARB_HFLIP	EQU	$b
+
+CHARF_YFLIP	EQU	$1000
+CHARB_YFLIP	EQU	$c
+CHARF_VFLIP	EQU	$1000
+CHARB_VFLIP	EQU	$c
+
+CHARF_PAL0	EQU	$0000
+CHARF_PAL1	EQU	$2000
+CHARF_PAL2	EQU	$4000
+CHARF_PAL3	EQU	$6000
+
+CHARF_PRI	EQU	$8000
+CHARB_PRI	EQU	$f
+
+;----------------------------------------------------------------------------
+; sprite equates
+
+SPRITEF_XFLIP	EQU	$0800
+SPRITEB_XFLIP	EQU	$b
+SPRITEF_HFLIP	EQU	$0800
+SPRITEB_HFLIP	EQU	$b
+
+SPRITEF_YFLIP	EQU	$1000
+SPRITEB_YFLIP	EQU	$c
+SPRITEF_VFLIP	EQU	$1000
+SPRITEB_VFLIP	EQU	$c
+
+SPRITEF_PAL0	EQU	$0000
+SPRITEF_PAL1	EQU	$2000
+SPRITEF_PAL2	EQU	$4000
+SPRITEF_PAL3	EQU	$6000
+
+SPRITEF_PRI	EQU	$8000
+SPRITEB_PRI	EQU	$f
+
+SPRITEATTR_SIZE	EQU	8
+
+;==============================================================================
+; sound equates
+
+PSG		equ	$c00011
+
+PSGB_FEEDBACK	equ	$2
+PSGF_FEEDBACK	equ	$4
+
+PSG_NOISELOW	equ	$0
+PSG_NOISEMIDDLE	equ	$1
+PSG_NOISEHIGH	equ	$2
+PSG_NOISETRACK3	equ	$3
+
+;============================================================================
+; Z80 equates
+
+Z80_CONTR	equ	$a11100
+Z80_RESET	equ	$a11200
+
+Z80B_BUSREQ	equ	8
+Z80F_BUSREQ	equ	1<<Z80B_BUSREQ
+
+Z80B_NORESET	equ	8
+Z80F_NORESET	equ	1<<Z80B_NORESET
+
+Z80_BASE	equ	$a00000
+
+;============================================================================
+
+RAMBASE	EQU	$FF0000
+
+	END
+
+;============================================================================
+
+

@@ -1,0 +1,1235 @@
+					GENESIS LIBRARY DOCUMENTATION:		Last Update 5/5/1993
+					^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+
+MACROS:
+~~~~~~~
+
+InputBooleans( inputStruct )										INPUT.H
+------------------------------------------------------------------------------
+
+
+
+InputBooleansDownEdge( inputStruct )								INPUT.H
+------------------------------------------------------------------------------
+
+
+
+InputBooleansUpEdge( inputStruct )									INPUT.H
+------------------------------------------------------------------------------
+
+
+
+InputProportionalX( inputStruct )									INPUT.H
+------------------------------------------------------------------------------
+
+
+
+InputProportionalY( inputStruct )									INPUT.H
+------------------------------------------------------------------------------
+
+
+
+InputType( inputStruct )											INPUT.H
+------------------------------------------------------------------------------
+
+
+
+
+
+
+FUNCTIONS:
+~~~~~~~~~~
+
+AddAnimatedMap														MAPANIM.H
+------------------------------------------------------------------------------
+	PUBLIC void AddAnimatedMap( short, short, short, const TMapAnim *, short )
+
+		AddAnimatedSprite:  Takes following parameters
+		short xPos (pixels)
+		short yPos (pixels)
+		short desc (first char, flip, palette )
+		const TMapAnim * (pointer to animation to play )
+		short frame (which frame to display out of the anim.  Not checked
+
+
+
+AddAnimatedSprite													SPANIM.H
+------------------------------------------------------------------------------
+	PUBLIC void AddAnimatedSprite( short x, short y, short desc,
+								   const TSpriteAnim *spa, short frame )
+
+
+
+AddLSprite															SPRITE.H
+------------------------------------------------------------------------------
+	void AddLSprite( void *pSpriteStruct, unsigned int x, unsigned int y,
+					 unsigned int nSpriteDescriptor )
+
+
+
+AddMagicMap															MAPANIM.H
+------------------------------------------------------------------------------
+	PUBLIC void AddMagicMap(  )
+
+		AddMagicSprite:  Takes on pointer to an object, takes all of it's
+		parameters from there.
+		Following data must be meaningful:
+		p->xPos, p->yPos, a->nAnimToPlay, a->nPhase, & a->wSpriteStat.
+
+
+
+AddMagicSprite														SPANIM.H
+------------------------------------------------------------------------------
+	PUBLIC void AddMagicSprite();
+
+
+
+AddMSprite															MSPRITE.H
+------------------------------------------------------------------------------
+	PUBLIC char *AddMSprite( short n,short xOffset, short yOffset,
+							 short desc, TMapData *pMapData, char *cChar,
+							 TLogicalSpriteData *pLSprite )
+
+
+
+ButtonDispatch														JOY.H
+------------------------------------------------------------------------------
+	void ButtonDispatch( void(*p[])(), void *a2val, int nJoyValue )
+
+
+
+ButtonRelease														JOY.H
+------------------------------------------------------------------------------
+	void ButtonRelease()
+
+
+
+
+CharWithinMap														MSPRITE.H
+------------------------------------------------------------------------------
+	PUBLIC short CharWithinMap( TMapData *pMapData, short x, short y )
+
+
+
+ClearFieldA															VDP.H
+------------------------------------------------------------------------------
+	extern void ClearFieldA( void )
+
+- clears VDP background plane area A
+
+
+ClearFieldB															VDP.H
+------------------------------------------------------------------------------
+	void ClearFieldB( void )
+
+- clears VDP background plane area B
+
+
+ClearMSpriteTable													MSPRITE.H
+------------------------------------------------------------------------------
+	PUBLIC void ClearMSpriteTable( short )
+
+- clears mapped sprite area
+- called at beginning of main game loop
+
+
+ClearSpriteTable( void )											SPRITE.H
+------------------------------------------------------------------------------
+	void ClearSpriteTable( void )
+
+- clears sprite area
+- called at beginning of main game loop
+
+
+ColorCycle															CDEBUG.H
+------------------------------------------------------------------------------
+	void ColorCycle( short baseNum )
+
+
+
+ComputeDistance														FIELD.H
+------------------------------------------------------------------------------
+	short ComputeDistance( CRender *p1, CRender *p2 )
+
+- returns distance in pixels between two objects
+
+
+
+ComputePointDistance												FIELD.H
+------------------------------------------------------------------------------
+	short ComputePointDistance( short xPos1, short yPos1, short xPos2,
+								short yPos2 )
+
+- returns distance in pixels between two points
+
+
+ComputeRectDistance													FIELD.H
+------------------------------------------------------------------------------
+	short ComputeRectDistance( CRender *p1, CRender *p2 )
+
+- compares distance of the x coordinates and y coordinates and returns
+  the greater of the two
+- much faster than ComputeDistance but less accurate
+
+
+ComputeXDelta														FIELD.H
+------------------------------------------------------------------------------
+	short ComputeXDelta( CRender *p1, CRender *p2 )
+
+- return the distance between the x coordinates
+
+
+ComputeXPointDelta													FIELD.H
+------------------------------------------------------------------------------
+	short ComputeXPointDelta(short xPos1, short xPos2)
+
+- return the distance between the x coordinates
+
+
+
+ComputeYDelta														FIELD.H
+------------------------------------------------------------------------------
+	short ComputeYDelta(CRender *p1, CRender *p2)
+
+- return the distance between the y coordinates
+
+
+ComputeYPointDelta													FIELD.H
+------------------------------------------------------------------------------
+	short ComputeYPointDelta( short yPos1, short yPos2 )
+
+- return the distance between the y coordinates
+
+
+CopySprites															SPRITE.H
+------------------------------------------------------------------------------
+	void CopySprites( short addr )
+
+
+- copies sprite characters to VDP
+- used in main game loop
+
+
+CountSpriteChars													MSPRITE.H
+------------------------------------------------------------------------------
+	PUBLIC short CountSpriteChars( TLogicalSpriteData *ls )
+
+
+
+
+Crash																CDEBUG.H
+------------------------------------------------------------------------------
+	void Crash( char *text )
+
+- display text on screen and halt program
+
+
+CrashCallback														DEBUG.H
+------------------------------------------------------------------------------
+	void CrashCallback( void (*)() )
+
+
+
+CrossFade															EFFECTS.H
+------------------------------------------------------------------------------
+	extern void CrossFade( short nStartingColor, short nCrossFadeColors,
+						   short nFramesToWait,	void *pSourceColors,
+						   void	*pDestinationColors )
+
+		nStartingColor:		 first color to fade from
+		nCrossFadeColors:	 number of colors to fade
+		nFramesToWait:		 frames to delay between fade steps
+		*pSourceColors:		 pointer to source colors
+		*pDestinationColors: pointer to dest colors
+
+		pre:  nFramesToWait is the number of frames to wait between fade steps - 1
+			  e.g. for 4 frame delay set this to 3
+		post: fades from source colors to destination colors*/
+
+
+
+DecompressToRam														COMPRESS.H
+------------------------------------------------------------------------------
+	void DecompressToRam( TComprData *data, ubyte *buffer )
+
+
+
+DecompressToVDP														COMPRESS.H
+------------------------------------------------------------------------------
+	void DecompressToVDP( TComprData *data, uword vdpAddr )
+
+
+
+DeferedDMACopy														VDP.H
+------------------------------------------------------------------------------
+	extern void *DeferedDMACopy( unsigned short wVDPAddr,
+								 unsigned short nWords,
+								 void *pDMAData, void* pBuffer );
+- moves data into a DMA buffer for transfer to the VDP
+  at a later time
+
+
+
+
+
+DMACopy																VDP.H
+------------------------------------------------------------------------------
+	short DMACopy( short base, short count, void *data )
+
+
+
+DoNothing															BASE.H
+------------------------------------------------------------------------------
+	extern void *DoNothing()
+
+
+
+DownloadMappedSprites												MSPRITE.H
+------------------------------------------------------------------------------
+	PUBLIC void DownloadMappedSprites( short n )
+
+- copies mapped sprite data to DMA buffer
+- used in main game loop
+
+
+ExecuteDeferedDMA													VDP.H
+------------------------------------------------------------------------------
+	extern void ExecuteDeferedDMA( void *pDeferDMAArray,
+
+- copies characters in DMA buffer to VDP								   unsigned short nDMACount )
+
+
+
+ExtendedMapAlign													SURFMAP.H
+------------------------------------------------------------------------------
+	extern BOOL ExtendedMapAlign( TSurfMap *poMapStruct, short xPos,
+								   short yPos )
+
+- performs surfmap map alignment
+- checks not only current tile, but also tile above and below for
+  contour information
+
+
+FillString															TEXT.H
+------------------------------------------------------------------------------
+	extern void FillString( char *sString, char cChar, short nBytes )
+
+		pre:  sString is the empty string
+			  cChar is the character with which to fill the string
+			  nBytes is the number of times to repeat the character
+		post: fills the string with the given character
+
+
+
+FindObjectTile														FIELD.H
+------------------------------------------------------------------------------
+	BOOL FindObjectTile( UWORD, UWORD *, UWORD * )
+
+- searches map for the specifed object tile
+- calling again with tile ID of 0 means find next occurance
+
+
+FindSpecialTile														FIELD.H
+------------------------------------------------------------------------------
+	BOOL FindSpecialTile( UWORD, UWORD *, UWORD * )
+
+- searches map for the specifed special tile
+- calling again with tile ID of 0 means find next occurance
+
+
+
+gemsinit															GEMS.H
+------------------------------------------------------------------------------
+void gemsinit( char *patchbankptr, char *envbankptr,
+			   char *seqbankptr, char *sampbankptr )
+
+- initializes gems music driver
+
+
+
+gemslockchannel														GEMS.H
+------------------------------------------------------------------------------
+	void gemslockchannel( short channel )
+
+- lock a channel for use with sound effects
+
+
+
+gemsmute															GEMS.H
+------------------------------------------------------------------------------
+	void gemsmute( short song, short channel, short val )
+
+- mute a channel of a song
+- val = 1 is mute, val = 0 is enabled
+
+
+
+gemsnoteon															GEMS.H
+------------------------------------------------------------------------------
+	void gemsnoteon( short channel, short notenum )
+
+- turn on notenum() on channel
+
+
+
+gemsnoteoff															GEMS.H
+------------------------------------------------------------------------------
+	void gemsnoteoff( short channel, short notenum )
+
+- turn off notenum on channel
+
+
+
+gemspauseall														GEMS.H
+------------------------------------------------------------------------------
+	void gemspauseall( void )
+
+- pause all active sequences
+
+
+
+gemspitchbend														GEMS.H
+------------------------------------------------------------------------------
+	void gemspitchbend( short channel, short bendamt )
+
+- bend the note on channel by bendamt(signed 8-bit frac # semi-tones
+
+
+
+gemsprogchange														GEMS.H
+------------------------------------------------------------------------------
+	void gemsprogchange( short channel, short newprog )
+
+- change the patch to newprog on channel
+
+
+
+gemsreadmbox														GEMS.H
+------------------------------------------------------------------------------
+	short gemsreadmbox( short mbox )
+
+- read a value from a mailbox
+- legal mailbox #s are 0..29, values are 0..127
+
+
+
+gemsresumeall														GEMS.H
+------------------------------------------------------------------------------
+	void gemsresumeall( void )
+
+- resume all paused sequences
+
+
+
+
+gemsretrigenv														GEMS.H
+------------------------------------------------------------------------------
+	void gemsretrigenv( short channel, short val )
+
+- turn on/off the note-on retrigger mode on channel
+- val = 80h is on, val = 0 is off(explicit envelope trigger)
+
+
+
+gemssamprate														GEMS.H
+------------------------------------------------------------------------------
+	void gemssamprate( short channel, short rate )
+
+- set the digital playback rate on channel
+- rate = 4 means dont override rate in sample bank
+- rate = 5 means play samples back at 10.4 kHz; see docs for more
+
+
+
+gemssetenv															GEMS.H
+------------------------------------------------------------------------------
+	void gemssetenv( short channel, short envnum )
+
+- change the pitch modulator to envnum on channel
+- trigger the envelope if not in note-on retrigger mode
+
+
+
+gemssetprio															GEMS.H
+------------------------------------------------------------------------------
+	void gemssetprio( short channel, short priority )
+
+- set the note on priority for a channel
+
+
+
+gemssettempo														GEMS.H
+------------------------------------------------------------------------------
+	void gemssettempo( short newtempo )
+
+- set the global tempo value in beats per minute
+
+
+
+gemsstartsong														GEMS.H
+------------------------------------------------------------------------------
+	void gemsstartsong( short seqno );
+
+- start a sequence
+
+
+
+gemsstopall															GEMS.H
+------------------------------------------------------------------------------
+	void gemsstopall( void )
+
+- stop all sequences
+
+
+
+gemsstopsong														GEMS.H
+------------------------------------------------------------------------------
+	void gemsstopsong( short seqno )
+
+- stop a sequence
+
+
+
+gemsstorembox														GEMS.H
+------------------------------------------------------------------------------
+	void gemsstorembox( short mbox, short val )
+
+- store a value in a mailbox
+- legal mailbox #s are 0..29, values are 0..127
+
+
+
+gemssustain															GEMS.H
+------------------------------------------------------------------------------
+	void gemssustain(short channel, short val)
+
+- turn on/off the sustain mode on channel
+- val = 80h is on, val = 0 is off
+
+
+
+gemsunlockchannel													GEMS.H
+------------------------------------------------------------------------------
+	void gemsunlockchannel(short channel)
+
+- unlock a channel when done with making sound effects on it
+
+
+
+GetLargestAnimFrame													SPANIM.H
+------------------------------------------------------------------------------
+	PUBLIC short GetLargestAnimFrame( const TSpriteAnim **anims )
+
+- returns the number of characters of the largest animation frame in
+  an entire animation set
+- used when reserving space for permanent sprites
+
+
+
+GetMetaTileCoord													FIELD.H
+------------------------------------------------------------------------------
+	void GetMetaTileCoord( UWORD, UWORD, UWORD *, UWORD * )
+
+- returns the metatile coordinates bases on specified tile coordinate
+
+
+GetMetaTileNumber													FIELD.H
+------------------------------------------------------------------------------
+	UWORD GetMetaTileNumber( UWORD, UWORD )
+
+- returns the meta tile ID based on specified tile coordinate
+
+
+GetScrollRegs														SCROLL.H
+------------------------------------------------------------------------------
+	short GetScrollRegs( void )
+
+- read contents of hardware baackground scroll registers
+
+
+GetTextString														TEXT.H
+------------------------------------------------------------------------------
+	extern void GetTextString( char *sBuffer, void *pInputStructure,
+							   short nChars )
+
+		pre:  sBuffer is the area to store the string
+			  pInputStructure is the way to get the characters
+			  nChars is the number of characters to get
+		post: reads the number of chars into the buffer
+
+- read in text from joystick
+
+
+GetTileID															FIELD.H
+------------------------------------------------------------------------------
+	void GetTileID( UWORD, UWORD, UWORD *, UWORD *, UWORD * )
+
+- returns the object, special and contour IDs at the specified
+  x,y tile
+
+
+
+
+InitAnim															ANIMPLAY.H
+------------------------------------------------------------------------------
+	extern void InitAnim( short xOffset, short yOffset, short nCharBase,
+					  short nField, void *pAnimStruct, void *pMapPointers )
+
+		pre:  nField is either FIELD_A or FIELD_B
+			  pAnimStruct is uninitialized
+			  pMapPointers is an array of map pointers, zero terminated
+		post: initializes animation
+
+
+
+
+
+InitInput															INPUT.H
+------------------------------------------------------------------------------
+	void InitInput( TInput * )
+
+
+
+InitMetaScroll														SCROLL.H
+------------------------------------------------------------------------------
+	void InitMetaScroll( short xCoordinate,	short yCoordinate,
+						 short nFirstChar, short nField,
+						 TScrollField *pScrollStruct,
+						 const TMetaCharMap *pMap, const TMetaMap *pMetaMap,
+						 const TXlateTable *Xlation )
+
+- provides the 4-way wrap met a tiel scrolling routines with
+  the information needed to function
+
+InitMSprites														MSPRITE.H
+------------------------------------------------------------------------------
+	PUBLIC void InitMSprites( short n, short nNumCharsToMalloc )
+
+- initialize the mapped sprite routine
+- called once at start of game
+
+
+
+
+InitSprites															SPRITE.H
+------------------------------------------------------------------------------
+	void InitSprites( short firstChar )
+
+
+
+
+
+InitText															TEXT.H
+------------------------------------------------------------------------------
+	extern void InitText( short nVDPCharSet )
+
+		pre:  nVDPCharSet is the character set base address
+		post: initializes text stuff
+
+- initializes text routine and download the text characters to
+  the VDP
+
+
+InitVDP																VDP.H
+------------------------------------------------------------------------------
+	void InitVDP( char * )
+
+
+
+InitVM																VMALLOC.H
+------------------------------------------------------------------------------
+	PUBLIC void InitVM(void)
+
+
+
+IntersectCamera														FIELD.H
+------------------------------------------------------------------------------
+	BOOL IntersectCamera(CCamera *p, CRender *p)
+
+- returns TRUE if specified object is within field of view
+
+
+
+LoadChars															VDP.H
+------------------------------------------------------------------------------
+	short LoadChars( TCharSetData *charset )
+
+- load characters into VDP and return starting character position
+
+
+MakeMapSpriteChars													MSPRITE.H
+------------------------------------------------------------------------------
+	PUBLIC static char *MakeMapSpriteChars( TMapData *pMapData,
+											char *pChar, char *pBuffer,
+											TLogicalSpriteData *pLSprite )
+
+
+
+MapAlign															SURFMAP.H
+------------------------------------------------------------------------------
+	extern BOOL MapAlign( TSurfMap	*poMapStruct, short	xPos, short	yPos )
+
+
+- adjusts the objects x,y coordinates in the surface map structure
+  to be aligned to contour tiles
+
+
+MapInit																SURFMAP.H
+------------------------------------------------------------------------------
+	extern void MapInit( TSurfMap *poMapStruct,
+						 const TMetaCharMap *poMetaCharMap,
+						 const TMetaMap	*poMetaMap,
+					 	 const TFloorTable *poFloorTable,
+					 	 const TContourDef *poContour,
+					 	 const TContourDef *poCrossContour, UWORD wCrossID )
+
+- initiailze surfmap map manager
+
+
+MapManagerInit														FIELD.H
+------------------------------------------------------------------------------
+	void MapManagerInit( const TMetaCharMap *, const TMetaMap *,
+						 const TFloorTable * )
+
+- initial map manager
+
+
+MapMove																SURFMAP.H
+------------------------------------------------------------------------------
+	extern UWORD MapMove( TSurfMap *poMapStruct, short nDeltaX )
+
+- move the specifed object nDeltaX pixels and adjust the objects height
+  to be aligned to the surfmap
+- returns status (success, tileInterrupt, NoContourInfo)
+
+
+
+
+
+MusicInit															MUSIC.H
+------------------------------------------------------------------------------
+	PUBLIC void MusicInit( char *, char *, char *, char * )
+
+- initialize Music Manager
+
+
+
+MusicPauseAll														MUSIC.H
+------------------------------------------------------------------------------
+	PUBLIC void MusicPauseAll( void )
+
+
+- pause all music sequences
+
+
+
+MusicPlayBackgroundSeq												MUSIC.H
+------------------------------------------------------------------------------
+	PUBLIC void MusicPlayBackgroundSeq( void )
+
+- play a background sequence
+- must be chosen by MusicSetBackgroundSeq() function
+
+
+MusicPlayInterruptSeq												MUSIC.H
+------------------------------------------------------------------------------
+	PUBLIC void MusicPlayInterruptSeq( void )
+
+- stop background music and play interrupt music sequences
+- must be chosen by MusicSetInterruptSeq() function
+
+
+
+MusicPlayOverdubSeq													MUSIC.H
+------------------------------------------------------------------------------
+	PUBLIC void MusicPlayOverdubSeq( short )
+
+- play overdub sequence over top of background sequence
+
+
+MusicResumeAll														MUSIC.H
+------------------------------------------------------------------------------
+	PUBLIC void MusicResumeAll( void )
+
+
+- resume all paused sequences
+
+
+MusicSetBackgroundSeq												MUSIC.H
+------------------------------------------------------------------------------
+	PUBLIC void MusicSetBackgroundSeq( TMusicBackSeq * )
+
+- set the sequence number of the background music to be played
+- must call MusicPlayBackgroundSeq to start sequence
+
+
+MusicSetInterruptSeq												MUSIC.H
+------------------------------------------------------------------------------
+	PUBLIC void MusicSetInterruptSeq( TMusicIntSeq * )
+
+- set the sequence number of the interrupt music to be played
+- must call MusicPlayInterruptSeq to start sequence
+
+
+MusicStopBackgroundSeq												MUSIC.H
+------------------------------------------------------------------------------
+	PUBLIC void MusicStopBackgroundSeq( void )
+
+- stop current background sequence
+
+
+MusicStopInterruptSeq												MUSIC.H
+------------------------------------------------------------------------------
+	PUBLIC void MusicStopInterruptSeq( void )
+
+- stop current interrupt sequence
+
+
+MusicStopOverdubSeq													MUSIC.H
+------------------------------------------------------------------------------
+	PUBLIC void MusicStopOverdubSeq( void )
+
+- stop current overdub sequence
+
+
+ObjInObj															FIELD.H
+------------------------------------------------------------------------------
+	BOOL ObjInObj( CRender *, CRender * )
+
+- returns true if the two object overlap
+- takes into account vertical and horizontal map wrap aound
+
+
+
+
+ObjInRelativeRect													FIELD.H
+------------------------------------------------------------------------------
+	BOOL ObjInRelativeRect( CRender *p1, short left, short top,
+				 short right, short bottom, CRender *p2 )
+
+- returns true if the two object overlap
+- can specify an adjustment for all four side of the first object's
+  bounding rectangle
+
+
+PixelToTile															FIELD.H
+------------------------------------------------------------------------------
+	void PixelToTile( short, short, UWORD *, UWORD * )
+
+- converts pixel coordinates to tile coordinates
+
+
+PlotMapA															VDP.H
+------------------------------------------------------------------------------
+	void PlotMapA( short x, short y, short base, void *map )
+
+
+
+PlotMapB															VDP.H
+------------------------------------------------------------------------------
+	void PlotMapB( short nXPosition, short nYPosition, long iCharOffset,
+				   void *pMap )
+
+
+
+PlotMapField														VDP.H
+------------------------------------------------------------------------------
+	void PlotMapField( short nXPosition, short nYPosition, long iCharOffset,	VDP.H
+					   void *pFieldStructure, void *pMap )
+
+
+
+PlotMapWindow														VDP.H
+------------------------------------------------------------------------------
+	void PlotMapWindow( short nXPosition, short nYPosition,
+						long iCharOffset, void *pMap )
+
+
+
+PlotMapXFlipA														VDP.H
+------------------------------------------------------------------------------
+	void PlotMapXFlipA( short nXPosition, short nYPosition,
+						long iCharOffset, void *pMap )
+
+
+
+PlotMapXFlipB														VDP.H
+------------------------------------------------------------------------------
+	void PlotMapXFlipB( short nXPosition, short nYPosition,
+						long iCharOffset, void *pMap )
+
+
+
+PlotMapXYFlipA														VDP.H
+------------------------------------------------------------------------------
+	void PlotMapXYFlipA( short nXPosition, short nYPosition,
+						 long iCharOffset,	VDP.H void *pMap )
+
+
+
+PlotMapXYFlipB														VDP.H
+------------------------------------------------------------------------------
+	void PlotMapXYFlipB( short nXPosition, short nYPosition,
+						 long iCharOffset, void *pMap )
+
+
+
+PlotMapYFlipA														VDP.H
+------------------------------------------------------------------------------
+	void PlotMapYFlipA( short nXPosition, short nYPosition,
+						long iCharOffset, void *pMap )
+
+
+
+PlotMapYFlipB														VDP.H
+------------------------------------------------------------------------------
+	void PlotMapYFlipB( short nXPosition, short nYPosition,
+						long iCharOffset, void *pMap )
+
+
+
+PlotWrapA															VDP.H
+------------------------------------------------------------------------------
+	void PlotWrapA( short x, short y, short base, void *map )
+
+
+
+PlotWrapB															VDP.H
+------------------------------------------------------------------------------
+	void PlotWrapB( short x, short y, short base, void *map )
+
+
+
+PointInObj															FIELD.H
+------------------------------------------------------------------------------
+	BOOL PointInObj( short, short, CRender * )
+
+- returns true if the point is within the rectangle
+- takes into account vertical and horizontal map wrap-around
+
+
+
+
+
+PrintChar															TEXT.H
+------------------------------------------------------------------------------
+	extern void PrintChar( char c )
+
+		pre:  c is the character to print
+		post: prints the character
+
+
+
+PrintDecimalCount													TEXT.H
+------------------------------------------------------------------------------
+	extern void PrintDecimalCount( long iValue, short nDigits )
+
+		pre:  iValue is the decimal value to print; must be less than 99,999
+	  		  nDigits is the number of digits to print
+		post: prints the number of digits of the value
+
+
+
+PrintHex16															TEXT.H
+------------------------------------------------------------------------------
+	extern void PrintHex16( short nValue )
+
+		pre:  nValue is the hex value to print
+		post: prints the value
+
+
+
+PrintHex32															TEXT.H
+------------------------------------------------------------------------------
+	extern void PrintHex32( long iValue )
+
+		pre:  iValue is the hex value to print
+		post: prints the value
+
+
+
+PrintHex8															TEXT.H
+------------------------------------------------------------------------------
+	extern void PrintHex8( char cValue )
+
+		pre:  cValue is the hex value to print
+		post: prints the value
+
+
+
+PrintRegs															DEBUG.H
+------------------------------------------------------------------------------
+	void PrintRegs(	void )
+
+
+
+PrintText															TEXT.H
+------------------------------------------------------------------------------
+	extern char *PrintText( char *sString )
+
+		pre:  sString is the string to print
+		post: prints the string returns a pointer to just beyond the end of
+			  the string.
+
+
+
+PrintTextCount														TEXT.H
+------------------------------------------------------------------------------
+	extern char *PrintTextCount( char *sString, short nChars )
+
+		pre:  sString is the string to print nChars is the number of
+			  characters to print.
+		post: prints the number of characters of the string returns a
+			  pointer to just beyond the end of the string.
+
+
+
+RandomNum															MATH.H
+-----------------------------------------------------------------------------
+	UWORD RandomNum( void )
+
+
+
+RandomSeed															MATH.H
+------------------------------------------------------------------------------
+	void RandomSeed( UWORD seed )
+
+
+
+ReadInput															INPUT.H
+------------------------------------------------------------------------------
+	uword ReadInput( TInput * )
+
+
+
+ReadJoy1															JOY.H
+------------------------------------------------------------------------------
+	unsigned short ReadJoy1( void )
+
+
+
+ReadJoy2															JOY.H
+------------------------------------------------------------------------------
+	unsigned short ReadJoy2( void )
+
+
+
+RenderList															RENDER.H
+------------------------------------------------------------------------------
+	PUBLIC void RenderList( unsigned short nList )
+
+- renders the sprites of any obejct which is visable and active in the
+  specified list
+
+
+RenderSemiPermSprite												SPANIM.H
+------------------------------------------------------------------------------
+	PUBLIC void RenderSemiPermSprite(  )
+
+- display a semi-permanent sprite
+
+
+RenderSprite														SPANIM.H
+------------------------------------------------------------------------------
+	PUBLIC void RenderSprite(  )
+
+- display a normal sprite
+
+
+
+RestoreCursor														TEXT.H
+------------------------------------------------------------------------------
+	extern void RestoreCursor( long iCursor )
+
+		pre:  hiword of iCursor is cursorY, loword is cursorX
+		post: restores cursor location from iCursor
+
+
+
+SafeSetAnimation													SPANIM.H
+------------------------------------------------------------------------------
+	PUBLIC void SafeSetAnimation( CObject *p, unsigned short )
+
+- change animation sequence number
+
+
+SaveCursor															TEXT.H
+------------------------------------------------------------------------------
+	extern long SaveCursor( void )
+
+		pre:
+		post: returns cursorY in hiword and cursorX in loword.
+
+
+
+ScrollMetaDown														SCROLL.H
+------------------------------------------------------------------------------
+	void ScrollMetaDown( TScrollField *pScrollStruct, unsigned short )
+
+- scroll playfield down specified number of pixels
+
+
+ScrollMetaLeft														SCROLL.H
+------------------------------------------------------------------------------
+	void ScrollMetaLeft( TScrollField *pScrollStruct, unsigned short )
+
+- scroll playfield left specified number of pixels
+
+
+ScrollMetaRight														SCROLL.H
+------------------------------------------------------------------------------
+	void ScrollMetaRight( TScrollField *pScrollStruct, unsigned short )
+
+- scroll playfield right specified number of pixels
+
+
+ScrollMetaUp														SCROLL.H
+------------------------------------------------------------------------------
+	void ScrollMetaUp( TScrollField *pScrollStruct, unsigned short )
+
+- scroll playfield up specified number of pixels
+
+
+SetAnimation														SPANIM.H
+------------------------------------------------------------------------------
+	PUBLIC void SetAnimation( CAnim *p, unsigned short )
+
+- set animation sequence
+
+
+SetBackColor														VDP.H
+------------------------------------------------------------------------------
+	void SetBackColor( short c )
+
+
+
+SetCrossFade														EFFECTS.H
+------------------------------------------------------------------------------
+	extern void SetCrossFade( short nCrossFadeValue, short nCrossFadeColors,
+							  void *pSourceColors,void *pDestinationColors,
+							  void *pResult )
+
+		nCrossFadeValue:		current step of fade
+		nCrossFadeColors:		number of colors to fade
+		*pSourceColors:			pointer to source colors
+		*pDestinationColors:	pointer to dest colors
+		*pResult:				pointer to result
+
+		pre:  nCrossFadeValue is a 4 bit value, $0 indicating all source and
+			  $f indicating all destination.
+		post: sets pResult to a palette which is nCrossFadeValue fades from
+			  pSourceColors to pDestinationColors.
+
+
+
+SetHScroll															SCROLL.H
+------------------------------------------------------------------------------
+	void SetHScroll( short scroll, short filed )
+
+
+
+SetPal																VDP.H
+------------------------------------------------------------------------------
+	void SetPal( short base, short count, void *palette )
+
+
+
+
+
+
+SetPSGVolume														SOUND.H
+------------------------------------------------------------------------------
+	extern void SetPSGVolume( short nChannel, short nVolume )
+
+		pre:  nChannel is the channel, 0-2. nVolume is the volume, 0 - 0xf.
+		post: sets the volume of the channel.
+
+
+
+SetRenderSpritePanic												SPANIM.H
+------------------------------------------------------------------------------
+	PUBLIC void *SetRenderSpritePanic( void * )
+
+
+
+SetScrollRegs														SCROLL.H
+------------------------------------------------------------------------------
+	void SetScrollRegs( void )
+
+- set the hardware horizontal and vertical scroll registers to properly
+  position the playfield
+
+
+SetVScroll															SCROLL.H
+------------------------------------------------------------------------------
+	void SetVScroll( short scroll,short field )
+
+
+
+
+TraceOff															TRACE.H
+------------------------------------------------------------------------------
+	void TraceOff( void )
+
+TraceOn																TRACE.H
+------------------------------------------------------------------------------
+	void TraceOn( void )
+
+
+
+
+
+VDPAddr																VDP.H
+------------------------------------------------------------------------------
+	void VDPAddr( short vdpAddr )
+
+
+
+VdpView																DEBUG.H
+------------------------------------------------------------------------------
+	void VdpView( void )
+
+
+
+vfree																VMALLOC.H
+------------------------------------------------------------------------------
+	PUBLIC unsigned short vfree( unsigned short nChar )
+
+- free characters from VDP RAM allocated by vmalloc() function
+
+
+
+vlargestblock														VMALLOC.H
+------------------------------------------------------------------------------
+	PUBLIC unsigned short vlargestblock( void )
+
+- return largest free VDP RAM block
+
+
+vmalloc																VMALLOC.H
+------------------------------------------------------------------------------
+	PUBLIC unsigned short vmalloc( unsigned short nChars )
+
+- allocate space in VDP RAM for character storage
+
+
+VMConsume															VMALLOC.H
+------------------------------------------------------------------------------
+	PUBLIC void VMConsume( unsigned short, unsigned short )
+
+
+
+vtotalfree															VMALLOC.H
+------------------------------------------------------------------------------
+	PUBLIC unsigned short vtotalfree( void )
+
+
+
+WaitBlank															VDP.H
+------------------------------------------------------------------------------
+	WaitBlank( void )
+
+- wait for vertical blank interval
+

@@ -1,0 +1,1 @@
+make -a -DSYSTEM=GEN -DPREFIX=
