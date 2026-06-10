@@ -4,10 +4,16 @@
 Usage: render_ansi.py input.ansi output.png [scale]
   scale: pixel multiplier (default 2 for crisp 2x rendering)
 
-Trims to the window bounding box by detecting the desktop background colour
-from the top-left cell of the content area (row 1, col 0), then cropping to
-the smallest rectangle of non-desktop cells in rows 1..(n-2), skipping the
-menu bar (row 0) and status bar (last row).
+Returns (prints) the recommended HTML display width on stdout alongside the
+normal progress line so callers can embed correct <img width="…"> tags.
+
+Crop strategy:
+  - drmon's desktop is always ANSI blue (0,0,170); hard-coded — sampling from a
+    single cell fails when the window sits at row 1 col 0 (cells are window-bg).
+  - Crop bounding box = smallest rectangle of non-desktop cells in rows 1..n-2,
+    skipping the menu bar (row 0) and status bar (last row).
+  - Drop shadow (1-2 cells of all-black+space on the right and bottom edges of
+    the crop) is stripped after the initial bounding-box pass.
 """
 import sys
 from PIL import Image, ImageDraw, ImageFont
@@ -15,21 +21,18 @@ from PIL import Image, ImageDraw, ImageFont
 FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"
 FONT_SIZE = 14
 
-# Standard 16-colour ANSI palette (CGA-compatible)
 PALETTE = [
     (0, 0, 0),      (170, 0, 0),    (0, 170, 0),    (170, 170, 0),
     (0, 0, 170),    (170, 0, 170),  (0, 170, 170),  (170, 170, 170),
     (85, 85, 85),   (255, 85, 85),  (85, 255, 85),  (255, 255, 85),
     (85, 85, 255),  (255, 85, 255), (85, 255, 255), (255, 255, 255),
 ]
-DEFAULT_FG = PALETTE[7]
-DEFAULT_BG = PALETTE[0]
+DEFAULT_FG  = PALETTE[7]
+DEFAULT_BG  = PALETTE[0]           # black  — window/title background
+DESKTOP_BG  = PALETTE[4]           # blue   — drmon desktop, always this colour
 
 
 def parse_ansi(text):
-    """Parse ANSI-escaped terminal text into a grid.
-    Returns list of rows; each row is a list of (char, fg_rgb, bg_rgb).
-    """
     rows, row = [], []
     fg, bg, bold = DEFAULT_FG, DEFAULT_BG, False
     i = 0
@@ -85,6 +88,11 @@ def parse_ansi(text):
     return rows
 
 
+def _is_shadow_strip(cells):
+    """True if every cell is black+space — the drmon drop-shadow pattern."""
+    return all(bg == DEFAULT_BG and ch == ' ' for ch, _, bg in cells)
+
+
 def render(ansi_file, out_file, scale=2):
     with open(ansi_file, 'r', encoding='utf-8', errors='replace') as f:
         text = f.read()
@@ -99,18 +107,15 @@ def render(ansi_file, out_file, scale=2):
     cell_h = ascent + descent
     cell_w = round(font.getlength("M"))
 
-    # Normalise all rows to the same column count
     n_cols = max((len(r) for r in rows), default=80)
-    desktop_bg = rows[1][0][2] if len(rows) > 1 and rows[1] else DEFAULT_BG
-    padded = [list(r) + [(' ', DEFAULT_FG, desktop_bg)] * (n_cols - len(r))
+    padded = [list(r) + [(' ', DEFAULT_FG, DESKTOP_BG)] * (n_cols - len(r))
               for r in rows]
 
-    # Find the bounding box of non-desktop cells, ignoring menu bar (row 0)
-    # and status bar (last row) so we crop to just the open window.
+    # --- bounding box of non-desktop cells (skip menu bar row 0 + status bar) ---
     r1 = r2 = c1 = c2 = None
     for ri in range(1, len(padded) - 1):
         for ci in range(n_cols):
-            if padded[ri][ci][2] != desktop_bg:
+            if padded[ri][ci][2] != DESKTOP_BG:
                 if r1 is None:
                     r1 = ri
                 r2 = ri
@@ -120,14 +125,21 @@ def render(ansi_file, out_file, scale=2):
                     c2 = ci
 
     if r1 is None:
-        # No window open — fall back to full content area
         r1, r2, c1, c2 = 1, len(padded) - 2, 0, n_cols - 1
 
+    # --- strip drop shadow (all-black+space strips on right and bottom edges) ---
+    while r2 > r1 and _is_shadow_strip(
+            [padded[r2][ci] for ci in range(c1, c2 + 1)]):
+        r2 -= 1
+    while c2 > c1 and _is_shadow_strip(
+            [padded[ri][c2] for ri in range(r1, r2 + 1)]):
+        c2 -= 1
+
     crop = [padded[ri][c1:c2 + 1] for ri in range(r1, r2 + 1)]
-    n_rows = len(crop)
+    n_rows_out = len(crop)
     n_cols_out = c2 - c1 + 1
 
-    img = Image.new("RGB", (n_cols_out * cell_w, n_rows * cell_h), desktop_bg)
+    img = Image.new("RGB", (n_cols_out * cell_w, n_rows_out * cell_h), DESKTOP_BG)
     draw = ImageDraw.Draw(img)
 
     for ri, row in enumerate(crop):
@@ -136,15 +148,18 @@ def render(ansi_file, out_file, scale=2):
             y = ri * cell_h
             draw.rectangle([x, y, x + cell_w, y + cell_h], fill=bg)
             if ch != ' ':
-                # default anchor "la" (left-ascender): top of the em-square at y
                 draw.text((x, y), ch, font=font, fill=fg)
 
     if scale != 1:
         img = img.resize((img.width * scale, img.height * scale), Image.NEAREST)
 
     img.save(out_file)
-    print(f"  {ansi_file} → {out_file}  ({n_cols_out}×{n_rows} cells, "
-          f"{img.width}×{img.height}px)")
+
+    display_w = min(img.width // scale, 700)
+    print(f"  {ansi_file} → {out_file}  "
+          f"({n_cols_out}×{n_rows_out} cells, {img.width}×{img.height}px, "
+          f"display_w={display_w})")
+    return display_w
 
 
 if __name__ == '__main__':

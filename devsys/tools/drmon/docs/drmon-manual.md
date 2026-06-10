@@ -62,7 +62,7 @@ global keys are in the [Key reference](#key-reference).
 Examine memory as bytes, words, long words, ASCII, or disassembled code. Navigate with the
 arrows / PgUp / PgDn. *(values read as zero until a backend is wired)*
 
-<img src="img/memory.png" width="700">
+<img src="img/memory.png" width="352">
 
 | Key | Action | | Key | Action |
 |-----|--------|---|-----|--------|
@@ -78,12 +78,12 @@ View and set the current 65816 registers (A, X, Y, P/flags, D, DB, PB, SP, PC); 
 individually. Click a register to open an Expression window prompting for a new value.
 *(live values need a backend)*
 
-<img src="img/register.png" width="700">
+<img src="img/register.png" width="224">
 
 ### Breakpoint — `Alt+B` (single)
 List and manage breakpoints.
 
-<img src="img/breakpoint.png" width="700">
+<img src="img/breakpoint.png" width="168">
 
 | Key | Action |
 |-----|--------|
@@ -98,7 +98,7 @@ List and manage breakpoints.
 ### Watch — `Alt+W`
 Monitor expressions; each row shows `value : expression`, updated every frame.
 
-<img src="img/watch.png" width="700">
+<img src="img/watch.png" width="408">
 
 | Key | Action |
 |-----|--------|
@@ -109,7 +109,7 @@ Monitor expressions; each row shows `value : expression`, updated every frame.
 ### Symbol — `Alt+S` (single)
 Create, delete, and load symbols.
 
-<img src="img/symbol.png" width="700">
+<img src="img/symbol.png" width="208">
 
 | Key | Action |
 |-----|--------|
@@ -125,19 +125,19 @@ A calculator for symbols and expressions; results show in **hex, decimal, and bi
 first matching symbol. See [Expression language](#expression-language). No menu; results can be
 copied and pasted into other input fields.
 
-<img src="img/expression.png" width="700">
+<img src="img/expression.png" width="480">
 
 ### Command — `Alt+K` (single)
 Type [console commands](#console-command-language); responses print here. More powerful than
 keyboard macros, with scripting (`.scr`). **↑/↓** walk the command history.
 
-<img src="img/command.png" width="700">
+<img src="img/command.png" width="616">
 
 ### Source — `Alt+L` (single)
 Source-level debugging: load a `.sld` file (`Ctrl+L`) to view the source the code was assembled
 from and set breakpoints by line.
 
-<img src="img/source.png" width="700">
+<img src="img/source.png" width="624">
 
 | Key | Action |
 |-----|--------|
@@ -152,7 +152,7 @@ from and set breakpoints by line.
 ### Text View — `Alt+T`
 A generic text-file viewer. Arrows move the cursor; PgUp/PgDn page.
 
-<img src="img/textview.png" width="700">
+<img src="img/textview.png" width="624">
 
 | Key | Action |
 |-----|--------|
@@ -165,22 +165,22 @@ A generic text-file viewer. Arrows move the cursor; PgUp/PgDn page.
 Read-only output the *target program* prints via the dev-package print routines. `Ctrl+C` clears
 it. *(empty until a backend is wired)*
 
-<img src="img/console.png" width="700">
+<img src="img/console.png" width="320">
 
 ### ASCII chart — `Alt+Y`
 A reference table of character codes (decimal / hex / the CP437 glyph).
 
-<img src="img/ascii.png" width="700">
+<img src="img/ascii.png" width="416">
 
 ### Project Info — `Alt+I` (single)
 Shows free memory and symbol counts.
 
-<img src="img/projectinfo.png" width="700">
+<img src="img/projectinfo.png" width="232">
 
 ### About — `Alt+A`
 Shows version and credits.
 
-<img src="img/about.png" width="700">
+<img src="img/about.png" width="424">
 
 ### Help — `F1`
 The built-in `snesmon.hlp` key card, shown in a Text View window.
