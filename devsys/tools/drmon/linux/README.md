@@ -73,22 +73,22 @@ files stay close to original:
   (`screen.cpp`); `scrBuffer` allocated on Linux (`display.cpp`); ncurses blit after
   `CopyScreen` (`display.cpp`); keyboard wired through ncurses (`input.cpp`).
 
-## ⚠ Editing source with CP437 bytes
+## CP437 / extended-ASCII bytes
 
-Many drmon source files contain **literal IBM CP437 / extended-ASCII bytes** — the
-box-drawing characters used for window/menu borders (`window.cpp`, `window.hpp` default
-border, `menu.cpp` / `filereq.cpp` border strings, plus data in `charts.cpp`,
-`gadget.cpp`, `monmenu.cpp`, …). These are **not valid UTF-8**. Any editor (or tool) that
-round-trips the file through UTF-8 will silently replace every high byte with `U+FFFD` (�)
-and break the borders. Edit those files only with **byte-safe** tools (`sed`, `perl -i`,
-`python` `rb`/`wb`) — never a UTF-8 text editor. Quick check:
+drmon draws its UI in **IBM CP437 / extended-ASCII** (box-drawing borders, shades, the
+`█` logo, the ASCII-chart table, default config chars). Those bytes used to be stored
+**raw** (not valid UTF-8), which the UTF-8 Edit/Write tools silently corrupted into
+`U+FFFD` (�) and broke the borders. The whole tree has since been converted to a
+UTF-8-safe form (see [the conversion plan](../../../../docs/plans/2026-06-10-cp437-ascii-conversion.md),
+tool `cp437-to-ascii.py`): **string/char literals + data → `\xNN` escapes**, **comments →
+UTF-8**. Every file is now valid UTF-8, so ordinary editing is safe again.
+
+To keep it that way: write any new border/glyph **string** as ASCII escape sequences
+(e.g. `"\xC9\xCD\xBB\xBA\xBA\xC8\xCD\xBC"`), never raw high bytes. Sanity check after edits:
 
 ```
 python3 -c "print(open('menu.cpp','rb').read().count(b'\xef\xbf\xbd'))"   # 0 = clean
 ```
-
-New border strings should be written as ASCII escape sequences (e.g.
-`"\xC9\xCD\xBB\xBA\xBA\xC8\xCD\xBC"`) so they can't be corrupted.
 
 ## Known limitations (by design, this phase)
 
