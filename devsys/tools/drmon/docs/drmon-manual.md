@@ -25,8 +25,17 @@ the version and run state (`Running` / `Stopped`).
 
 - Press **F10** to enter the global **menu bar**; ←/→ move between menus, **Enter** opens one,
   ↑/↓ pick an item, **Esc** cancels.
-- Open windows directly with **Alt+letter** (e.g. **Alt+M** memory, **Alt+R** registers,
-  **Alt+E** expression) — see [Key reference](#key-reference).
+- Open windows with **Alt+letter**:
+
+  | Key | Window | Key | Window |
+  |-----|--------|-----|--------|
+  | `Alt+M` | Memory | `Alt+K` | Command |
+  | `Alt+R` | Register | `Alt+W` | Watch |
+  | `Alt+B` | Breakpoint | `Alt+T` | Text View |
+  | `Alt+L` | Source | `Alt+I` | Project Info |
+  | `Alt+O` | Console | `Alt+A` | About |
+  | `Alt+S` | Symbol | `Alt+Y` | ASCII chart |
+  | `Alt+E` | Expression | | |
 - **F6** cycles between open windows; **Alt+Q** closes the front one; **F9** enters window
   *movement mode* (arrows move, Shift+arrows resize, Esc leaves).
 - **Alt+X** quits. **Ctrl+C is intentionally ignored** (the monitor swallows it, matching the
@@ -214,18 +223,6 @@ The authoritative bindings for this Linux build (from `monkeys.hpp`).
 | `F8` | Step Over *(backend)* | `Alt+Z` | Zoom window |
 | `Ctrl+F7` / `Ctrl+F8` | Step Into / Over (assembly) | `Alt+P` | Log window to file |
 | `Alt+F7` / `Alt+F8` | Step Into / Over (source) | `Alt+D` | Shell *(legacy; no-op on Linux)* |
-
-### Open a window
-
-| Key | Window | Key | Window |
-|-----|--------|-----|--------|
-| `Alt+M` | Memory | `Alt+K` | Command |
-| `Alt+R` | Register | `Alt+W` | Watch |
-| `Alt+B` | Breakpoint | `Alt+T` | Text View |
-| `Alt+L` | Source | `Alt+I` | Project Info |
-| `Alt+O` | Console | `Alt+A` | About |
-| `Alt+S` | Symbol | `Alt+Y` | ASCII chart |
-| `Alt+E` | Expression | | |
 
 ### Text-field editing (string gadgets)
 
