@@ -72,12 +72,6 @@ _(none)_
 
 - [ ] **Package drmon as a `.deb`** for the foundry apt repo once it does something useful
   (Phase 2+). Build is reproducible via the Docker toolchain today.
-- [ ] **Package WLA-DX** for the foundry apt repo. GPL-2.0+, cmake build, absent from
-  Debian/Ubuntu, supports 65816 + SPC-700 (both SNES CPUs). Priority 1 of the SNES toolchain
-  set — also a PVSnesLib dependency. See [toolchain survey](docs/investigations/2026-06-11-snes-65816-toolchains.md).
-- [ ] **Package asar** for the foundry apt repo. GPL-3.0/LGPL-3.0, cmake build, absent from
-  Debian/Ubuntu. De facto standard SNES ROM hacking assembler (SMW Central); libasar embeddable
-  form useful for tool integration. See [toolchain survey](docs/investigations/2026-06-11-snes-65816-toolchains.md).
 
 
 ## VERIFY
