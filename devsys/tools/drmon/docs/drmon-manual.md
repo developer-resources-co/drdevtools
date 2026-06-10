@@ -1,6 +1,6 @@
 # drmon User Manual
 
-**drmon** — the *DR Monitor* — is a source-level debugger/monitor for cartridge-console
+**drmon** — the *Developer Resources Monitor* — is a source-level debugger/monitor for cartridge-console
 development. It targets the **SNES** (Nintendo 65816) and **Genesis** (68000); this build is
 SNES (`SNESMon`). Originally a 1990s DOS product (Developer Resources, 1991–1994; the title bar
 reads **SNESMon V2.1.30**), it has been ported to Linux as a wide-ncurses terminal application.
@@ -62,14 +62,14 @@ global keys are in the [Key reference](#key-reference).
 Examine memory as bytes, words, long words, ASCII, or disassembled code. Navigate with the
 arrows / PgUp / PgDn. *(values read as zero until a backend is wired)*
 
-| Key | Action | Key | Action |
-|-----|--------|-----|--------|
-| `Ctrl+B` | view as bytes | `Ctrl+G` | go to address |
-| `Ctrl+W` | view as words | `Ctrl+M` | modify memory at cursor |
-| `Ctrl+L` | view as long words | `Ctrl+S` | set breakpoint at cursor |
-| `Ctrl+D` | view as disassembly | `Ctrl+O` | set break-once at cursor |
-| `Ctrl+Y` | view as ASCII | `Ctrl+N` | set break-with-count at cursor |
-| `Ctrl+H` | run to cursor | `Ctrl+A` | clear all breakpoints |
+| Key | Action | | Key | Action |
+|-----|--------|---|-----|--------|
+| `Ctrl+B` | view as bytes | | `Ctrl+G` | go to address |
+| `Ctrl+W` | view as words | | `Ctrl+M` | modify memory at cursor |
+| `Ctrl+L` | view as long words | | `Ctrl+S` | set breakpoint at cursor |
+| `Ctrl+D` | view as disassembly | | `Ctrl+O` | set break-once at cursor |
+| `Ctrl+Y` | view as ASCII | | `Ctrl+N` | set break-with-count at cursor |
+| `Ctrl+H` | run to cursor | | `Ctrl+A` | clear all breakpoints |
 
 ### Register — `Alt+R` (single)
 View and set the current 65816 registers (A, X, Y, P/flags, D, DB, PB, SP, PC); flags are shown
@@ -77,18 +77,38 @@ individually. Click a register to open an Expression window prompting for a new 
 *(live values need a backend)*
 
 ### Breakpoint — `Alt+B` (single)
-List and manage breakpoints. `Ctrl+S` set · `Ctrl+O` set once · `Ctrl+N` set with count ·
-`Ctrl+E` set conditional · `Ctrl+C` clear under cursor · `Ctrl+A` clear all · `Ctrl+T` toggle
-on/off.
+List and manage breakpoints.
+
+| Key | Action |
+|-----|--------|
+| `Ctrl+S` | set |
+| `Ctrl+O` | set once |
+| `Ctrl+N` | set with count |
+| `Ctrl+E` | set conditional |
+| `Ctrl+C` | clear under cursor |
+| `Ctrl+A` | clear all |
+| `Ctrl+T` | toggle on/off |
 
 ### Watch — `Alt+W`
-Monitor expressions; each row shows `value : expression`, updated every frame. `Ctrl+S` add a
-watch · `Ctrl+C` clear under cursor · `Ctrl+A` clear all.
+Monitor expressions; each row shows `value : expression`, updated every frame.
+
+| Key | Action |
+|-----|--------|
+| `Ctrl+S` | add a watch |
+| `Ctrl+C` | clear under cursor |
+| `Ctrl+A` | clear all |
 
 ### Symbol — `Alt+S` (single)
-Create, delete, and load symbols. `Ctrl+L` load a symbol file · `Ctrl+S` define a new symbol ·
-`Ctrl+C` delete under cursor · `Ctrl+A` clear all · `Ctrl+B` set breakpoint at the symbol ·
-`Ctrl+O` set break-once at the symbol.
+Create, delete, and load symbols.
+
+| Key | Action |
+|-----|--------|
+| `Ctrl+L` | load a symbol file |
+| `Ctrl+S` | define a new symbol |
+| `Ctrl+C` | delete under cursor |
+| `Ctrl+A` | clear all |
+| `Ctrl+B` | set breakpoint at the symbol |
+| `Ctrl+O` | set break-once at the symbol |
 
 ### Expression — `Alt+E` (single)
 A calculator for symbols and expressions; results show in **hex, decimal, and binary**, plus the
@@ -101,13 +121,27 @@ keyboard macros, with scripting (`.scr`). **↑/↓** walk the command history.
 
 ### Source — `Alt+L` (single)
 Source-level debugging: load a `.sld` file (`Ctrl+L`) to view the source the code was assembled
-from and set breakpoints by line. `Ctrl+F` find · `Ctrl+N` find next · `Ctrl+R` search label ·
-`Ctrl+G` go to line · `Ctrl+S`/`Ctrl+O`/`Ctrl+C`/`Ctrl+A` set/once/clear/clear-all breakpoints ·
-`Ctrl+H` run to line · `Ctrl+Y` go to symbol.
+from and set breakpoints by line.
+
+| Key | Action |
+|-----|--------|
+| `Ctrl+F` | find |
+| `Ctrl+N` | find next |
+| `Ctrl+R` | search label |
+| `Ctrl+G` | go to line |
+| `Ctrl+S` / `Ctrl+O` / `Ctrl+C` / `Ctrl+A` | set / once / clear / clear-all breakpoints |
+| `Ctrl+H` | run to line |
+| `Ctrl+Y` | go to symbol |
 
 ### Text View — `Alt+T`
-A generic text-file viewer. Arrows move the cursor; PgUp/PgDn page; `Ctrl+L` load · `Ctrl+F`
-find · `Ctrl+N` find next · `Ctrl+G` go to line.
+A generic text-file viewer. Arrows move the cursor; PgUp/PgDn page.
+
+| Key | Action |
+|-----|--------|
+| `Ctrl+L` | load |
+| `Ctrl+F` | find |
+| `Ctrl+N` | find next |
+| `Ctrl+G` | go to line |
 
 ### Console — `Alt+O` (single)
 Read-only output the *target program* prints via the dev-package print routines. `Ctrl+C` clears
@@ -156,9 +190,14 @@ The authoritative bindings for this Linux build (from `monkeys.hpp`).
 
 ### Text-field editing (string gadgets)
 
-`Alt+U` cut · `Alt+C` copy · `Alt+V` paste. Shift+left-click and drag selects text to the
-clipboard. (The old in-app help card lists these as Alt+A/Alt+C/Alt+P — that card is stale;
-the bindings above are correct.)
+| Key | Action |
+|-----|--------|
+| `Alt+U` | cut |
+| `Alt+C` | copy |
+| `Alt+V` | paste |
+
+Shift+left-click and drag selects text to the clipboard. (The old in-app help card lists these
+as Alt+A/Alt+C/Alt+P — that card is stale; the bindings above are correct.)
 
 ### Window movement mode (`F9`)
 
