@@ -1,10 +1,28 @@
-# Building drmon on Linux (Phase 1)
+# Building drmon on Linux (Phases 1 & 1.5)
 
-**Status:** Phase 1 (compile + link) **complete** — `drmon` builds into an x86-64 ELF
-for `SYSTEM=SNES`. It currently **segfaults on launch**: the screen, keyboard and
-dev-link transport are no-op stubs (there is no terminal backend and no target yet),
-so *running* it is Phase 2+ (a real ncurses/DAP front end + a MAME backend). See
+**Status:** Phase 1 (compile + link) and Phase 1.5 (run + render) **complete** —
+`drmon` builds into an x86-64 ELF for `SYSTEM=SNES` and **launches in a terminal**,
+rendering its full text UI (menu bar, windows, status line, live clock) via an
+**ncurses** front end and accepting keyboard input (F10 menu, arrows, F-keys).
+The dev-link transport is still stubbed — there is no target yet, so drmon runs
+"disconnected"; wiring a real target (MAME) is Phase 2. See
 [../../../../docs/plans/2026-06-10-port-drmon-linux.md](../../../../docs/plans/2026-06-10-port-drmon-linux.md).
+
+```
+  File Control Windows Macros Rate Settings Help       Wed Jun 10 09:35:21 2026
+
+
+
+
+ SNESMon V2.1.30  Copyright 1991-1994 Developer Resources          Running
+```
+
+Run it in a terminal at least 80×25:
+
+```
+docker run --rm -it -v "$PWD":/src -v /tmp/drmon-build:/build \
+    -w /build drmon-build ./drmon
+```
 
 ## Build
 
@@ -34,7 +52,8 @@ files stay close to original:
 | `linux/include/*.h` | Shim headers for the Borland/DOS headers the source includes: `dos.h`, `conio.h`, `alloc.h`, `dir.h`, `mem.h`, `io.h`, `bios.h`, `direct.h`, `iostream.h`, `fstream.h`, plus empty stubs for the dropped `phapi.h`/`bse.h`/`os2.h`/`i86.h`. |
 | `linux/dos_stubs.cpp` | No-op implementations of DOS/BIOS/conio (`int86`, `inportb`, `getch`, `gettextinfo`, …) + functional `_splitpath`/`_makepath`/`strupr`. Real terminal I/O is a later phase. |
 | `linux/slio_stub.cpp` | Replaces the DOS x86 transport asm (`snesio.asm`): provides `SwapWord`/`GetSlaveBus`/`SendCmd`/… as no-ops. **This is the seam the Phase 2 MAME bridge plugs into.** |
-| `CMakeLists.txt` | Builds the `drmon.mak` object set (minus the asm) for `SYSTEM=SNES` with `-std=gnu++98 -fpermissive -fcommon`. |
+| `linux/ncurses_io.cpp` | **Phase 1.5 front end.** Blits drmon's CGA char+attr video buffer to the terminal (CP437→ACS box-drawing, CGA→ncurses colour pairs) and feeds the keyboard back in the DOS extended-key format (arrows/F-keys→scan codes). Replaces the keyboard stubs. |
+| `CMakeLists.txt` | Builds the `drmon.mak` object set (minus the asm) for `SYSTEM=SNES` with `-std=gnu++98 -fpermissive -fcommon`; links `ncurses`. |
 
 ## Edits to historical source (kept minimal)
 
@@ -48,9 +67,16 @@ files stay close to original:
   dependent-base member access `this->next` (`pclib/list.hpp`).
 - **Case-sensitivity fixes** (Borland's TLINK was case-insensitive): `pobjBase`→`pObjBase`
   (`object.cpp`); added the `memOpsMenu` pointer alias for the `memopsMenu` table (`memops.cpp`).
+- **Phase 1.5 run fixes** (all `#if defined(__GNUC__)` guarded): comram backed by a real
+  buffer instead of a `seg<<16` far pointer (`board.cpp`); non-fatal "no slave" so the UI
+  runs disconnected (`drmon.cpp`); real 80×25 framebuffer + ncurses init in `SetupScreen`
+  (`screen.cpp`); `scrBuffer` allocated on Linux (`display.cpp`); ncurses blit after
+  `CopyScreen` (`display.cpp`); keyboard wired through ncurses (`input.cpp`).
 
 ## Known limitations (by design, this phase)
 
-- Segfaults on launch — no terminal/target backend yet.
+- Runs **disconnected** — no target yet (dev-link transport stubbed); a real target
+  arrives via the Phase 2 MAME bridge.
+- Keyboard covers letters/arrows/F-keys/Enter/Esc; **Alt-combos and mouse** aren't wired yet.
 - Genesis (`SYSTEM=GEN`) not built yet (SNES first).
-- Symbol/file loading, dev-link I/O, and the TUI are stubbed.
+- Fixed 80×25; terminal must be at least that size.

@@ -18,11 +18,15 @@ set(DRMON_CXX_SRC
     zardoz.cpp monmenu.cpp about.cpp general.cpp config.cpp filereq.cpp
     profile.cpp filename.cpp
     # Linux port shims:
-    linux/dos_stubs.cpp linux/slio_stub.cpp
+    linux/dos_stubs.cpp linux/slio_stub.cpp linux/ncurses_io.cpp
 )
 set(DRMON_C_SRC lexyy.c ytab.c)
 
 add_executable(drmon ${DRMON_CXX_SRC} ${DRMON_C_SRC})
+
+find_package(Curses REQUIRED)
+target_link_libraries(drmon PRIVATE ${CURSES_LIBRARIES})
+target_include_directories(drmon PRIVATE ${CURSES_INCLUDE_DIRS})
 
 target_include_directories(drmon PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/linux/include    # DOS/Borland header shims (first)

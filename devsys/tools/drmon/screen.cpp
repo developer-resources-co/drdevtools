@@ -18,6 +18,10 @@
 #include "screen.hpp"
 #include "display.hpp"
 
+#if defined(__GNUC__)
+#include <ncurses_io.h>
+#endif
+
 #ifdef __OS2__
 #define INCL_BASE
 #include <bse.h>
@@ -203,6 +207,11 @@ SetCursorStartStop(int startLine,int stopLine)
 void
 InitScreen(void)
 {
+#if defined(__GNUC__)
+	drmon_nc_init();
+	screenWidth2 = 80;
+	screenHeight2 = 25;
+#endif
 #ifdef __MSDOS__
 	gettextinfo(&ti);
 	screenWidth2 = 80;
@@ -409,6 +418,22 @@ SetupScreen(void)
 	WrFont( (void _far *)SetupDisplay, 0, di.height );
 #endif
 
+#elif defined(__GNUC__)
+	// Linux: fixed 80x25 text screen rendered to the terminal by ncurses.
+	{
+		extern uint backgroundChar, backgroundAttr;
+		backgroundChar = ' ';
+		backgroundAttr = 0x17;          // white on blue (classic)
+	}
+	primaryDispCGA = boolean::TRUE;
+	screenWidth  = 80;  screenHeight  = 25;
+	screenWidth2 = 80;  screenHeight2 = 25;
+	if(screen)  free(screen);
+	if(screen2) free(screen2);
+	screen  = (char*)calloc((long)screenWidth *screenHeight *charSize, 1);
+	screen2 = (char*)calloc((long)screenWidth2*screenHeight2*charSize, 1);
+	screenSize  = screenWidth *screenHeight *charSize;
+	screenSize2 = screenWidth2*screenHeight2*charSize;
 #endif
 #endif
 	fillChar = ' ';

@@ -13,6 +13,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         flex \
         make \
         file \
+        gdb \
+        tmux \
         libncurses-dev \
         ca-certificates \
     && rm -rf /var/lib/apt/lists/*

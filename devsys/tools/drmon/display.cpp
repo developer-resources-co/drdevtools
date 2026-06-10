@@ -7,6 +7,11 @@
 #include "moninc.hpp"
 #include "display.hpp"
 
+#if defined(__GNUC__)
+#include <ncurses_io.h>
+extern char far *screen;
+#endif
+
 
 //=============================================================================
 
@@ -91,6 +96,9 @@ UpdateScreen(void)
 	CopyScreen(screen,scrBuffer,screenSize);
 	if(twoScreen)
 		CopyScreen(screen2,scrBuffer2,screenSize2);
+#if defined(__GNUC__)
+	drmon_nc_blit((const unsigned char*)screen, screenWidth, screenHeight);
+#endif
 	refreshAll = boolean::FALSE;
 }
 
@@ -162,7 +170,7 @@ SetupDisplay(void)
 	{
 
 						// kts check for no memory
-#ifdef __MSDOS__
+#if defined(__MSDOS__) || defined(__GNUC__)
 	if ( scrBuffer ) free( scrBuffer );
 	scrBuffer = (char far *)farmalloc(screenSize);
 #endif

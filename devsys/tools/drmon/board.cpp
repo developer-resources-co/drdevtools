@@ -57,6 +57,13 @@ extern unsigned char* slaveBufferCmdc;
 
 	DosMapRealSeg( slaveMemSeg, 65536, &sel );
 	slaveBuffer_ = (char far*)MAKEP( sel, 0 );
+#elif defined(__GNUC__)
+	// Linux: there is no segmented hardware comram, and (slaveMemSeg<<16) would
+	// be a bogus flat pointer. Back the comram with a real 64 KB buffer so the
+	// no-target path reads/writes valid memory. The Phase 2 MAME bridge supplies
+	// the real comram window here.
+	(void)slaveMemSeg;
+	slaveBuffer_ = (unsigned char*)calloc( 0x10000, 1 );
 #else
 	slaveBuffer_ = (unsigned char far*)((long)slaveMemSeg << 16);
 #endif

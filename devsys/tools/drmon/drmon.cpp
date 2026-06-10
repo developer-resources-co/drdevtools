@@ -98,8 +98,14 @@ Init( int argc, char* argv[] )
     ver = SlaveGetVer();
     if(ver != SLAVE_VER_NUMBER)
 	 {
+#if defined(__GNUC__)
+		// Linux port: no dev hardware/target yet. Run the UI disconnected instead
+		// of aborting (a real target arrives via the Phase 2 MAME bridge).
+		fprintf(stderr,"Warning: no/incompatible slave ROM (version %d) - running disconnected\n",ver);
+#else
 	  	sprintf(textBuffer,"Incorrect Slave ROM Version %d",ver);
 	  	return(textBuffer);
+#endif
 	 }
 
 	drMon = new App( argc, argv );

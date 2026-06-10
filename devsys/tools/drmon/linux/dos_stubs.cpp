@@ -76,7 +76,8 @@ void puttext(int, int, int, int, void *) {}
 void _setcursortype(int)          {}
 
 // --- bios ---
-int _bios_keybrd(int)             { return 0; }
+// NB: _bios_keybrd is provided by linux/ncurses_io.cpp (routes to the ncurses
+// keyboard), not here, so the input layer's key-ready polling actually works.
 
 // --- dir / io ---
 int  findfirst(const char *, struct ffblk *, int) { return -1; }

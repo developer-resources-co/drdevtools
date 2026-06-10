@@ -19,6 +19,10 @@
 #include "base.hpp"
 #include "global.hpp"
 
+#if defined(__GNUC__)
+#include <ncurses_io.h>
+#endif
+
 #include "config.hpp"
 #include "screen.hpp"
 #include "list.hpp"
@@ -165,6 +169,8 @@ static int dosgetch( void )
 		}
 	return rc & 0xFF;
 	}
+#elif defined(__GNUC__)
+#define dosgetch()	drmon_nc_getbyte()
 #else
 #define dosgetch()	getch()
 #endif
@@ -330,6 +336,9 @@ InitInput(void)
 #else
 #ifdef __MSDOS__
 	keyboardStatus = (unsigned char far*)0x417;
+#endif
+#if defined(__GNUC__)
+	keyboardStatus = drmon_nc_shiftbyte();
 #endif
 #endif
 	InitMouse();
