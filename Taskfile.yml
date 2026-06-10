@@ -70,6 +70,12 @@ tasks:
     cmds:
       - '{{.DOCKER}} bash linux/smoke-test.sh /build/drmon'
 
+  signals:
+    desc: Signal test — Ctrl+C (SIGINT) is ignored; a fatal signal (SIGSEGV) restores the terminal
+    deps: [build]
+    cmds:
+      - '{{.DOCKER}} bash linux/signal-test.sh /build/drmon'
+
   clean:
     desc: Remove the build tree
     cmds:

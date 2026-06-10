@@ -15,6 +15,8 @@
 #include <ncurses.h>
 #include <stdlib.h>
 #include <wchar.h>
+#include <signal.h>
+#include <unistd.h>
 
 extern "C" {
 
@@ -50,6 +52,33 @@ void drmon_nc_shutdown(void)
     }
 }
 
+// Async-signal-safe terminal restore for the fatal-signal handler below. The
+// normal drmon_nc_shutdown() uses fputs/fflush/mousemask, none of which are
+// async-signal-safe; here we disable the forced mouse modes with a single
+// write(2) (the reported Ctrl+C leak) FIRST, then endwin(). endwin() isn't
+// strictly async-signal-safe either, but the process is dying anyway and the
+// mouse-disable bytes are already flushed before we risk it.
+static void drmon_nc_emergency_restore(void)
+{
+    if (g_inited) {
+        static const char off[] = "\033[?1003l\033[?1006l\033[?25h";  // mouse off + cursor on
+        ssize_t n = write(STDOUT_FILENO, off, sizeof(off) - 1);
+        (void)n;
+        endwin();
+        g_inited = 0;
+    }
+}
+
+// Fatal/terminate signals: restore the terminal, then re-raise with the default
+// disposition so the process still dies with the correct exit status (and a core
+// dump for SIGSEGV) — but leaves a clean shell instead of leaking mouse modes.
+static void drmon_nc_fatal(int sig)
+{
+    drmon_nc_emergency_restore();
+    signal(sig, SIG_DFL);
+    raise(sig);                           // delivered once this handler returns
+}
+
 void drmon_nc_init(void)
 {
     if (g_inited) return;
@@ -81,7 +110,31 @@ void drmon_nc_init(void)
             for (int fg = 0; fg < 8; ++fg)
                 init_pair((short)(bg * 8 + fg + 1), (short)fg, (short)bg);
     }
-    atexit(drmon_nc_shutdown);            // always restore the terminal
+    atexit(drmon_nc_shutdown);            // restore the terminal on a normal exit
+
+    // DOS parity: InitInput() ran ctrlbrk(&CtrlBrkHander), whose return(1) told
+    // Borland C to *resume* the program — the monitor swallowed Ctrl+Break and
+    // kept running (you quit via Alt+X). Match that: ignore SIGINT. Under cbreak
+    // (ISIG on), Ctrl+C raises SIGINT, gets dropped here, and the byte is eaten
+    // by the tty driver — it never reaches getch(). (Reserved for "interrupt the
+    // target" once a debug backend exists.)
+    struct sigaction sa;
+    memset(&sa, 0, sizeof sa);
+    sigemptyset(&sa.sa_mask);
+    sa.sa_handler = SIG_IGN;
+    sigaction(SIGINT, &sa, NULL);
+
+    // Any other death (crash or kill) must still un-leak the mouse modes that
+    // atexit can't reach when a signal terminates us.
+    sa.sa_handler = drmon_nc_fatal;
+    sigaction(SIGTERM, &sa, NULL);
+    sigaction(SIGHUP,  &sa, NULL);
+    sigaction(SIGQUIT, &sa, NULL);
+    sigaction(SIGSEGV, &sa, NULL);
+    sigaction(SIGABRT, &sa, NULL);
+    sigaction(SIGBUS,  &sa, NULL);
+    sigaction(SIGFPE,  &sa, NULL);
+
     g_inited = 1;
 }
 
