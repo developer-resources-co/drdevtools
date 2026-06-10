@@ -337,11 +337,12 @@ ExpWinInput(_input *in,_object *oPtr)
 
 	if(leave)
 	 {
-//		CloseWindow(pWindow);
+		FLAG notPopup = !oPtr->dataPtr;	// capture BEFORE delete — reading oPtr->dataPtr
+//		CloseWindow(pWindow);			// after `delete oPtr` is a use-after-free (ASan)
 		delete pWindow;
 //		DeleteObject(oPtr);
 		delete oPtr;
-		if(!oPtr->dataPtr)				// if not pop-up
+		if(notPopup)					// if not pop-up
 		 {
 			exprOpen = boolean::FALSE;
 			exprObjPtr = NULL;
