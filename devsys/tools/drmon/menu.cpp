@@ -408,8 +408,9 @@ MenuInput(_input *in,_object *oPtr)
 void
 _menu::Render(_object *pObject)
 {
-	pWindow = new _window(xPos,yPos,xSize,ySize,text,(unsigned char)menuAttr,(char)menuChar,"\xC9\xCD\xBB\xBA\xBA\xC8\xCD\xBC");
-	pWindow->windowNum = 0;
+	// windowNum 0 => unnumbered: a dropdown isn't a hot-key-switchable window. Passed
+	// to the ctor (not set after) so the digit is never painted into the title bar.
+	pWindow = new _window(xPos,yPos,xSize,ySize,text,(unsigned char)menuAttr,(char)menuChar,"\xC9\xCD\xBB\xBA\xBA\xC8\xCD\xBC",0);
 	pWindow->data = pObject;
 	ForceWindowResize( pWindow, (_object*)pWindow->data,
 		((_object*)pWindow->data)->inputRoutine );

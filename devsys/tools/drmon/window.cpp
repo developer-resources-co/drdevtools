@@ -68,7 +68,7 @@ FindNumberedWindow(int num)
 
 //==============================================================================
 
-_window::_window( int newXPos,int newYPos,unsigned int xSize,unsigned int ySize, char *newTitle, unsigned char charAttr, char fillChar, char newBorder[8]) :
+_window::_window( int newXPos,int newYPos,unsigned int xSize,unsigned int ySize, char *newTitle, unsigned char charAttr, char fillChar, char newBorder[8], int newWindowNum) :
 	_shadowedLayer(newXPos, newYPos, xSize, ySize, charAttr, fillChar)
 {
 	if ( newXPos == -1 )
@@ -96,7 +96,10 @@ _window::_window( int newXPos,int newYPos,unsigned int xSize,unsigned int ySize,
 	 }
 #endif
 	DrawBorder(this,border,xSize,ySize);
-	windowNum = GetAvailWindowNum();
+	// -1 => auto-assign; otherwise honour the caller (0 = unnumbered menu). Must be
+	// set before PrintTitle, which paints the number into the title bar right here —
+	// a later override (e.g. menu.cpp) is too late to stop the digit being drawn.
+	windowNum = (newWindowNum < 0) ? GetAvailWindowNum() : newWindowNum;
 	PrintTitle(this,windowTitleAttr);			// won't work since oPtr is not yet valid
 	activateRoutine = HighLightTitle;
 	deactivateRoutine = UnHighLightTitle;
