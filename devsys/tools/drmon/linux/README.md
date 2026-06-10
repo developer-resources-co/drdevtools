@@ -52,7 +52,7 @@ files stay close to original:
 | `linux/include/*.h` | Shim headers for the Borland/DOS headers the source includes: `dos.h`, `conio.h`, `alloc.h`, `dir.h`, `mem.h`, `io.h`, `bios.h`, `direct.h`, `iostream.h`, `fstream.h`, plus empty stubs for the dropped `phapi.h`/`bse.h`/`os2.h`/`i86.h`. |
 | `linux/dos_stubs.cpp` | No-op implementations of DOS/BIOS/conio (`int86`, `inportb`, `getch`, `gettextinfo`, …) + functional `_splitpath`/`_makepath`/`strupr`. Real terminal I/O is a later phase. |
 | `linux/slio_stub.cpp` | Replaces the DOS x86 transport asm (`snesio.asm`): provides `SwapWord`/`GetSlaveBus`/`SendCmd`/… as no-ops. **This is the seam the Phase 2 MAME bridge plugs into.** |
-| `linux/ncurses_io.cpp` | **Phase 1.5 front end.** Blits drmon's CGA char+attr video buffer to the terminal (CP437→ACS box-drawing, CGA→ncurses colour pairs) and feeds the keyboard back in the DOS extended-key format (arrows/F-keys→scan codes). Replaces the keyboard stubs. |
+| `linux/ncurses_io.cpp` | **Phase 1.5 front end.** Blits drmon's CGA char+attr video buffer to the terminal via **wide ncurses** (CP437→Unicode box-drawing/blocks, CGA→colour pairs) and feeds the keyboard back in the DOS extended-key format — arrows/F-keys→scan codes, and **Alt+letter** (ESC-disambiguated) → DOS alt scan codes so alt-Q/alt-X/alt-M etc. work. Replaces the keyboard stubs. |
 | `CMakeLists.txt` | Builds the `drmon.mak` object set (minus the asm) for `SYSTEM=SNES` with `-std=gnu++98 -fpermissive -fcommon`; links `ncurses`. |
 
 ## Edits to historical source (kept minimal)
@@ -77,6 +77,7 @@ files stay close to original:
 
 - Runs **disconnected** — no target yet (dev-link transport stubbed); a real target
   arrives via the Phase 2 MAME bridge.
-- Keyboard covers letters/arrows/F-keys/Enter/Esc; **Alt-combos and mouse** aren't wired yet.
+- Keyboard covers letters/arrows/F-keys/Enter/Esc and **Alt-combos** (alt-Q close,
+  alt-X exit, alt-M/alt-R/… open windows). **Mouse** isn't wired yet.
 - Genesis (`SYSTEM=GEN`) not built yet (SNES first).
 - Fixed 80×25; terminal must be at least that size.

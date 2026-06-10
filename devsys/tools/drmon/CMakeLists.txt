@@ -24,6 +24,7 @@ set(DRMON_C_SRC lexyy.c ytab.c)
 
 add_executable(drmon ${DRMON_CXX_SRC} ${DRMON_C_SRC})
 
+set(CURSES_NEED_WIDE TRUE)              # wide ncurses for Unicode box-drawing
 find_package(Curses REQUIRED)
 target_link_libraries(drmon PRIVATE ${CURSES_LIBRARIES})
 target_include_directories(drmon PRIVATE ${CURSES_INCLUDE_DIRS})
