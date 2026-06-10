@@ -32,13 +32,13 @@ get_long( istream& input )
 	unsigned char c;
 	long v;
 
-	input.get( c );
+	input.get( (char&)c );
 	v = (unsigned long)c;
-	input.get( c );
+	input.get( (char&)c );
 	v |= ((unsigned long)c ) << 8;
-	input.get( c );
+	input.get( (char&)c );
 	v |= ((unsigned long)c ) << 16;
-	input.get( c );
+	input.get( (char&)c );
 	v |= ((unsigned long)c ) << 24;
 
 	return v;
@@ -61,9 +61,9 @@ get_word( istream& input )
 	unsigned char c;
 	short v;
 
-	input.get( c );
+	input.get( (char&)c );
 	v = (unsigned long)c;
-	input.get( c );
+	input.get( (char&)c );
 	v |= ((unsigned long)c ) << 8;
 
 	return v;
@@ -74,7 +74,7 @@ get_byte( istream& input )
 	{
 	unsigned char c;
 
-	input.get( c );
+	input.get( (char&)c );
 
 	return c;
 	}

@@ -41,7 +41,8 @@ _layerBase::~_layerBase()
 class _layer*
 _layerBase::Tail()
 	{
-	for ( _layer* lPtr = (_layer*)&layBase; lPtr->next; lPtr=lPtr->next )
+	_layer* lPtr;
+	for ( lPtr = (_layer*)&layBase; lPtr->next; lPtr=lPtr->next )
 		;
 
 	assert( lPtr );

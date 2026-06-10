@@ -4,13 +4,13 @@
 
 #include <fstream.h>
 
-#include <pclib\stdstrm.hpp>
-#include <pclib\strmnull.hpp>
+#include <pclib/stdstrm.hpp>
+#include <pclib/strmnull.hpp>
 
 // note: we did it this way to insure strmnull gets constructed before the
 // standard streams
 
-#include <pclib\strmnull.cpp>
+#include <pclib/strmnull.cpp>
 
 //==============================================================================
 

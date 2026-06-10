@@ -10,9 +10,9 @@ Documentation:
 
 	Class Hierarchy:
 					node
-                     ³
+                     ï¿½
 				nodeInterface<template>
-                     ³
+                     ï¿½
 				    list
 
 	Dependancies:
@@ -63,7 +63,7 @@ class list : public nodeInterface<T>
 {
 public:
 		list() : nodeInterface<T>() { }
-		void DeleteAll() {	while(next) delete next; }
+		void DeleteAll() {	while(this->next) delete this->next; }
 		~list() { DeleteAll(); }
 		T *Last()
 		 {

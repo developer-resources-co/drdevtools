@@ -1,25 +1,11 @@
-
 #ifndef COMPAT_HPP
 #define COMPAT_HPP
 
-#ifdef __BORLANDC__
-#include <malloc.h>
-#include <dir.h>
-#else
-
-#define clrscr()
-#define gotoxy( x, y )
-
-#endif
-
-
-#if defined( __WATCOMC__ ) || defined( __SC__ ) || defined( __OS2__ )
+// Linux / modern-C++ build. Real shims for the DOS/Borland console and low-level
+// headers live on the include path (devsys/tools/drmon/linux/include/), so the
+// old Borland / Watcom / OS2 fallback macros (clrscr/gotoxy stubs, inportb->inp
+// remaps) are no longer needed and have been dropped (Linux-only port).
 #include <conio.h>
-#define inportb inp
-#define outport  outp
-#define outportb outp
-#endif
+#include <dos.h>
 
 #endif
-
-

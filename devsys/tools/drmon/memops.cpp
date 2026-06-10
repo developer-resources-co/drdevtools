@@ -412,4 +412,9 @@ menuItems memopsMenu[] =
 	{0,0,0}
 };
 
+// The rest of the code refers to this table as `memOpsMenu` (capital O); under
+// Borland's case-insensitive TLINK that resolved to memopsMenu. Define the
+// pointer explicitly for case-sensitive linkers.
+menuItems *memOpsMenu = memopsMenu;
+
 //=============================================================================

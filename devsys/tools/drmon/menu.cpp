@@ -119,7 +119,8 @@ _menu::CountMenuItems()
 	{
 	_menuItem* iPtr = child;
 
-	for ( int i=0; iPtr; ++i, iPtr=iPtr->next )
+	int i;
+	for ( i=0; iPtr; ++i, iPtr=iPtr->next )
 		;
 
 	return( i );
@@ -407,7 +408,7 @@ MenuInput(_input *in,_object *oPtr)
 void
 _menu::Render(_object *pObject)
 {
-	pWindow = new _window(xPos,yPos,xSize,ySize,text,(unsigned char)menuAttr,(char)menuChar,"ÉÍ»ººÈÍ¼");
+	pWindow = new _window(xPos,yPos,xSize,ySize,text,(unsigned char)menuAttr,(char)menuChar,"ï¿½Í»ï¿½ï¿½ï¿½Í¼");
 	pWindow->windowNum = 0;
 	pWindow->data = pObject;
 	ForceWindowResize( pWindow, (_object*)pWindow->data,

@@ -24,13 +24,13 @@ inline ulong ReadLong(istream &input)
 {
 	ulong data;
 	ubyte temp;
-	input.get(temp);
+	input.get((char&)temp);   // istream::get only binds char&; temp stays unsigned
 	data = ((ulong)temp) << 24;
-	input.get(temp);
+	input.get((char&)temp);
 	data |= ((ulong)temp) << 16;
-	input.get(temp);
+	input.get((char&)temp);
 	data |= ((ulong)temp) << 8;
-	input.get(temp);
+	input.get((char&)temp);
 	data |= ((ulong)temp);
 	return(data);
 }
@@ -41,9 +41,9 @@ inline uword ReadWord(istream &input)
 {
 	uword data;
 	ubyte temp;
-	input.get(temp);
+	input.get((char&)temp);   // istream::get only binds char&; temp stays unsigned
 	data = ((ulong)temp) << 8;
-	input.get(temp);
+	input.get((char&)temp);
 	data |= ((ulong)temp);
 	return(data);
 }

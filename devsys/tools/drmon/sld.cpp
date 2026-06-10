@@ -38,21 +38,21 @@ drSld::ParseSLDLine(void)
 	char *s;
 	errorcode error;
 	error = NOERR;
-	streamPtr->get(in);
+	streamPtr->get((char&)in);
 	if(streamPtr->rdstate() != ios::goodbit)
 		return(ERROR_NOSOURCEINFO);
 	switch(in)
 	 {
 		case 1:
 			s = fileName;
-			streamPtr->get(in);
+			streamPtr->get((char&)in);
 			while(in != 0xff && in != 0)
 			 {
 				*s++ = in;
-				streamPtr->get(in);
+				streamPtr->get((char&)in);
 			 }
 			*s = 0;
-			streamPtr->get(in);						// skip other 0xff
+			streamPtr->get((char&)in);						// skip other 0xff
 			break;
 		case 2:
 			char temp;
@@ -84,8 +84,8 @@ drSld::BackUpSLDLine(void)
 	if(SldSeek(-2,ios::cur))
 		return(-1);
 
-	streamPtr->get(c);
-	streamPtr->get(c2);
+	streamPtr->get((char&)c);
+	streamPtr->get((char&)c2);
 
 	if(c == 0xff && c2 == 0xff)
 	 {

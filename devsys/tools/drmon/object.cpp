@@ -11,7 +11,7 @@
 
 //-----------------------------------------------------------------------------
 
-_object* pobjBase;
+_object* pObjBase;
 
 
 void
@@ -63,7 +63,8 @@ _object::~_object()
 _object*
 GetLastObject( void )
 	{
-	for ( _object* oPtr = pObjBase; oPtr->Next(); oPtr=oPtr->Next() )
+	_object* oPtr;
+	for ( oPtr = pObjBase; oPtr->Next(); oPtr=oPtr->Next() )
 		;
 	return( oPtr );
 	}

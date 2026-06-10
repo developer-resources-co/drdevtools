@@ -47,8 +47,8 @@ Documentation:
 
 #include <conio.h>					// for text_info
 
-#include "pclib\general.hpp"
-#include "pclib\color.hpp"
+#include "pclib/general.hpp"
+#include "pclib/color.hpp"
 
 //==============================================================================
 // class declaration

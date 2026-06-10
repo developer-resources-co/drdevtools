@@ -23,7 +23,7 @@ Documentation:
 #if !defined(GFXTOOLS_color_H)
 #define GFXTOOLS_color_H
 
-#include "pclib\general.hpp"
+#include "pclib/general.hpp"
 
 //==============================================================================
 

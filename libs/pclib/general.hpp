@@ -27,9 +27,9 @@ Documentation:
 
 #include <stdlib.h>
 
-#include <pclib\error.hpp>
+#include <pclib/error.hpp>
 
-#include <pclib\libtypes.hpp>
+#include <pclib/libtypes.hpp>
 
 //=============================================================================
 
@@ -45,7 +45,7 @@ private:
 	ulong ver;
 };
 
-#include <pclib\boolean.hpp>
+#include <pclib/boolean.hpp>
 
 //==============================================================================
 // string code that works

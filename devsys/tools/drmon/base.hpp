@@ -3,7 +3,7 @@
 //=============================================================================
 
 #include "error.hpp"
-#include <pclib\general.hpp>
+#include <pclib/general.hpp>
 
 //enum {FALSE, TRUE};
 

@@ -9,7 +9,7 @@
 
 #include <iostream.h>
 
-#include <pclib\libtypes.hpp>
+#include <pclib/libtypes.hpp>
 
 //==============================================================================
 

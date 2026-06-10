@@ -16,4 +16,3 @@ extern ULONG	exprAnswer;				/* place to put the result */
 extern char expString[];
 
 //=============================================================================
-

@@ -33,7 +33,7 @@ Documentation:
 #if !defined(GFXTOOLS_math_H)
 #define GFXTOOLS_math_H
 
-#include <pclib\general.hpp>
+#include <pclib/general.hpp>
 
 //==============================================================================
 
