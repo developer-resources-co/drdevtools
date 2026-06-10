@@ -41,11 +41,7 @@ Plan-first: non-trivial work gets a `docs/plans/YYYY-MM-DD-<topic>.md` and a TOD
 
 ## DRMON — DOCS
 
-- [ ] **USER's manual + installation + configuration.** Seed the key reference from the
-  plaintext `snesmon.hlp`/`genmon.hlp`; document the console command/expression language,
-  install (Dockerized build now, `.deb` later), and config (`DR_SNESPORT`/`DR_SNESMEMBUFFER`
-  env vars, `.scr` startup scripts, saved layout). Detail in the
-  [port plan](docs/plans/2026-06-10-port-drmon-linux.md) "Documentation deliverables".
+_(none)_
 
 
 ## PACKAGING
@@ -62,6 +58,7 @@ _(none)_
 
 ## DONE
 
+- [x] 2026-06-11 — drmon user docs (manual + install + config) under `devsys/tools/drmon/docs/`, seeded from `snesmon.hlp` but reconciled against source (keys/commands/expr verified vs `monkeys.hpp`/`command.cpp`/`expr.*`); target-dependent features flagged Phase 2 — [plan](docs/plans/2026-06-10-drmon-user-manual-installation-configuration-docs.md)
 - [x] 2026-06-10 — Viewport fill: size the CGA screen to the terminal's COLS×LINES (chrome fills, windows fixed) + live `KEY_RESIZE` re-fill; root-caused the width≥83 garble/crash to a dormant 64-bit `CopyScreen`/`CopyMem` `len/=4` long-copy (2× over-copy) — fixed w/ `memcpy`; ASan now on by default — [plan](docs/plans/2026-06-10-drmon-viewport-fill.md) · [BUGS.md](docs/BUGS.md)
 - [x] 2026-06-10 — Handle Ctrl+C + restore terminal on signal-death (port gap: DOS `ctrlbrk` was never ported): ignore SIGINT (DOS parity, drmon keeps running) + emergency terminal-restore handler for SIGSEGV/etc. so a crash/kill no longer leaks xterm mouse modes; `task signals` regression guard
 - [x] 2026-06-10 — Fix Alt+E (and Alt+K / file requester) SIGSEGV: string gadgets edited their text in place but were seeded with a read-only string literal (writable on 1990s DOS compilers); add `SetGadgString` writable-buffer helper + `task smoke` regression guard — [BUGS.md](docs/BUGS.md)

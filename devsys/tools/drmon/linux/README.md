@@ -17,6 +17,16 @@ The dev-link transport is still stubbed — there is no target yet, so drmon run
  SNESMon V2.1.30  Copyright 1991-1994 Developer Resources          Running
 ```
 
+## Documentation
+
+User-facing docs live in [`../docs/`](../docs/):
+
+- **[User Manual](../docs/drmon-manual.md)** — windows, key reference, menus, the console
+  command + expression languages, and the debug workflow.
+- **[Installation](../docs/install.md)** — build & run via the Docker / `task` toolchain.
+- **[Configuration](../docs/configuration.md)** — environment variables, `.scr` startup
+  scripts, and the saved `.ini` settings.
+
 Run it in a terminal at least 80×25:
 
 ```
