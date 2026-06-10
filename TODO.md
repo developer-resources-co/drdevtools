@@ -23,13 +23,12 @@ Plan-first: non-trivial work gets a `docs/plans/YYYY-MM-DD-<topic>.md` and a TOD
 - [ ] **ROM-region writes won't stick.** MAME maps SNES ROM as read-only; writes
   to ROM addresses ($008000+) are silently dropped. WRAM ($7E0000+) writes work.
   Document prominently in the manual's Phase 2 section when the backend lands.
-- [ ] **Phase 2 — MAME backend.** Replace the stubbed SLIO transport
+- [wip] **Phase 2 — MAME backend.** Replace the stubbed SLIO transport
   ([`devsys/tools/drmon/linux/slio_stub.cpp`](devsys/tools/drmon/linux/slio_stub.cpp) — the
   designed seam) with a bridge that translates drmon's opcode protocol (read/write mem+regs,
   set/clear breakpoint, step, continue, async-exception) to MAME debugger ops over its
-  [Lua debugger API](https://docs.mamedev.org/luascript/ref-debugger.html) or
-  [gdbstub](https://docs.mamedev.org/plugins/gdbstub.html) (`127.0.0.1:2159`). Load a SNES
-  game in MAME; drmon drives it. Needs a plan before starting.
+  [Lua debugger API](https://docs.mamedev.org/luascript/ref-debugger.html). Load a SNES
+  (snesmon) or Genesis (genmon) game in MAME; drmon drives it. — [plan](docs/plans/2026-06-11-drmon-mame-backend.md)
 - [ ] **Phase 3 — DAP front end (confirm approach first).** Wrap drmon-core (65816/68000
   disassemblers, `.sld`/COFF parsers, breakpoint/expr engine) behind a
   [cppdap](https://github.com/google/cppdap) DAP server so VS Code / nvim-dap is the UI —
@@ -38,8 +37,7 @@ Plan-first: non-trivial work gets a `docs/plans/YYYY-MM-DD-<topic>.md` and a TOD
 
 ## DRMON — UI / UX
 
-- [ ] **Genesis target (`SYSTEM=GEN`).** Currently SNES-only; add a `genmon` build variant
-  (68000 disassembler, `genmon.prc`, `sliogen.cpp` path) once SNES is solid.
+- [wip] **Genesis target (`SYSTEM=GEN`).** Folded into Phase 2 MAME backend — genmon build bring-up is step 4 of that plan.
 - [ ] **Support multiple "monitors"** (as windows)
 
 ## DRMON — CLEANUP
@@ -55,10 +53,31 @@ Plan-first: non-trivial work gets a `docs/plans/YYYY-MM-DD-<topic>.md` and a TOD
 _(none)_
 
 
+## DRMON — INVESTIGATIONS
+
+- [ ] **IDA Pro + Ghidra 65816 RSP against MAME gdbstub — get real answers.**
+  [idapro_m6502](https://github.com/LucienMP/idapro_m6502) shows IDA's gdb client consuming MAME gdbstub XML for m6502.
+  Verify the same pipeline for 65816: does a 65816 processor module exist for IDA; does IDA's gdb client
+  work with a hand-authored `target.xml`; does Ghidra's RSP debugger path connect without a custom
+  agent? Needs the MAME Lua 65816 map (Tier 1 of [65816 gdbstub investigation](docs/investigations/2026-06-11-65816-gdbstub.md))
+  as the test endpoint. Write findings to `docs/investigations/`.
+- [ ] **Upstream MAME 65816/5A22 register map to `debuggdbstub.cpp`** (~35 lines; prove via Lua plugin
+  first; propose arch name `w65c816`). See [65816 gdbstub investigation](docs/investigations/2026-06-11-65816-gdbstub.md).
+- [ ] **Add ca65 `.dbg` + WLA-DX `.sym` symbol importers to drmon-core** — table stakes for the current
+  homebrew community (every active SNES toolchain outputs one of these; drmon today speaks only `.sld`/COFF/zardoz).
+  Join `sld.cpp`/`coff.cpp` behind the existing symbol layer. See [competitive analysis](docs/investigations/2026-06-11-mesen2-bsnes-plus-vs-drmon.md).
+
+
 ## PACKAGING
 
 - [ ] **Package drmon as a `.deb`** for the foundry apt repo once it does something useful
   (Phase 2+). Build is reproducible via the Docker toolchain today.
+- [ ] **Package WLA-DX** for the foundry apt repo. GPL-2.0+, cmake build, absent from
+  Debian/Ubuntu, supports 65816 + SPC-700 (both SNES CPUs). Priority 1 of the SNES toolchain
+  set — also a PVSnesLib dependency. See [toolchain survey](docs/investigations/2026-06-11-snes-65816-toolchains.md).
+- [ ] **Package asar** for the foundry apt repo. GPL-3.0/LGPL-3.0, cmake build, absent from
+  Debian/Ubuntu. De facto standard SNES ROM hacking assembler (SMW Central); libasar embeddable
+  form useful for tool integration. See [toolchain survey](docs/investigations/2026-06-11-snes-65816-toolchains.md).
 
 
 ## VERIFY
