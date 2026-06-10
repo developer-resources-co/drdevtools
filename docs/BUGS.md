@@ -42,22 +42,6 @@ if(!oPtr->dataPtr)        // read of freed _object
 
 ---
 
-## Mouse-pointer backdrop dangled across a `scrBuffer` realloc — use-after-free on terminal resize — 2026-06-11
-
-**Status:** FIXED [`2038358`](https://github.com/developer-resources-co/drdevtools/commit/2038358) (`devsys/tools/drmon/input.cpp` + `input.hpp`, `display.cpp`).
-
-**Symptom:** Resizing the terminal triggered an AddressSanitizer `heap-use-after-free` (WRITE) in `ErasePointer` ([`input.cpp:86`](../devsys/tools/drmon/input.cpp)) via `UpdateScreen`, writing into a `scrBuffer` that `SetupDisplay` had just freed. Surfaced by the 2026 viewport-fill feature (live `KEY_RESIZE` re-layout); never reachable before, since `scrBuffer` was only ever (re)allocated at startup/mode-change, not at runtime with a pointer already drawn.
-
-**Root cause:** `DrawPointer` caches the framebuffer base in a file-global `pointerScreen` (and the saved cell) so `ErasePointer` can restore it; `ErasePointer` writes through that cached pointer whenever `pointerDrawn` is set. `SetupDisplay` does `free(scrBuffer); scrBuffer = farmalloc(...)`. When a resize calls `SetupDisplay` while a pointer backdrop is live, `pointerScreen` is left dangling at the freed block, and the next `ErasePointer` writes through it.
-
-**Why dormant:** Pre-port, `SetupDisplay`'s free+realloc of `scrBuffer` only ran at startup (no backdrop yet) or on a config display-mode change (rare); the realloc-while-pointer-drawn path didn't exist until live terminal resize was added.
-
-**Fix:** Add `InvalidatePointer()` (clears `pointerDrawn`) and call it in `SetupDisplay` immediately before `free(scrBuffer)`, so a stale backdrop can never be written back through the freed pointer; the trailing `DisplayPointer()` re-establishes it against the new buffer.
-
-**Origin:** `input.cpp`/`display.cpp` from CVS import [`c835c3b`](https://github.com/developer-resources-co/drdevtools/commit/c835c3b) (2003-08-15); latent until the resize feature exercised it. **Commit / verification:** [`2038358`](https://github.com/developer-resources-co/drdevtools/commit/2038358); resize churn 80→120→70→100→80 is ASan-clean.
-
----
-
 ## `CopyScreen`/`CopyMem` copied 2× their length on 64-bit — `len /= 4` assumed a 4-byte `long` — 2026-06-11
 
 **Status:** FIXED [`adc92e2`](https://github.com/developer-resources-co/drdevtools/commit/adc92e2) (`devsys/tools/drmon/general.cpp`).

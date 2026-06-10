@@ -131,4 +131,14 @@ bytes past both `scrBuffer` and `screen` every frame. Invisible at 80×25 (over-
 catastrophic once the larger over-copy reached live data. Found with AddressSanitizer
 (`heap-buffer-overflow` READ in `CopyScreen` ← `UpdateScreen`). Fixed with `memcpy`. ASan also caught
 two overlapping-`strcpy` accelerator-strip bugs (`menu.cpp` `CreateItems`/`_menu::_menu`) → `memmove`.
-Full writeup in [BUGS.md](../BUGS.md).
+Those are pre-existing dormant bugs — full writeup in [BUGS.md](../BUGS.md).
+
+### Regression fixed within this feature (not a dormant bug)
+
+This feature's new runtime `SetupDisplay` realloc (in `ReSizeViewport`) introduced a
+**use-after-free**: `ErasePointer` caches a raw pointer into `scrBuffer` (the mouse-pointer
+backdrop), and freeing/reallocating `scrBuffer` on resize left it dangling, so the next
+`ErasePointer` wrote through freed memory (ASan `heap-use-after-free`, commit `2038358`). Fixed by
+adding `InvalidatePointer()` and calling it in `SetupDisplay` before the free. Recorded here rather
+than in BUGS.md because it is only reachable through this session's resize code — a fresh defect in
+new functionality, not a bug that shipped in (or predates) the port.
