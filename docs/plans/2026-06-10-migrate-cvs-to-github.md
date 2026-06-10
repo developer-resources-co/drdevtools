@@ -105,8 +105,13 @@ the empty org once at [github.com/account/organizations/new](https://github.com/
   git push -u origin main --tags
   ```
 
-### 7. Leave SourceForge as archived origin
-- No deletion. Optionally (later) add a notice on the SF project pointing to GitHub.
+### 7. Leave SourceForge as archived origin + post migration notice
+- No deletion; keep SourceForge as a read-only archive.
+- Post a notice pointing to GitHub. Exact wording and locations are in
+  [docs/sourceforge-notice.md](../sourceforge-notice.md): prepend the Markdown block to the
+  [wiki home](https://sourceforge.net/p/drdevtools/wiki/Home/) and set the short description via
+  [admin/overview](https://sourceforge.net/p/drdevtools/admin/overview). Requires SF login —
+  a single manual paste (no unauthenticated path).
 
 ## Critical files / paths
 - `drdevtools/docs/investigations/2026-06-10-hosting-sourceforge-vs-github.md` — provenance, carried into new repo.

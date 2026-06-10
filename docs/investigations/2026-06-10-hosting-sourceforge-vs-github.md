@@ -3,9 +3,17 @@
 **Date:** 2026-06-10
 **Question:** Is `drdevtools` only on SourceForge, or did it later migrate to GitHub?
 
+> **Update (2026-06-10): superseded by action.** This question is now moot — the
+> project was migrated to GitHub the same day. Canonical home is now
+> [github.com/developer-resources-co/drdevtools](https://github.com/developer-resources-co/drdevtools);
+> SourceForge is retained as a read-only archive with a
+> [pointer notice](../sourceforge-notice.md). See the
+> [migration plan](../plans/2026-06-10-migrate-cvs-to-github.md). The original findings below
+> remain accurate as of *before* the migration.
+
 ## Answer
 
-**SourceForge only — no GitHub migration found.**
+**SourceForge only — no GitHub migration found** *(at the time of investigation).*
 
 `drdevtools` is the **Developer Resources** Sega Genesis / Super Nintendo
 development tools and libraries (source-level debugger, assembler, graphics
