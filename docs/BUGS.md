@@ -13,6 +13,50 @@ Format per entry:
 
 ---
 
+## `CopyScreen`/`CopyMem` copied 2× their length on 64-bit — `len /= 4` assumed a 4-byte `long` — 2026-06-11
+
+**Status:** FIXED [`adc92e2`](https://github.com/developer-resources-co/drdevtools/commit/adc92e2) (`devsys/tools/drmon/general.cpp`).
+
+**Symptom:** With the Linux viewport-fill change (size the CGA screen to the terminal instead of a hardcoded 80×25), drmon rendered correctly at exactly 80×25 but **garbled the entire desktop at any width ≥ 83** — menu-structure text (Rate/Save/Index/Command/About items, hotkeys) and raw memory splattered across the body, two menu bars, etc. — and **`SIGABRT`'d when the terminal was shrunk**. Width-triggered (height was fine); the framebuffer drmon handed to the blit was already garbage, so it was drmon-side, not ncurses. AddressSanitizer pinned it exactly:
+
+```
+ERROR: AddressSanitizer: heap-buffer-overflow ... READ of size 8
+    #0 CopyScreen(char*, char*, unsigned int)  general.cpp:319
+    #1 UpdateScreen()                           display.cpp:117
+    ... 0 bytes after 9600-byte region allocated by SetupDisplay (scrBuffer)
+```
+
+**Root cause:** `CopyScreen` (and its twin `CopyMem`) copied the framebuffer with a `long`-at-a-time loop, sizing it as:
+
+```cpp
+long far *source = (long far *)sBuff, *dest = (long far *)dBuff;
+len /= 4;                       // # of 4-byte longs
+for (i = 0; i < len; ++i) *dest++ = *source++;
+```
+
+`len /= 4` is correct only where `sizeof(long) == 4` (16-bit DOS / Win16). On 64-bit Linux `long` is **8 bytes**, so the loop runs `len/4` iterations copying 8 bytes each = **2 × `len` bytes** — every `UpdateScreen` it read `screenSize` bytes *past* `scrBuffer` and wrote `screenSize` bytes *past* `screen`. The over-read dragged whatever heap followed `scrBuffer` (menu `_menuItem` structures) into the visible framebuffer; the over-write corrupted the heap after `screen` (the shrink-time `SIGABRT`).
+
+**Why dormant:** drmon ran at exactly **80×25** for its entire ~30-year life (the DOS text mode, and the hardcoded Linux Phase-1.5 size). At 80×25 the 2× copy ran 4000 bytes past each buffer onto spare heap that happened to be harmless, and — crucially — the blit only reads the first `screenSize` bytes of `screen`, which *are* a correct copy, so nothing visibly broke. The bug only bites once the screen is a different size: a larger framebuffer's 2× over-copy reaches live allocations (menu data, then heap metadata). Nothing exercised a non-80×25 screen until the viewport-fill work, so the 64-bit `long` mismatch stayed invisible from the 2003 CVS import (≈1993 code) until now.
+
+**Fix:** Replace the hand-rolled `long`-copy with `memcpy(dBuff, sBuff, len)` in both `CopyScreen` and `CopyMem` — copies exactly `len` bytes regardless of `sizeof(long)`, and lets the compiler vectorize.
+
+**Diff** (`devsys/tools/drmon/general.cpp`):
+```diff
+-	long far *source,far *dest;
+-	source = (long far *)sBuff;
+-	dest = (long far *)dBuff;
+-	len /= 4;
+-	for(i=0;i<len;++i)
+-		*dest++ = *source++;
++	memcpy(dBuff, sBuff, len);
+```
+
+**Origin:** Imported via CVS commit [`c835c3b`](https://github.com/developer-resources-co/drdevtools/commit/c835c3b) (2003-08-15); the `len/=4` long-copy is ~1993-vintage DOS code, unchanged since. ~30 years dormant.
+
+**Commit / verification:** Fix [`adc92e2`](https://github.com/developer-resources-co/drdevtools/commit/adc92e2). Found by enabling AddressSanitizer (now the default build, `-DDRMON_ASAN=ON`). Verified: clean render + **0 ASan errors** at 120×40 startup, live resize 80→120→70→100→80, and no shrink crash. The same ASan sweep also surfaced two overlapping-`strcpy` accelerator-strip bugs in `menu.cpp` (`CreateItems`, `_menu::_menu`) — `strcpy(p, p+1)` to delete the `&`, UB on overlap — fixed with `memmove` in the same commit.
+
+---
+
 ## String gadgets stored their editable text in a read-only string literal — opening the Expression window (Alt+E) segfaulted — 2026-06-10
 
 **Status:** FIXED [`0406bef`](https://github.com/developer-resources-co/drdevtools/commit/0406bef) (`devsys/tools/drmon/gadget.cpp` + `gadget.hpp`, `expr.cpp`, `command.cpp`, `filereq.cpp`).
