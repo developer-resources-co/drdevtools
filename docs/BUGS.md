@@ -13,6 +13,62 @@ Format per entry:
 
 ---
 
+## String gadgets stored their editable text in a read-only string literal — opening the Expression window (Alt+E) segfaulted — 2026-06-10
+
+**Status:** FIXED [`0406bef`](https://github.com/developer-resources-co/drdevtools/commit/0406bef) (`devsys/tools/drmon/gadget.cpp` + `gadget.hpp`, `expr.cpp`, `command.cpp`, `filereq.cpp`).
+
+**Symptom:** Pressing **Alt+E** (Open Expression window) crashed drmon with `SIGSEGV` (exit 139). gdb backtrace:
+
+```
+#0  PadString(char*, int)
+#1  ActivateStrGadget(_window*, _gadget*)
+#2  OpenExp(int, int)
+#3  OpenExpWindow()
+#4  GlobInput(_input*, _object*)
+```
+
+The same fault lurked in the Command window (Alt+K) and the file requester.
+
+**Root cause:** String gadgets are edited **in place** — [`PadString`](../devsys/tools/drmon/general.cpp) (`general.cpp:368`) and the `StrGadgInput` key handlers ([`gadget.cpp:443-517`](../devsys/tools/drmon/gadget.cpp)) write directly into `gPtr->gadgText`, padding spaces out to `xSize` and inserting/deleting typed characters. But `AddExpWinGadgets` initialized that text with a **string literal**:
+
+```cpp
+gPtr->gadgText = "                                                     ";   // expr.cpp:120
+...
+pWindow->activeGadget = FindGadget(&pWindow->gadgBase,EXPGAD_EXP);
+ActivateStrGadget(pWindow,pWindow->activeGadget);   // -> PadString(gadgText, xSize)
+```
+
+`PadString` walks to the terminator, then `*buffer = 0` — a **write into the literal**, which on a modern toolchain lives in read-only `.rodata`. Write to a read-only page → `SIGSEGV`. (Even if `PadString` were skipped, the first keystroke would fault on the same buffer.)
+
+**Why dormant:** The 1990s DOS compilers this code targets (where `char* = "literal"` was even legal, not just `const char*`) placed string literals in **writable** data, so editing them worked and shipped fine for ~30 years. `g++` puts literals in read-only `.rodata`, so the long-standing idiom faults the instant the gadget is activated. The sibling builder `AddExpGadgets` (`expr.cpp:86`) happened to use the writable module buffer `expString` for the *same* gadget, which is why the GetExpr prompt path never crashed — the two paths were inconsistent and only the literal one was reachable via Alt+E.
+
+**Fix:** Add [`SetGadgString(gPtr, text)`](../devsys/tools/drmon/gadget.cpp) — copies the initial text into a heap buffer sized for in-place editing (`max(strlen+1, xSize+1)`) — and use it for every **editable** string gadget: the Expression input + 4 result gadgets (`expr.cpp`), the Command input (`command.cpp`), and the file-requester dir/drive fields (`filereq.cpp`). The file field switches to the existing writable module buffer `fileReqFileName`, dropping a dead duplicate assignment. Read-only buttons/labels (`[Ok]`, `[Cancel]`, the close/zoom/scroll glyphs) keep their literals — they are drawn, never written.
+
+**Diff** (representative — `expr.cpp` input gadget + the new helper in `gadget.cpp`):
+```diff
+-	gPtr->gadgText = "                                                     ";
++	SetGadgString(gPtr,"                                                     ");
+```
+```diff
++void
++SetGadgString(_gadget *gPtr,const char *text)
++{
++	int len = (int)strlen(text);
++	int cap = (int)gPtr->xSize + 1;		// room for PadString's pad-to-xSize + NUL
++	if(len + 1 > cap)
++		cap = len + 1;
++	gPtr->gadgText = (char *)malloc(cap);
++	if(gPtr->gadgText)
++		memcpy(gPtr->gadgText,text,len + 1);
++}
+```
+
+**Origin:** Imported to version control via CVS commit [`c835c3b`](https://github.com/developer-resources-co/drdevtools/commit/c835c3b) (2003-08-15); `git blame` puts both `PadString` and the literal assignment in that initial import (≈1993 code, never modified since). ~30 years dormant.
+
+**Commit / verification:** Fix [`0406bef`](https://github.com/developer-resources-co/drdevtools/commit/0406bef). Regression guard: [`linux/smoke-test.sh`](../devsys/tools/drmon/linux/smoke-test.sh) / `task smoke` opens every window via its Alt-key under gdb and fails on any `SIGSEGV` (and types into the Expression gadget to exercise the edit path). Confirmed it **FAILS** with the backtrace above on the pre-fix line and **PASSES** after.
+
+---
+
 ## `_window` ctor painted the auto-assigned window number before menus could opt out — dropdowns showed a stray "1" — 2026-06-10
 
 **Status:** FIXED [`5f679ff`](https://github.com/developer-resources-co/drdevtools/commit/5f679ff) (`devsys/tools/drmon/window.cpp` ctor + `window.hpp` + `menu.cpp` `_menu::Render`).
