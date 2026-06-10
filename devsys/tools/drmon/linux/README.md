@@ -73,6 +73,23 @@ files stay close to original:
   (`screen.cpp`); `scrBuffer` allocated on Linux (`display.cpp`); ncurses blit after
   `CopyScreen` (`display.cpp`); keyboard wired through ncurses (`input.cpp`).
 
+## ⚠ Editing source with CP437 bytes
+
+Many drmon source files contain **literal IBM CP437 / extended-ASCII bytes** — the
+box-drawing characters used for window/menu borders (`window.cpp`, `window.hpp` default
+border, `menu.cpp` / `filereq.cpp` border strings, plus data in `charts.cpp`,
+`gadget.cpp`, `monmenu.cpp`, …). These are **not valid UTF-8**. Any editor (or tool) that
+round-trips the file through UTF-8 will silently replace every high byte with `U+FFFD` (�)
+and break the borders. Edit those files only with **byte-safe** tools (`sed`, `perl -i`,
+`python` `rb`/`wb`) — never a UTF-8 text editor. Quick check:
+
+```
+python3 -c "print(open('menu.cpp','rb').read().count(b'\xef\xbf\xbd'))"   # 0 = clean
+```
+
+New border strings should be written as ASCII escape sequences (e.g.
+`"\xC9\xCD\xBB\xBA\xBA\xC8\xCD\xBC"`) so they can't be corrupted.
+
 ## Known limitations (by design, this phase)
 
 - Runs **disconnected** — no target yet (dev-link transport stubbed); a real target
