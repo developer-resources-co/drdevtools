@@ -28,6 +28,11 @@ InitDisplay(void);
 void
 UpdateScreen(void);
 
+#if defined(__GNUC__)
+void
+ReSizeViewport(void);		// Linux: re-fill the screen after a terminal resize
+#endif
+
 void
 XorDisplayRect(int startX, int startY, int endX, int endY);
 

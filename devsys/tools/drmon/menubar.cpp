@@ -9,6 +9,7 @@
 #include "global.hpp"
 
 #include "config.hpp"
+#include "screen.hpp"		// screenWidth (right-align the menu-bar clock)
 #include "list.hpp"
 #include "keys.hpp"
 #include "monkeys.hpp"
@@ -98,7 +99,11 @@ MenuRoutine(_object *oPtr)
 	tPtr=localtime(&lt);
 	cPtr = asctime(tPtr);
 	strcpy(textBuffer,cPtr);
-    PrintLay(oPtr->layer,textBuffer,55,0);
+	{ char *nl = strchr(textBuffer,'\n'); if(nl) *nl = 0; }   // asctime trailing newline
+	// Right-align to the menu bar's width (lands at col 55 on an 80-wide screen, as
+	// before; moves to the top-right when the screen fills a wider terminal).
+	{ int x = (int)screenWidth - (int)strlen(textBuffer) - 1; if(x < 0) x = 0;
+	  PrintLay(oPtr->layer,textBuffer,x,0); }
 }
 
 //===========================================================================

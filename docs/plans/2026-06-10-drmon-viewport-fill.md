@@ -1,7 +1,9 @@
 # drmon viewport fill — size the screen to the terminal (Linux ncurses)
 
 **Date:** 2026-06-10
-**Status:** Proposed — plan for review before implementation
+**Status:** Implemented + verified (Phase A fill, Phase B live resize). Surfaced and fixed a
+dormant 64-bit `CopyScreen` overflow that garbled the screen at widths ≥ 83 — see
+[BUGS.md](../BUGS.md).
 **Companion to:** [drmon mouse support](2026-06-10-drmon-mouse.md) (this was split off as the separate
 "resize" plan). Mouse landed first; this is "chrome fills, windows fixed".
 
@@ -101,13 +103,32 @@ Two phases: **A** fills at startup (most of the value, simple); **B** adds live 
 
 ## Verification
 
-1. **Build** — Docker toolchain, 0 errors; links.
-2. **80×25 regression** — `task shot` (tmux 80×25) renders exactly as today (menu bar + windows unchanged).
-3. **Startup fill** — `tmux new-session -x 120 -y 40`, run drmon, capture → menu bar spans all 120
-   columns, desktop background fills all 40 rows, clock visible (top-right after polish), an opened
-   window centres on the larger desktop.
-4. **Live resize** — start in tmux at 80×25, `tmux resize-window -x 120 -y 40`, capture → drmon
-   re-fills to 120×40 without restart; resize back to 90×30, capture → re-fills again; no crash, no
-   stale 80-column island.
-5. **Shrink** — resize to 70×20 → no crash; content clips cleanly; resizing back restores full fill.
-6. **Keyboard/menus still work** after a resize (F10 → File dropdown) — no regression.
+All run under AddressSanitizer (now the default build, `-DDRMON_ASAN=ON`); **0 ASan errors** across
+every case below.
+
+1. **Build** — Docker toolchain, 0 errors; links (ASan-instrumented). — **PASS**
+2. **80×25 regression** — `task shot` renders as before. — **PASS**
+3. **Startup fill** — `tmux new-session -x 120 -y 40` → menu bar spans all 120 columns, copyright/
+   message bar at row 40 (bottom), clean desktop between; `F10`→`Enter` opens the File dropdown
+   cleanly at 120 wide. — **PASS**
+   ```
+   ☼ File Control Windows Macros Rate Settings Help            Wed Jun 10 15:44 2026   <- row 1, full width
+    SNESMon V2.1.30  Copyright 1991─1994 Developer Resources          Running          <- row 40, bottom
+   ```
+4. **Live resize** — start 80×25, resize 120×40 → re-fills; → 70×20 → 100×30 → 80×25, each re-fills
+   cleanly, no garble, no stale island. — **PASS**
+5. **Shrink** — 70×20 → no crash (the prior SIGABRT is gone with the CopyScreen fix); content clips
+   cleanly; regrow restores full fill. — **PASS**
+6. **Keyboard/menus after resize** — `F10`→`Enter` opens the File dropdown post-resize. — **PASS**
+
+### Root cause surfaced during verification (the real blocker)
+
+Startup at any width > ~82 garbled the whole desktop with menu-structure data and crashed on shrink.
+**Not** a sizing-logic error — a dormant **16-bit→64-bit bug** in `CopyScreen`/`CopyMem`
+([`general.cpp`](../../devsys/tools/drmon/general.cpp)): `len /= 4` then copying `long`s assumed
+`sizeof(long)==4` (DOS); on 64-bit Linux `long` is 8 bytes, so it copied **2× `len`** — `screenSize`
+bytes past both `scrBuffer` and `screen` every frame. Invisible at 80×25 (over-copy hit benign heap),
+catastrophic once the larger over-copy reached live data. Found with AddressSanitizer
+(`heap-buffer-overflow` READ in `CopyScreen` ← `UpdateScreen`). Fixed with `memcpy`. ASan also caught
+two overlapping-`strcpy` accelerator-strip bugs (`menu.cpp` `CreateItems`/`_menu::_menu`) → `memmove`.
+Full writeup in [BUGS.md](../BUGS.md).

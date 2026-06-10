@@ -65,8 +65,9 @@ CreateItems(menuItems* items)
 					item->hotKeyPos = ampersandPos - item->text;
 					}
 
-				// Move text over
-				strcpy( ampersandPos, ampersandPos+1 );
+				// Move text over (delete the '&'): src/dst overlap, so memmove,
+				// not strcpy (strcpy on overlapping ranges is undefined behaviour).
+				memmove( ampersandPos, ampersandPos+1, strlen(ampersandPos+1)+1 );
 				}
 			item->attr = menuAttr;
 			item->yPos = yPos++;
@@ -174,8 +175,8 @@ _menu::_menu( _menuItem* childParam, char* textParam )
 			hotKeyPos = ampersandPos - text;
 			}
 
-		// Move text over
-		strcpy( ampersandPos, ampersandPos+1 );
+		// Move text over (delete the '&'): src/dst overlap → memmove, not strcpy.
+		memmove( ampersandPos, ampersandPos+1, strlen(ampersandPos+1)+1 );
 		}
 	next = NULL;
 	choice = 0;

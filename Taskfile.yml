@@ -16,8 +16,12 @@ vars:
   IMAGE: drmon-build
   DRMON: devsys/tools/drmon
   BUILD: /tmp/drmon-build
+  # AddressSanitizer runtime opts (build is ASan by default, -DDRMON_ASAN=ON). Log to a
+  # file under the mounted build dir (host: /tmp/drmon-build/asan.<pid>) so reports never
+  # corrupt the TUI; keep running after a non-fatal hit; skip leak-at-exit noise.
+  ASAN: 'log_path=/build/asan:halt_on_error=0:detect_leaks=0:abort_on_error=0'
   # common container invocation: repo at /src, build tree at /build, cwd = drmon dir
-  DOCKER: docker run --rm -v {{.ROOT_DIR}}:/src -v {{.BUILD}}:/build -w /src/{{.DRMON}} {{.IMAGE}}
+  DOCKER: docker run --rm -v {{.ROOT_DIR}}:/src -v {{.BUILD}}:/build -e ASAN_OPTIONS={{.ASAN}} -w /src/{{.DRMON}} {{.IMAGE}}
 
 tasks:
   default:
@@ -42,20 +46,20 @@ tasks:
     desc: Run drmon in a terminal (needs a TTY ≥ 80×25; runs disconnected, no target)
     deps: [build]
     cmds:
-      - docker run --rm -it -v {{.ROOT_DIR}}:/src -v {{.BUILD}}:/build -w /build -e TERM=xterm-256color {{.IMAGE}} ./drmon
+      - docker run --rm -it -v {{.ROOT_DIR}}:/src -v {{.BUILD}}:/build -w /build -e TERM=xterm-256color -e ASAN_OPTIONS={{.ASAN}} {{.IMAGE}} ./drmon
 
   debug:
     desc: Run drmon under gdb and print a backtrace (for diagnosing crashes)
     deps: [build]
     cmds:
-      - docker run --rm -v {{.ROOT_DIR}}:/src -v {{.BUILD}}:/build -w /build {{.IMAGE}} gdb -q -batch -ex run -ex bt ./drmon
+      - docker run --rm -v {{.ROOT_DIR}}:/src -v {{.BUILD}}:/build -w /build -e ASAN_OPTIONS={{.ASAN}} {{.IMAGE}} gdb -q -batch -ex run -ex bt ./drmon
 
   shot:
     desc: Headless screenshot — launch drmon in tmux and dump the rendered TUI as text
     deps: [build]
     cmds:
       - >-
-        docker run --rm -v {{.ROOT_DIR}}:/src -v {{.BUILD}}:/build -w /build {{.IMAGE}}
+        docker run --rm -v {{.ROOT_DIR}}:/src -v {{.BUILD}}:/build -w /build -e ASAN_OPTIONS={{.ASAN}} {{.IMAGE}}
         bash -euc '
           export TERM=xterm-256color;
           tmux new-session -d -s d -x 80 -y 25;

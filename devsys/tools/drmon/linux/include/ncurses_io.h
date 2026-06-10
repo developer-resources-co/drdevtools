@@ -13,6 +13,9 @@ int            drmon_nc_getbyte(void);
 int            drmon_nc_bioskeybrd(int cmd);
 int            drmon_nc_havemouse(void);
 int            drmon_nc_getmouse(short *fx, short *fy);
+void           drmon_nc_size(int *cols, int *rows);
+int            drmon_nc_resized(void);
+void           drmon_nc_resync(void);
 #ifdef __cplusplus
 }
 #endif

@@ -6,6 +6,11 @@
 cmake_minimum_required(VERSION 3.16)
 project(drmon LANGUAGES CXX C)
 
+# AddressSanitizer is ON by default during the Linux port — it has already caught
+# real heap bugs (overlapping strcpy in CreateItems, the viewport overruns). Turn it
+# off with -DDRMON_ASAN=OFF once the port is stable.
+option(DRMON_ASAN "Build with AddressSanitizer" ON)
+
 # Object list mirrors drmon.mak's OBJS, minus the DOS x86 asm transport
 # (snesio.asm) which is replaced by linux/slio_stub.cpp.
 set(DRMON_CXX_SRC
@@ -47,3 +52,8 @@ target_compile_options(drmon PRIVATE
     $<$<COMPILE_LANGUAGE:CXX>:-fpermissive>
     $<$<COMPILE_LANGUAGE:C>:-std=gnu89>
 )
+
+if(DRMON_ASAN)
+    target_compile_options(drmon PRIVATE -fsanitize=address -fno-omit-frame-pointer -g)
+    target_link_options(drmon PRIVATE -fsanitize=address)
+endif()

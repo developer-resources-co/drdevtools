@@ -310,13 +310,11 @@ CopyScreen(char far *dBuff,char far *sBuff,unsigned int len)
 		pop		ds
 	 }
 #else
-	unsigned int i;
-	long far *source,far *dest;
-	source = (long far *)sBuff;
-	dest = (long far *)dBuff;
-	len /= 4;
-   for(i=0;i<len;++i)
-		*dest++ = *source++;
+	// Copy len bytes. The old body did `len /= 4` then copied `long`s — correct only
+	// where sizeof(long)==4 (16-bit DOS); on 64-bit Linux long is 8 bytes, so it copied
+	// 2x len and ran screenSize bytes past both buffers (garbled the screen at widths
+	// whose over-copy hit live heap, and corrupted the heap). memcpy copies exactly len.
+	memcpy(dBuff, sBuff, len);
 #endif
 }
 
@@ -325,13 +323,9 @@ CopyScreen(char far *dBuff,char far *sBuff,unsigned int len)
 void
 CopyMem(char far *dBuff,char far *sBuff,unsigned int len)
 {
-    unsigned int i;
-	long far *source,far *dest;
-	source = (long far *)sBuff;
-	dest = (long far *)dBuff;
-	len /= 4;
-    for(i=0;i<len;++i)
-	*dest++ = *source++;
+	// Same 64-bit long fix as CopyScreen: copy exactly len bytes (was len/=4 + long
+	// copy, which copied 2x on a 64-bit host where long is 8 bytes, not 4).
+	memcpy(dBuff, sBuff, len);
 }
 
 //=============================================================================

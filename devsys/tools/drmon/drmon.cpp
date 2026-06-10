@@ -13,6 +13,9 @@
 #include "about.hpp"
 #include "display.hpp"
 #include "app.hpp"
+#if defined(__GNUC__)
+#include <ncurses_io.h>     // drmon_nc_resized() for the main-loop resize check
+#endif
 
 //=============================================================================
 // globals
@@ -210,6 +213,10 @@ MainLoop()
 
 		slaveUpdate = (modeUpdate && timeToChange);
 		pObjBase->Update();
+#if defined(__GNUC__)
+		if(drmon_nc_resized())			// terminal resized -> re-fill before drawing
+			ReSizeViewport();
+#endif
 		UpdateScreen();
 	 }
 	pObjBase->Update();				// give objects a chance to shut down

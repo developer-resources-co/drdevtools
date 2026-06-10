@@ -82,6 +82,27 @@ ScrollToMouse(_input *in)
 
 //==============================================================================
 
+#if defined(__GNUC__)
+//==============================================================================
+// Terminal was resized: rebuild every size-dependent surface so the desktop and
+// menu bar re-fill the new COLS x LINES. Windows keep their fixed sizes/positions
+// (layer clipping handles any now off-screen). Mirrors the display-mode-change
+// relayout in config.cpp (SetConfigParm / PARM_DISPMODE).
+
+void
+ReSizeViewport(void)
+{
+	drmon_nc_resync();	// rebuild ncurses at the new tty size before re-reading it
+	SetupScreen();		// re-read terminal size; realloc screen/screen2 + screenSize
+	InitDisplay();		// recompute displayWidth/displayHeight
+	SetupDisplay();		// realloc scrBuffer to the new screenSize (sets refreshAll)
+	GetMenuBarLayer();	// re-span the menu bar across the new width
+	InitMessageBar();	// re-span the message bar
+}
+#endif
+
+//==============================================================================
+
 void
 UpdateScreen(void)
 {

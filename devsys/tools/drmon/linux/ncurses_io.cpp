@@ -24,6 +24,7 @@ static int           g_inited = 0;
 static unsigned char g_shift  = 0;   // backing byte for input.cpp's keyboardStatus
 static int           g_mx = 0, g_my = 0;   // latest mouse cell position
 static int           g_mbtn = 0;           // sticky button mask (0x01 left, 0x02 right)
+static int           g_resized = 0;        // sticky: terminal was resized, relayout pending
 
 // CGA colour index (0..15) -> ncurses base colour (0..7); bright = index >= 8.
 static const short kCga2Curses[16] = {
@@ -162,11 +163,16 @@ static const wchar_t kCp437[256] = {
 };
 
 // Blit drmon's video buffer (w*h cells of {char, attr}) to the terminal as wide chars.
+// The buffer stride stays `w` (drmon's screenWidth), but never write past the actual
+// terminal (COLS/LINES): when drmon's floored 80x25 exceeds a smaller terminal, writing
+// at x>=COLS corrupts ncurses' model and lingers after a regrow. Clip the visible span.
 void drmon_nc_blit(const unsigned char *buf, int w, int h)
 {
     if (!g_inited || !buf) return;
-    for (int y = 0; y < h; ++y) {
-        for (int x = 0; x < w; ++x) {
+    int vw = (w < COLS)  ? w : COLS;     // visible width  (buffer stride stays w)
+    int vh = (h < LINES) ? h : LINES;    // visible height
+    for (int y = 0; y < vh; ++y) {
+        for (int x = 0; x < vw; ++x) {
             unsigned char ch   = buf[(y * w + x) * 2];
             unsigned char attr = buf[(y * w + x) * 2 + 1];
             wchar_t wc[2] = { kCp437[ch] ? kCp437[ch] : L' ', 0 };
@@ -235,6 +241,11 @@ static void pump(void)
         return;
     }
 
+    if (k == KEY_RESIZE) {                     // terminal resized; flag a relayout.
+        g_resized = 1;                         // drmon_nc_resync() (called from
+        return;                                // ReSizeViewport) rebuilds ncurses. No key.
+    }
+
     if (k == 27) {                            // ESC: bare ESC, or Alt+key (ESC-prefixed)
         int k2 = ERR;
         for (int i = 0; i < 8 && k2 == ERR; ++i) { k2 = getch(); if (k2 == ERR) napms(1); }
@@ -276,6 +287,38 @@ int drmon_nc_getmouse(short *fx, short *fy)
     if (fx) *fx = (short)(g_mx * 8);     // drmon divides fine coords by 8 -> cell
     if (fy) *fy = (short)(g_my * 8);
     return g_mbtn;
+}
+
+// ---- viewport size: track the terminal's COLS/LINES exactly ----
+// Must equal what ncurses thinks stdscr is: any floor ABOVE the real terminal size
+// makes drmon's framebuffer wider/taller than stdscr, and the stride mismatch garbles
+// the blit (and wedges the next resize). So clamp to a sane max only, never up.
+void drmon_nc_size(int *cols, int *rows)
+{
+    int c = COLS, r = LINES;
+    if (c < 1)  c = 1;  else if (c > 255) c = 255;   // ceiling keeps buffers sane
+    if (r < 1)  r = 1;  else if (r > 127) r = 127;
+    if (cols) *cols = c;
+    if (rows) *rows = r;
+}
+
+// Returns (and clears) the sticky resize flag set when KEY_RESIZE arrives.
+int drmon_nc_resized(void)
+{
+    drmon_nc_keyready();                 // pump so an idle-frame KEY_RESIZE is seen
+    int r = g_resized; g_resized = 0; return r;
+}
+
+// Re-sync ncurses to the current terminal size. endwin()+refresh() is the documented
+// way to make ncurses re-read the tty geometry and rebuild its screen model after a
+// resize; without it, shrinking leaves stdscr/curscr larger than the terminal and the
+// blit garbles. Call before re-reading drmon_nc_size() in a relayout.
+void drmon_nc_resync(void)
+{
+    if (!g_inited) return;
+    endwin();
+    refresh();
+    clearok(stdscr, TRUE);               // force a full repaint on the next blit
 }
 
 } // extern "C"

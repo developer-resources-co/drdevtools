@@ -426,8 +426,10 @@ SetupScreen(void)
 		backgroundAttr = 0x17;          // white on blue (classic)
 	}
 	primaryDispCGA = boolean::TRUE;
-	screenWidth  = 80;  screenHeight  = 25;
-	screenWidth2 = 80;  screenHeight2 = 25;
+	// Fill the terminal: size the CGA screen to the actual COLS x LINES (floored at
+	// 80x25). Re-read on every call so ReSizeViewport() picks up live terminal resizes.
+	{ int w = 80, h = 25; drmon_nc_size(&w, &h); screenWidth = w; screenHeight = h; }
+	screenWidth2 = 80;  screenHeight2 = 25;   // secondary mono screen: only used if twoScreen
 	if(screen)  free(screen);
 	if(screen2) free(screen2);
 	screen  = (char*)calloc((long)screenWidth *screenHeight *charSize, 1);
