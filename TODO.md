@@ -1,6 +1,6 @@
 # TODO
 
-drmon = the "DR Monitor" source-level debugger being brought from 1990s DOS to Linux.
+drmon = the Developer Resources Monitor, a source-level debugger being brought from 1990s DOS to Linux.
 See [docs/plans/2026-06-10-port-drmon-linux.md](docs/plans/2026-06-10-port-drmon-linux.md)
 for the phased roadmap.
 
@@ -12,6 +12,17 @@ Plan-first: non-trivial work gets a `docs/plans/YYYY-MM-DD-<topic>.md` and a TOD
 
 ## DRMON — DEBUGGER BACKEND
 
+- [ ] **PPU/CRAM/OBJRAM reads return zeros.** `ReadSlavePPU` is stubbed safe
+  (zeros, no crash); real PPU/CRAM/OBJ reads need the MAME backend (Phase 2+).
+- [ ] **SPC700 ops are stubbed / no-op.** Audio CPU (SPC700) memory and register
+  ops are not wired; needs Phase 2 MAME bridge.
+- [ ] **Write-protect and BRK-on-write are no-ops.** The stub accepts the protocol
+  command but doesn't enforce protection; needs a live target (Phase 2+).
+- [ ] **SNES_SEARCH not implemented.** Memory-search command is stubbed; needs
+  Phase 2 backend to read target memory.
+- [ ] **ROM-region writes won't stick.** MAME maps SNES ROM as read-only; writes
+  to ROM addresses ($008000+) are silently dropped. WRAM ($7E0000+) writes work.
+  Document prominently in the manual's Phase 2 section when the backend lands.
 - [ ] **Phase 2 — MAME backend.** Replace the stubbed SLIO transport
   ([`devsys/tools/drmon/linux/slio_stub.cpp`](devsys/tools/drmon/linux/slio_stub.cpp) — the
   designed seam) with a bridge that translates drmon's opcode protocol (read/write mem+regs,
