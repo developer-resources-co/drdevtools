@@ -32,6 +32,11 @@ DEFAULT_BG  = PALETTE[0]           # black  — window/title background
 DESKTOP_BG  = PALETTE[4]           # blue   — drmon desktop, always this colour
 
 
+def _is_box(ch):
+    """True for Unicode box-drawing characters U+2500–U+257F."""
+    return bool(ch) and 0x2500 <= ord(ch) < 0x2580
+
+
 def parse_ansi(text):
     rows, row = [], []
     fg, bg, bold = DEFAULT_FG, DEFAULT_BG, False
@@ -88,11 +93,6 @@ def parse_ansi(text):
     return rows
 
 
-def _is_shadow_strip(cells):
-    """True if every cell is black+space — the drmon drop-shadow pattern."""
-    return all(bg == DEFAULT_BG and ch == ' ' for ch, _, bg in cells)
-
-
 def render(ansi_file, out_file, scale=2):
     with open(ansi_file, 'r', encoding='utf-8', errors='replace') as f:
         text = f.read()
@@ -111,11 +111,13 @@ def render(ansi_file, out_file, scale=2):
     padded = [list(r) + [(' ', DEFAULT_FG, DESKTOP_BG)] * (n_cols - len(r))
               for r in rows]
 
-    # --- bounding box of non-desktop cells (skip menu bar row 0 + status bar) ---
+    # --- crop to the bounding box of box-drawing border characters ---
+    # Box-drawing chars (U+2500–U+257F) mark the exact window extent; everything
+    # outside them is desktop or drop-shadow and should be excluded.
     r1 = r2 = c1 = c2 = None
     for ri in range(1, len(padded) - 1):
         for ci in range(n_cols):
-            if padded[ri][ci][2] != DESKTOP_BG:
+            if _is_box(padded[ri][ci][0]):
                 if r1 is None:
                     r1 = ri
                 r2 = ri
@@ -124,16 +126,21 @@ def render(ansi_file, out_file, scale=2):
                 if c2 is None or ci > c2:
                     c2 = ci
 
+    # Fallback: no box-drawing found — crop to non-desktop bounding box
+    if r1 is None:
+        for ri in range(1, len(padded) - 1):
+            for ci in range(n_cols):
+                if padded[ri][ci][2] != DESKTOP_BG:
+                    if r1 is None:
+                        r1 = ri
+                    r2 = ri
+                    if c1 is None or ci < c1:
+                        c1 = ci
+                    if c2 is None or ci > c2:
+                        c2 = ci
+
     if r1 is None:
         r1, r2, c1, c2 = 1, len(padded) - 2, 0, n_cols - 1
-
-    # --- strip drop shadow (all-black+space strips on right and bottom edges) ---
-    while r2 > r1 and _is_shadow_strip(
-            [padded[r2][ci] for ci in range(c1, c2 + 1)]):
-        r2 -= 1
-    while c2 > c1 and _is_shadow_strip(
-            [padded[ri][c2] for ri in range(r1, r2 + 1)]):
-        c2 -= 1
 
     crop = [padded[ri][c1:c2 + 1] for ri in range(r1, r2 + 1)]
     n_rows_out = len(crop)
