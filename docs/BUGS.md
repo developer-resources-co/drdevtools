@@ -13,6 +13,51 @@ Format per entry:
 
 ---
 
+## `ExpWinInput` read `oPtr->dataPtr` after `delete oPtr` — Expression-window close use-after-free — 2026-06-11
+
+**Status:** FIXED [`0680e84`](https://github.com/developer-resources-co/drdevtools/commit/0680e84) (`devsys/tools/drmon/expr.cpp`).
+
+**Symptom:** Closing the Expression window read freed memory — AddressSanitizer `heap-use-after-free` (READ) in `ExpWinInput` ([`expr.cpp:344`](../devsys/tools/drmon/expr.cpp)), the object having been `delete`d one line earlier at `expr.cpp:343`. No visible failure (the freed `_object` wasn't reused yet), so it never crashed in practice.
+
+**Root cause:** The window-close branch deleted the object, then dereferenced it:
+```cpp
+delete oPtr;
+if(!oPtr->dataPtr)        // read of freed _object
+    { exprOpen = boolean::FALSE; exprObjPtr = NULL; }
+```
+`oPtr->dataPtr` distinguishes a pop-up from the normal window, but it's read *after* `oPtr` is freed.
+
+**Why dormant:** Use-after-free of a just-freed heap block is silently fine until that memory is recycled; the glibc allocator hands the freed `_object` back later, not immediately, so the stale read returned the old value and behaved correctly for ~30 years. Only ASan (now the default build) flags it.
+
+**Fix:** Capture the flag into a local before the deletes:
+```diff
++	FLAG notPopup = !oPtr->dataPtr;	// capture BEFORE delete
+	delete pWindow;
+	delete oPtr;
+-	if(!oPtr->dataPtr)
++	if(notPopup)
+```
+
+**Origin:** CVS import [`c835c3b`](https://github.com/developer-resources-co/drdevtools/commit/c835c3b) (2003-08-15), ~1993 code. **Commit / verification:** [`0680e84`](https://github.com/developer-resources-co/drdevtools/commit/0680e84); `task smoke` (opens every window + types into Expression + closes) is ASan-clean after the fix.
+
+---
+
+## Mouse-pointer backdrop dangled across a `scrBuffer` realloc — use-after-free on terminal resize — 2026-06-11
+
+**Status:** FIXED [`2038358`](https://github.com/developer-resources-co/drdevtools/commit/2038358) (`devsys/tools/drmon/input.cpp` + `input.hpp`, `display.cpp`).
+
+**Symptom:** Resizing the terminal triggered an AddressSanitizer `heap-use-after-free` (WRITE) in `ErasePointer` ([`input.cpp:86`](../devsys/tools/drmon/input.cpp)) via `UpdateScreen`, writing into a `scrBuffer` that `SetupDisplay` had just freed. Surfaced by the 2026 viewport-fill feature (live `KEY_RESIZE` re-layout); never reachable before, since `scrBuffer` was only ever (re)allocated at startup/mode-change, not at runtime with a pointer already drawn.
+
+**Root cause:** `DrawPointer` caches the framebuffer base in a file-global `pointerScreen` (and the saved cell) so `ErasePointer` can restore it; `ErasePointer` writes through that cached pointer whenever `pointerDrawn` is set. `SetupDisplay` does `free(scrBuffer); scrBuffer = farmalloc(...)`. When a resize calls `SetupDisplay` while a pointer backdrop is live, `pointerScreen` is left dangling at the freed block, and the next `ErasePointer` writes through it.
+
+**Why dormant:** Pre-port, `SetupDisplay`'s free+realloc of `scrBuffer` only ran at startup (no backdrop yet) or on a config display-mode change (rare); the realloc-while-pointer-drawn path didn't exist until live terminal resize was added.
+
+**Fix:** Add `InvalidatePointer()` (clears `pointerDrawn`) and call it in `SetupDisplay` immediately before `free(scrBuffer)`, so a stale backdrop can never be written back through the freed pointer; the trailing `DisplayPointer()` re-establishes it against the new buffer.
+
+**Origin:** `input.cpp`/`display.cpp` from CVS import [`c835c3b`](https://github.com/developer-resources-co/drdevtools/commit/c835c3b) (2003-08-15); latent until the resize feature exercised it. **Commit / verification:** [`2038358`](https://github.com/developer-resources-co/drdevtools/commit/2038358); resize churn 80→120→70→100→80 is ASan-clean.
+
+---
+
 ## `CopyScreen`/`CopyMem` copied 2× their length on 64-bit — `len /= 4` assumed a 4-byte `long` — 2026-06-11
 
 **Status:** FIXED [`adc92e2`](https://github.com/developer-resources-co/drdevtools/commit/adc92e2) (`devsys/tools/drmon/general.cpp`).
