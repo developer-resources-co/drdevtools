@@ -68,6 +68,36 @@ tasks:
           tmux capture-pane -t d -p;
           tmux kill-server 2>/dev/null || true'
 
+  screenshots:
+    desc: Capture a PNG screenshot of every window type into devsys/tools/drmon/docs/img/
+    deps: [build]
+    cmds:
+      - mkdir -p /tmp/drmon-shots {{.ROOT_DIR}}/{{.DRMON}}/docs/img
+      - >-
+        docker run --rm
+        -v {{.ROOT_DIR}}:/src -v {{.BUILD}}:/build -v /tmp/drmon-shots:/shots
+        -w /build -e ASAN_OPTIONS={{.ASAN}} {{.IMAGE}}
+        bash -euc '
+          export TERM=xterm-256color; SESSION=drmon-shots;
+          cap1() { local n="$1" k="$2";
+            tmux kill-session -t "$SESSION" 2>/dev/null || true;
+            tmux new-session -d -s "$SESSION" -x 80 -y 25;
+            tmux send-keys -t "$SESSION" "./drmon 2>/dev/null" Enter; sleep 1.8;
+            [ -n "$k" ] && { tmux send-keys -t "$SESSION" "$k"; sleep 0.6; };
+            tmux capture-pane -t "$SESSION" -p -e > "/shots/${n}.ansi";
+            tmux kill-session -t "$SESSION" 2>/dev/null || true; };
+          cap1 desktop  "";
+          cap1 memory   M-m; cap1 register  M-r; cap1 breakpoint M-b;
+          cap1 watch    M-w; cap1 symbol    M-s; cap1 expression M-e;
+          cap1 command  M-k; cap1 source    M-l; cap1 textview   M-t;
+          cap1 console  M-o; cap1 ascii     M-y'
+      - >-
+        for f in /tmp/drmon-shots/*.ansi; do
+          n=$(basename "$f" .ansi);
+          python3 {{.ROOT_DIR}}/{{.DRMON}}/linux/render_ansi.py
+          "$f" "{{.ROOT_DIR}}/{{.DRMON}}/docs/img/${n}.png" 2;
+        done
+
   smoke:
     desc: Smoke test — open each window via its Alt-key under gdb; fail on any crash (SIGSEGV)
     deps: [build]
