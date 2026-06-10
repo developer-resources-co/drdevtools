@@ -134,6 +134,32 @@ the empty org once at [github.com/account/organizations/new](https://github.com/
 
 Paste raw output under each step and mark PASS/FAIL before promoting the TODO item.
 
+## Verification results — executed 2026-06-10
+
+1. **History present** — PASS
+
+        9e8f889 2003-08-15 09:45:46 +0000 Will Norris: initial import
+        56c97f1 2003-08-15 09:40:36 +0000 Will Norris: initial import
+        (4 import commits + 1 provenance commit; tree has tools/ devsys/ runtime/ libs/)
+
+2. **File count matches** — PASS — `1199` tracked source files (exact match to the 1199 CVS masters).
+
+3. **No CVS artifacts** — PASS — `CLEAN`.
+
+4. **Author identity** — PASS (with nuance) — imported commits all `Will Norris <wbnorris@gmail.com>`;
+   the single provenance commit uses the host git identity `Will Norris <will@biohack.net>` (also Will).
+
+5. **Pushed and browsable** — PASS
+
+        {"defaultBranch":"main","url":"https://github.com/developer-resources-co/drdevtools","visibility":"PUBLIC"}
+
+6. **Remote matches local** — PASS — local HEAD `ff3a1b9` == remote `main` `ff3a1b9`; tag `start` pushed. MATCH.
+
+**Outcome:** live at [github.com/developer-resources-co/drdevtools](https://github.com/developer-resources-co/drdevtools).
+Converted via `cvs-fast-export` in a throwaway `ubuntu:20.04` container (the `cvs2svn`/`debian:bullseye`
+path in §1/§4 failed — `cvs2svn` is Python-2 and absent from current Debian/Ubuntu; `cvs-fast-export` is
+the working tool). SourceForge left in place as archived origin (§7).
+
 ---
 
 # Remediation: render every URL as a link (memory + hooks)
