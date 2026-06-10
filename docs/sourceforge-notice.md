@@ -7,20 +7,31 @@ exact wording is reproducible.
 
 ## Where to post it
 
-The project has **no Wiki and no News tool enabled** — only Activity, Bugs, and
-Code (CVS). So the notice goes in the **project description**, which is what every
-visitor lands on at the [project summary](https://sourceforge.net/projects/drdevtools/).
+The project has **no Wiki and no News tool enabled** — only Activity, Bugs, and Code
+(CVS). The notice goes on the **Admin → Metadata** page
+([sourceforge.net/p/drdevtools/admin/overview](https://sourceforge.net/p/drdevtools/admin/overview),
+requires SF login). Three controls there, in priority order:
 
-- **Full / long description** — admin at [sourceforge.net/p/drdevtools/admin/overview](https://sourceforge.net/p/drdevtools/admin/overview)
-  → *Description* field → prepend the Markdown block below (SF renders Markdown there).
-- **Short description / summary line** — same admin page → set it to the plain one-liner below.
-- *(optional, if you want a dedicated page)* enable the Wiki via admin → *Tools* → add **Wiki**,
-  then post the block to the new wiki home.
+1. **"Moved Project to:" radio** (under *Project Status*, right column) → set the URL below.
+   This is SourceForge's native "project moved" mechanism: shows a banner, keeps code/files
+   readable as an archive. Flips status from *Active* to *Moved* (accurate for an archive).
+2. **Short Summary** — **hard 70-character limit** → use the 61-char line below.
+3. **Full Description** *(optional)* → prepend the Markdown block. Markdown rendering in this
+   field is not guaranteed, so treat it as secondary to 1 + 2.
 
-Posting requires being logged in to the SourceForge account that owns the project;
-there is no unauthenticated path.
+### "Moved Project to:" URL
 
-## Description block (Markdown — paste verbatim)
+```text
+https://github.com/developer-resources-co/drdevtools
+```
+
+### Short Summary (≤70 chars — this is 61)
+
+```text
+Moved to GitHub: github.com/developer-resources-co/drdevtools
+```
+
+### Full Description block (optional, Markdown)
 
 ```markdown
 # ⚠ This project has moved to GitHub
@@ -31,10 +42,4 @@ there is no unauthenticated path.
 The complete CVS history was migrated to git on 2026-06-10. This SourceForge
 project is retained only as a read-only archive — all current development happens
 on GitHub. Please update your bookmarks and clone from the GitHub URL above.
-```
-
-## Short-description one-liner (plain text)
-
-```text
-MOVED TO GITHUB — now maintained at https://github.com/developer-resources-co/drdevtools (SourceForge retained as a read-only archive).
 ```
