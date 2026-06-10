@@ -150,19 +150,21 @@ It supports Windows, Linux, and macOS, and ships Docker images and VS Code integ
 
 ## Packaging Priority Order
 
-Given the goal of supporting SNES/65816 homebrew development and complementing drmon:
+Given the goal of supporting SNES/65816 homebrew development and complementing drmon. The target distribution channel is the [foundry apt repo](https://apt.foundrylinux.org), wired into the `foundry-retro-tools` metapackage. TODOs tracked in [foundrylinux.org/TODO.md](../../foundrylinux.org/TODO.md) and [drdevtools/TODO.md](../../drdevtools/TODO.md).
 
-1. **WLA-DX** — package first. Single binary tool, GPL, cmake build, completely absent from Debian/Ubuntu, used by both standalone SNES assemblers and as PVSnesLib's assembler backend. Direct complement to drmon (assemble → debug).
+1. **64tass — add to `foundry-retro-tools` Depends** (no custom deb needed). Already in Ubuntu Noble/Resolute and Debian bookworm at the current version. `foundry-retro-tools` already pulls `cc65` from Ubuntu but not `64tass`; one-line Depends addition closes the gap.
 
-2. **asar** — package second. The standard ROM hacking assembler, GPL, cmake, absent from Debian/Ubuntu. High visibility in the SNES community; a packaged asar lowers the barrier for ROM hackers who might also adopt drmon for debugging.
+2. **WLA-DX** — package first among the custom debs. Single binary tool, GPL, cmake build, completely absent from Debian/Ubuntu, used by both standalone SNES assemblers and as PVSnesLib's assembler backend. Direct complement to drmon (assemble → debug).
 
-3. **PVSnesLib** — package eventually, after WLA-DX. High effort non-standard layout, but it is the only maintained SNES C SDK. MIT license. Phased approach: get WLA-DX packaged (a PVSnesLib dependency), then tackle the SDK itself. Could be distributed as a tarball install under `/opt/pvsneslib` with a wrapper `.deb` that sets environment variables.
+3. **asar** — package second. The standard ROM hacking assembler, GPL, cmake, absent from Debian/Ubuntu. High visibility in the SNES community; a packaged asar lowers the barrier for ROM hackers who might also adopt drmon for debugging.
 
-4. **ca65/cc65** — skip. Already in Debian/Ubuntu at current upstream version. No gap to fill.
+4. **PVSnesLib** — package eventually, after WLA-DX. High effort non-standard layout, but it is the only maintained SNES C SDK. MIT license. Phased approach: get WLA-DX packaged (a PVSnesLib dependency), then tackle the SDK itself. Could be distributed as a tarball install under `/opt/pvsneslib` with a wrapper `.deb` that sets environment variables.
 
-5. **64tass** — skip for now. In Debian/Ubuntu (older on Jammy, current on Noble+). Revisit only if a Jammy backport is needed.
+5. **ca65/cc65** — no action needed. Already in Debian/Ubuntu at current upstream version, and already in `foundry-retro-tools` Depends.
 
-6. **Calypsi** — cannot package. Proprietary license incompatible with apt repo distribution.
+6. **64tass (Jammy backport)** — low priority. Noble/Resolute have the current version; Jammy is one point release behind. Revisit only if Jammy is a supported target.
+
+7. **Calypsi** — cannot package. Proprietary license incompatible with apt repo distribution.
 
 ---
 
