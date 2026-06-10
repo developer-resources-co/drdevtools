@@ -90,7 +90,8 @@ tasks:
           cap1 memory   M-m; cap1 register  M-r; cap1 breakpoint M-b;
           cap1 watch    M-w; cap1 symbol    M-s; cap1 expression M-e;
           cap1 command  M-k; cap1 source    M-l; cap1 textview   M-t;
-          cap1 console  M-o; cap1 ascii     M-y'
+          cap1 console  M-o; cap1 ascii     M-y;
+          cap1 projectinfo M-i; cap1 about M-a'
       - >-
         for f in /tmp/drmon-shots/*.ansi; do
           n=$(basename "$f" .ansi);

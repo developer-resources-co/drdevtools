@@ -172,8 +172,15 @@ A reference table of character codes (decimal / hex / the CP437 glyph).
 
 <img src="img/ascii.png" width="700">
 
-### Project Info — `Alt+I` (single) · About — `Alt+A`
-Project Info shows free memory and symbol counts; About shows version and credits.
+### Project Info — `Alt+I` (single)
+Shows free memory and symbol counts.
+
+<img src="img/projectinfo.png" width="700">
+
+### About — `Alt+A`
+Shows version and credits.
+
+<img src="img/about.png" width="700">
 
 ### Help — `F1`
 The built-in `snesmon.hlp` key card, shown in a Text View window.
