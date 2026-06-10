@@ -69,19 +69,37 @@ files stay close to original:
 
 - **Tree-wide normalization** (mechanical): stripped the DOS `Ctrl-Z` (0x1A) EOF
   marker; converted DOS `\` separators in `#include` paths to `/`.
+  ([commit c7d1ea2](https://github.com/developer-resources-co/drdevtools/commit/c7d1ea226dc4df7442ed330b0250d9ba14cc47ba))
 - **`compat.hpp`** — rewritten for the Linux-only path (dropped the Borland/Watcom/OS2
   fallback macros).
+  ([diff](https://github.com/developer-resources-co/drdevtools/commit/c7d1ea226dc4df7442ed330b0250d9ba14cc47ba#diff-b5b68f01106e02d54e5da89993cadf895c0acc690fa5216793842468c56f6684))
 - **Modern-C++ correctness fixes**: `istream::get` needs `char&` not `unsigned char&`
-  (`coff.hpp`, `zardoz.hpp`, `sld.cpp`); K&R implicit-`int` arrays (`board.cpp`);
-  `for`-loop-scope variables hoisted (`object.cpp`, `layer.cpp`, `menu.cpp`);
-  dependent-base member access `this->next` (`pclib/list.hpp`).
+  ([coff.hpp](https://github.com/developer-resources-co/drdevtools/commit/c7d1ea226dc4df7442ed330b0250d9ba14cc47ba#diff-1e66fe1f587c5164155fa75ce2be73a1728c01754b14e9ffd761473dd94f2a82),
+  [zardoz.hpp](https://github.com/developer-resources-co/drdevtools/commit/c7d1ea226dc4df7442ed330b0250d9ba14cc47ba#diff-409064c9f87fa36f5f65ae13ce30359ca0cb83db45fb47c3d1be938b1a9d9ee8),
+  [sld.cpp](https://github.com/developer-resources-co/drdevtools/commit/c7d1ea226dc4df7442ed330b0250d9ba14cc47ba#diff-de0b3498087492a2d03c73dbdba98d4529a10a5d3e883c74706bee3e2038d20d));
+  K&R implicit-`int` arrays
+  ([board.cpp](https://github.com/developer-resources-co/drdevtools/commit/c7d1ea226dc4df7442ed330b0250d9ba14cc47ba#diff-46b7bcbbc75f88e06310b9af0505b530025279ce46279ae8fc7bf0629c0a4c0c));
+  `for`-loop-scope variables hoisted
+  ([object.cpp](https://github.com/developer-resources-co/drdevtools/commit/c7d1ea226dc4df7442ed330b0250d9ba14cc47ba#diff-ce341b9ed1e141de6e5f2a7aa485aa0d71bec37847092600279a7881821b776c),
+  [layer.cpp](https://github.com/developer-resources-co/drdevtools/commit/c7d1ea226dc4df7442ed330b0250d9ba14cc47ba#diff-ccf9565d7c221986fde93d63be45ba1cc765b2db4a274e1ccdc3787d828f1f56),
+  [menu.cpp](https://github.com/developer-resources-co/drdevtools/commit/c7d1ea226dc4df7442ed330b0250d9ba14cc47ba#diff-0fec4e6a5f39f8ebf3f60bdb6c98fc28e7f720d898b43cfd7d40093ee89f1039));
+  dependent-base member access `this->next`
+  ([pclib/list.hpp](https://github.com/developer-resources-co/drdevtools/commit/c7d1ea226dc4df7442ed330b0250d9ba14cc47ba#diff-0f6c67ca39c08ba2ea92d177dc4e8ad1e2027995bd0ca7aa3f877adf8ca86061)).
 - **Case-sensitivity fixes** (Borland's TLINK was case-insensitive): `pobjBase`→`pObjBase`
-  (`object.cpp`); added the `memOpsMenu` pointer alias for the `memopsMenu` table (`memops.cpp`).
+  ([object.cpp](https://github.com/developer-resources-co/drdevtools/commit/c7d1ea226dc4df7442ed330b0250d9ba14cc47ba#diff-ce341b9ed1e141de6e5f2a7aa485aa0d71bec37847092600279a7881821b776c));
+  added the `memOpsMenu` pointer alias for the `memopsMenu` table
+  ([memops.cpp](https://github.com/developer-resources-co/drdevtools/commit/c7d1ea226dc4df7442ed330b0250d9ba14cc47ba#diff-b51ff26efd4b443374efa32782e386e49bbefb3cb800669ef5cd0f12365ba41d)).
 - **Phase 1.5 run fixes** (all `#if defined(__GNUC__)` guarded): comram backed by a real
-  buffer instead of a `seg<<16` far pointer (`board.cpp`); non-fatal "no slave" so the UI
-  runs disconnected (`drmon.cpp`); real 80×25 framebuffer + ncurses init in `SetupScreen`
-  (`screen.cpp`); `scrBuffer` allocated on Linux (`display.cpp`); ncurses blit after
-  `CopyScreen` (`display.cpp`); keyboard wired through ncurses (`input.cpp`).
+  buffer instead of a `seg<<16` far pointer
+  ([board.cpp](https://github.com/developer-resources-co/drdevtools/commit/d97785e4470479c1490d7c2896bdb6b5bb15b41b#diff-46b7bcbbc75f88e06310b9af0505b530025279ce46279ae8fc7bf0629c0a4c0c));
+  non-fatal "no slave" so the UI runs disconnected
+  ([drmon.cpp](https://github.com/developer-resources-co/drdevtools/commit/d97785e4470479c1490d7c2896bdb6b5bb15b41b#diff-514b974653e9ea8a635c14365364e040eb7ba847b34f199e97b638c20ef59471));
+  real 80×25 framebuffer + ncurses init in `SetupScreen`
+  ([screen.cpp](https://github.com/developer-resources-co/drdevtools/commit/d97785e4470479c1490d7c2896bdb6b5bb15b41b#diff-51d84234d8182372f150550eda77829d7892b713e0c42a45275a51e65a7e856a));
+  `scrBuffer` allocated on Linux + ncurses blit after `CopyScreen`
+  ([display.cpp](https://github.com/developer-resources-co/drdevtools/commit/d97785e4470479c1490d7c2896bdb6b5bb15b41b#diff-02597adf45b63236181f6a6f92c05e0b35e361b200b1355e1a9a0076f60c5ee6));
+  keyboard wired through ncurses
+  ([input.cpp](https://github.com/developer-resources-co/drdevtools/commit/d97785e4470479c1490d7c2896bdb6b5bb15b41b#diff-0689495909ce363ed69070c5477ed56bb927f368f28042647b66d426e2ab5025)).
 
 ## CP437 / extended-ASCII bytes
 

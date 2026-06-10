@@ -5,7 +5,7 @@
 
 ## Context
 
-`drmon` (the "DR Monitor", v2.1.30, 1994) is the Developer Resources source-level
+`drmon` (the Developer Resources Monitor, v2.1.30, 1994) is the Developer Resources source-level
 debugger, now in this repo at `devsys/tools/drmon/` — ~32.5K LOC of Borland/Watcom
 C++ for DOS/OS2. It debugged SNES (65816) and Genesis (68000) games over a parallel
 "SLIO" dev-link. Goal: bring it to Linux. **Phase 1 (this plan) is narrow: get it to
@@ -134,12 +134,12 @@ Manual content that depends on a *running* debugger is finalized as the UI/backe
 
 1. **Toolchain image** — PASS — `docker build -t drmon-build devsys/tools/drmon/linux` (ubuntu:24.04 + g++/clang/cmake/ninja/bison/flex) succeeded.
 2. **CMake configure (SYSTEM=SNES)** — PASS — configured with `-DSNES -DSYSTEMSNES -DDEBUGDR`.
-3. **Compile all TUs** — PASS — 52 objects, 0 errors (`-std=gnu++98 -fpermissive -fcommon`). Iterated from 329 → 0 errors fixing: Ctrl-Z EOF markers, `\` include paths, `istream::get(char&)`, K&R implicit-int, for-scope leaks, Borland string fns, case-mismatched symbols.
+3. **Compile all TUs** — PASS — 52 objects, 0 errors (`-std=gnu++98 -fpermissive -fcommon`). Iterated from 329 → 0 errors fixing: Ctrl-Z EOF markers, `\` include paths, `istream::get(char&)`, K&R implicit-int, for-scope leaks, Borland string fns, case-mismatched symbols. ([commit c7d1ea2](https://github.com/developer-resources-co/drdevtools/commit/c7d1ea226dc4df7442ed330b0250d9ba14cc47ba))
 4. **Link → ELF** — PASS
 
         /tmp/drmon-build/drmon: ELF 64-bit LSB pie executable, x86-64, ... not stripped   (307 KB)
 
-5. **Run** — EXPECTED FAIL (acceptable for link-only) — `./drmon` segfaults immediately: screen/input/transport are no-op stubs (no terminal, no target). Making it *run* is Phase 1.5 (ncurses/DAP front end) + Phase 2 (MAME backend).
-6. **Docs** — PASS — see [../../devsys/tools/drmon/linux/README.md](../../devsys/tools/drmon/linux/README.md) (build steps, stub map, full edit list).
+5. **Run** — EXPECTED FAIL (acceptable for link-only) — `./drmon` segfaults immediately: screen/input/transport are no-op stubs (no terminal, no target). Making it *run* is Phase 1.5 (ncurses/DAP front end) + Phase 2 (MAME backend). Phase 1.5 complete: ([commit d97785e](https://github.com/developer-resources-co/drdevtools/commit/d97785e4470479c1490d7c2896bdb6b5bb15b41b))
+6. **Docs** — PASS — see [../../devsys/tools/drmon/linux/README.md](../../devsys/tools/drmon/linux/README.md) (build steps, stub map, full edit list with per-file diff links).
 
 **Outcome:** Phase 1 (compile + link) complete — drmon builds into a Linux x86-64 binary.
