@@ -232,8 +232,7 @@ The authoritative bindings for this Linux build (from `monkeys.hpp`).
 | `Alt+C` | copy |
 | `Alt+V` | paste |
 
-Shift+left-click and drag selects text to the clipboard. (The old in-app help card lists these
-as Alt+A/Alt+C/Alt+P — that card is stale; the bindings above are correct.)
+Shift+left-click and drag selects text to the clipboard.
 
 ### Window movement mode (`F9`)
 
