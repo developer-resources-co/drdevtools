@@ -80,6 +80,7 @@ tasks:
         bash -euc '
           export TERM=xterm-256color; SESSION=drmon-shots;
           sendalt() { printf "\033%s" "$1" | tmux load-buffer -; tmux paste-buffer -t "$SESSION"; };
+          sendraw() { printf "$1"        | tmux load-buffer -; tmux paste-buffer -t "$SESSION"; };
           cap1() { local n="$1" k="$2";
             tmux kill-session -t "$SESSION" 2>/dev/null || true;
             tmux new-session -d -s "$SESSION" -x 80 -y 25;
@@ -87,12 +88,25 @@ tasks:
             [ -n "$k" ] && { sendalt "$k"; sleep 0.6; };
             tmux capture-pane -t "$SESSION" -p -e > "/shots/${n}.ansi";
             tmux kill-session -t "$SESSION" 2>/dev/null || true; };
+          capmem() { local n="$1" ctrl="$2";
+            tmux kill-session -t "$SESSION" 2>/dev/null || true;
+            tmux new-session -d -s "$SESSION" -x 80 -y 25;
+            tmux send-keys -t "$SESSION" "./drmon 2>/dev/null" Enter; sleep 1.8;
+            sendalt m; sleep 0.5;
+            sendraw "$ctrl"; sleep 0.3;
+            tmux capture-pane -t "$SESSION" -p -e > "/shots/${n}.ansi";
+            tmux kill-session -t "$SESSION" 2>/dev/null || true; };
           cap1 desktop  "";
           cap1 memory   m; cap1 register  r; cap1 breakpoint b;
           cap1 watch    w; cap1 symbol    s; cap1 expression e;
           cap1 command  k; cap1 source    l; cap1 textview   t;
           cap1 console  o; cap1 ascii     y;
-          cap1 projectinfo i; cap1 about a'
+          cap1 projectinfo i; cap1 about a;
+          capmem memory_bytes  "\002";
+          capmem memory_words  "\027";
+          capmem memory_long   "\014";
+          capmem memory_disasm "\004";
+          capmem memory_ascii  "\031"'
       - |
         for f in /tmp/drmon-shots/*.ansi; do
           n=$(basename "$f" .ansi)

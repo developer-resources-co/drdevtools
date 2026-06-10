@@ -116,7 +116,7 @@ def render(ansi_file, out_file, scale=2):
     # window extent. The DESKTOP_BG guard excludes the status bar "1991─1994" (its
     # ─ sits on blue) and the menu bar. Scanning from row 0 captures top borders.
     r1 = r2 = c1 = c2 = None
-    for ri in range(len(padded)):
+    for ri in range(len(padded) - 1):  # exclude last row (status bar)
         for ci in range(n_cols):
             ch, fg, bg = padded[ri][ci]
             if _is_box(ch) and bg != DESKTOP_BG:

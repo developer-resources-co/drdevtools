@@ -73,6 +73,16 @@ arrows / PgUp / PgDn. *(values read as zero until a backend is wired)*
 | `Ctrl+Y` | view as ASCII | | `Ctrl+N` | set break-with-count at cursor |
 | `Ctrl+H` | run to cursor | | `Ctrl+A` | clear all breakpoints |
 
+**View modes:**
+
+| Bytes (`Ctrl+B`) | Words (`Ctrl+W`) | Long words (`Ctrl+L`) |
+|---|---|---|
+| <img src="img/memory_bytes.png" width="336"> | <img src="img/memory_words.png" width="336"> | <img src="img/memory_long.png" width="336"> |
+
+| Disassembly (`Ctrl+D`) | ASCII (`Ctrl+Y`) |
+|---|---|
+| <img src="img/memory_disasm.png" width="336"> | <img src="img/memory_ascii.png" width="336"> |
+
 ### Register — `Alt+R` (single)
 View and set the current 65816 registers (A, X, Y, P/flags, D, DB, PB, SP, PC); flags are shown
 individually. Click a register to open an Expression window prompting for a new value.
