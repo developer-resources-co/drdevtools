@@ -23,6 +23,10 @@
 
 #include "moninc.hpp"
 
+#if defined(__GNUC__)
+#include <ncurses_io.h>     // Linux: mouse comes from the ncurses backend
+#endif
+
 #pragma in_line
 
 //==============================================================================
@@ -59,7 +63,9 @@ void mouse(short *m1, short *m2, short *m3, short *m4)
 
 short CheckMouse( void )
 {
-#ifdef DO_MOUSE
+#if defined(__GNUC__)
+	return( drmon_nc_havemouse() ? 2 : 0 );   // left + right
+#elif defined(DO_MOUSE)
     m_ax = 0;
     MOUSE;
     if (m_ax == 0)
@@ -85,7 +91,9 @@ void HideMouse( void )
 
 short GetMouse( short *x, short *y )
 {
-#ifdef DO_MOUSE
+#if defined(__GNUC__)
+	return( drmon_nc_getmouse( x, y ) );
+#elif defined(DO_MOUSE)
     m_ax = 3;
     MOUSE;
     *x = m_cx;

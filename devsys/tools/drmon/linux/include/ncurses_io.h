@@ -11,6 +11,8 @@ unsigned char *drmon_nc_shiftbyte(void);
 int            drmon_nc_keyready(void);
 int            drmon_nc_getbyte(void);
 int            drmon_nc_bioskeybrd(int cmd);
+int            drmon_nc_havemouse(void);
+int            drmon_nc_getmouse(short *fx, short *fy);
 #ifdef __cplusplus
 }
 #endif

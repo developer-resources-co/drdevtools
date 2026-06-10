@@ -11,6 +11,7 @@
 #include <locale.h>
 #include <langinfo.h>
 #include <string.h>
+#include <stdio.h>
 #include <ncurses.h>
 #include <stdlib.h>
 #include <wchar.h>
@@ -19,6 +20,8 @@ extern "C" {
 
 static int           g_inited = 0;
 static unsigned char g_shift  = 0;   // backing byte for input.cpp's keyboardStatus
+static int           g_mx = 0, g_my = 0;   // latest mouse cell position
+static int           g_mbtn = 0;           // sticky button mask (0x01 left, 0x02 right)
 
 // CGA colour index (0..15) -> ncurses base colour (0..7); bright = index >= 8.
 static const short kCga2Curses[16] = {
@@ -37,7 +40,14 @@ static int pairFor(unsigned char attr)   // attr: fg=low nibble, bg=bits 4-6
 
 void drmon_nc_shutdown(void)
 {
-    if (g_inited) { endwin(); g_inited = 0; }
+    if (g_inited) {
+        // turn off any-motion + SGR reporting we forced on in init (see below)
+        fputs("\033[?1003l\033[?1006l", stdout);
+        fflush(stdout);
+        mousemask(0, NULL);
+        endwin();
+        g_inited = 0;
+    }
 }
 
 void drmon_nc_init(void)
@@ -56,6 +66,14 @@ void drmon_nc_init(void)
     keypad(stdscr, TRUE);
     nodelay(stdscr, TRUE);                // drmon polls; never block the main loop
     set_escdelay(25);                     // quick ESC vs Alt-combo disambiguation
+    mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, NULL);  // accept clicks, drag, motion
+    mouseinterval(0);                     // raw press/release, no click synthesis
+    // xterm-256color's terminfo has no XM cap, so ncurses only tells the terminal
+    // to send basic (mode 1000, press/release) reports — pure pointer motion is
+    // never sent, so menu hover-highlight (menu.cpp INP_MOUSEMOVE) goes dark.
+    // Force any-motion tracking (1003) + SGR coords (1006), matching kmous=\E[<.
+    fputs("\033[?1003h\033[?1006h", stdout);
+    fflush(stdout);
     curs_set(0);
     if (has_colors()) {
         start_color();
@@ -152,6 +170,18 @@ static void pump(void)
     int k = getch();                          // nodelay: ERR if nothing
     if (k == ERR) return;
 
+    if (k == KEY_MOUSE) {                      // update sticky mouse state; emits no key
+        MEVENT ev;
+        if (getmouse(&ev) == OK) {
+            g_mx = ev.x; g_my = ev.y;
+            if (ev.bstate & BUTTON1_PRESSED)  g_mbtn |= 0x01;   // MOUSEF_BLEFT
+            if (ev.bstate & BUTTON1_RELEASED) g_mbtn &= ~0x01;
+            if (ev.bstate & BUTTON3_PRESSED)  g_mbtn |= 0x02;   // MOUSEF_BRIGHT
+            if (ev.bstate & BUTTON3_RELEASED) g_mbtn &= ~0x02;
+        }
+        return;
+    }
+
     if (k == 27) {                            // ESC: bare ESC, or Alt+key (ESC-prefixed)
         int k2 = ERR;
         for (int i = 0; i < 8 && k2 == ERR; ++i) { k2 = getch(); if (k2 == ERR) napms(1); }
@@ -183,5 +213,16 @@ int drmon_nc_bioskeybrd(int cmd)
 
 // Replaces the dos_stubs.cpp no-op so drmon's keyboard-ready polling works.
 int _bios_keybrd(int cmd) { return drmon_nc_bioskeybrd(cmd); }
+
+// ---- mouse: latest ncurses state, polled by mouse.cpp's GetMouse/CheckMouse -------------
+int drmon_nc_havemouse(void) { return 1; }
+
+int drmon_nc_getmouse(short *fx, short *fy)
+{
+    drmon_nc_keyready();                 // pump pending events so state is current
+    if (fx) *fx = (short)(g_mx * 8);     // drmon divides fine coords by 8 -> cell
+    if (fy) *fy = (short)(g_my * 8);
+    return g_mbtn;
+}
 
 } // extern "C"
