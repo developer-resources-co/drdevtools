@@ -191,7 +191,7 @@ CopyBorder(char destB[8],char srcB[8])
 
 //=============================================================================
 // border order ul,um,ur,l,r,dl,dm,dr	(u=up,l=left,m=middle,r=right,d=down)
-//  example: '�ͻ���ͼ'
+//  example: '╔═╗║║╚═╝'
 
 void
 DrawBorder(_layer *lPtr,char border[8],int xSize,int ySize)

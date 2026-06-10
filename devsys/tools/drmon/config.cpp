@@ -248,7 +248,7 @@ SetupConfig(void)
 	if(primaryDispCGA)
 	 {
 		backgroundAttr = ATTR_BLUE;
-		backgroundChar = '°';
+		backgroundChar = '\xB0';
 		backgroundAttr2 = ATTR_NORMAL;
 		backgroundChar2 = ' ';
 		menuBarHighlightAttr = ATTR_INVERSE;
@@ -273,20 +273,20 @@ SetupConfig(void)
 		backgroundAttr = ATTR_NORMAL;
 		backgroundChar = ' ';
 		backgroundAttr2 = ATTR_BLUE;
-		backgroundChar2 = '°';
+		backgroundChar2 = '\xB0';
 		menuBarAttr = ATTR_INVERSE;
 		menuBarHighlightAttr = 1;                                               // normal underlined
 
 		messageBarAttr = ATTR_INVERSE;
 		exprAttr = ATTR_INVERSE;
-		exprChar = '±';
+		exprChar = '\xB1';
 		fileReqAttr = ATTR_INVERSE;
-		fileReqChar = '±';
+		fileReqChar = '\xB1';
 		windowTitleAttr = ATTR_NORMAL;
 		windowTitleHighlightAttr = ATTR_HIGHLIGHT;
 		windowTitleMoveAttr = 1;
 		strAttr = ATTR_INVERSE;
-		strChar = '±';
+		strChar = '\xB1';
 		dumpPCAttr = ATTR_HIGHLIGHT;
 		dumpCursorAttr = ATTR_INVERSE;
 		dumpBreakAttr = 1;

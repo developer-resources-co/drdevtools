@@ -11,8 +11,8 @@ Documentation:
 
 	Class Hierarchy:
 				  color
-                    ³
-                    ³
+                    â”‚
+                    â”‚
          		colorPalette
 
 */

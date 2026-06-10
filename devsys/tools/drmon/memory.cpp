@@ -84,15 +84,15 @@ enum
 
 char *mTypeText[] =
 {
-	"DisassemblyÄ",
-	"ByteÄ",
-	"WordÄ",
-	"LongÄ",
-	"ASCIIÄ",
+	"Disassembly\xC4",
+	"Byte\xC4",
+	"Word\xC4",
+	"Long\xC4",
+	"ASCII\xC4",
 #ifdef GENESIS
-	"VDPÄ",
-	"VDP ColorÄ",
-	"VDP VScrollÄ",
+	"VDP\xC4",
+	"VDP Color\xC4",
+	"VDP VScroll\xC4",
 #endif
 #ifdef SNES
 	"PPU ",
@@ -102,9 +102,9 @@ char *mTypeText[] =
 
 char *mSizeText[] =
 {
-	"ByteÄ",
-	"WordÄ",
-	"LongÄ"
+	"Byte\xC4",
+	"Word\xC4",
+	"Long\xC4"
 };
 
 char *updText[] =
@@ -1062,18 +1062,18 @@ MemoryRoutine(_object *oPtr)
     lPtr = oPtr->layer;
 
 	// first draw window status line
-	FillString(textBuffer,'Ä',160);
+	FillString(textBuffer,'\xC4',160);
 	textBuffer[159] = 0;
 	sPtr = PrintString(textBuffer,"Type: ");
 	sPtr = PrintString(sPtr,mTypeText[oPtr->mType]);
-	sPtr = PrintString(sPtr,"ÄUpd: ");
+	sPtr = PrintString(sPtr,"\xC4Upd: ");
 	sPtr = PrintString(sPtr,updText[oPtr->updateMode]);
 
 	if(oPtr->updateMode == UPDATE_STATIC)
 	 {
 	        sprintf(sPtr,"$%lx",oPtr->addr);
 	        sPtr = FindNull(sPtr);
-	        *sPtr = 'Ä';
+	        *sPtr = '\xC4';
 	 }
 	else
 	        sPtr = PrintString(sPtr,oPtr->dataPtr2);

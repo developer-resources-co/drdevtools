@@ -13,7 +13,7 @@
 class _window : public _shadowedLayer
 	{
 public:
-	_window( int xPos,int yPos,unsigned int xSize,unsigned int ySize, char *title = NULL, unsigned char charAttr = ATTR_NORMAL,char fillChar = ' ', char border[8] = "зд©ЁЁюды");
+	_window( int xPos,int yPos,unsigned int xSize,unsigned int ySize, char *title = NULL, unsigned char charAttr = ATTR_NORMAL,char fillChar = ' ', char border[8] = "\xDA\xC4\xBF\xB3\xB3\xC0\xC4\xD9");
 	~_window();
 
     _gadget gadgBase;

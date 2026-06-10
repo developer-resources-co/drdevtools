@@ -33,7 +33,7 @@ char dfltMessage[] =
 {
 	" " PROGNAME " V"
 #include "version.txt"
-"  Copyright 1991Ä1994 Developer Resources"
+"  Copyright 1991\xC4""1994 Developer Resources"
 };
 
 //=============================================================================
@@ -171,7 +171,7 @@ OpenAbout(void)
 			PrintLay( pWindow, szResources, ABOUT_XSIZE-strlen(szResources)-3, 4 );
 
 			for ( int y=0; y<3; ++y )
-				PrintLayAttr( pWindow, "Û", 26+2, 2+y, ATTR_BACKWHITE|ATTR_BLUE );
+				PrintLayAttr( pWindow, "\xDB", 26+2, 2+y, ATTR_BACKWHITE|ATTR_BLUE );
 
 			ActivateFrontWindow();
 			return(boolean::TRUE);                                                   // in case activated from menu

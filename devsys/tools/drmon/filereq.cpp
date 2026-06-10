@@ -316,7 +316,7 @@ DoFileReq(char* title,int xPos,int yPos,void (*fileRoutine)(void* data,char* pat
     _listRectDesc* lrPtr;
 	_stringList* sPtr;
 	ScanDir();
-    pWindow = new _window(xPos,yPos,40,FREQ_YSIZE,title,(unsigned char)fileReqAttr,(char)fileReqChar,"ÉÍ»ººÈÍ¼");
+    pWindow = new _window(xPos,yPos,40,FREQ_YSIZE,title,(unsigned char)fileReqAttr,(char)fileReqChar,"\xC9\xCD\xBB\xBA\xBA\xC8\xCD\xBC");
 	oPtr = AddObject();
 	oPtr->inputFlags = INPF_KEY|INPF_MOUSEBUTTONS;
 	oPtr->inputRoutine = FileReqInput;

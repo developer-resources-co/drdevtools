@@ -179,7 +179,7 @@ menuItems fileMenu[] =
 #ifdef __MSDOS__
 	{"&DOS Shell          Alt-D",FileMenuDosShell,   0},
 #endif
-	{"컴컴컴컴컴컴컴컴컴컴컴컴" ,NULL,               0},
+	{"\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4" ,NULL,               0},
 	{"E&xit               Alt-X",FileMenuQuit,0},
 	{0,0,0}
 };
@@ -433,7 +433,7 @@ menuItems helpMenu[] =
 	{"&Keyboard      ",HelpMenuKeyboard,0},
 	{"&Commands      ",HelpMenuCommands,0},
 	{"&Using Help    ",HelpMenuUsingHelp,0},
-	{"컴컴컴컴컴컴컴",NULL,            0},
+	{"\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4",NULL,            0},
 	{"&About         ",(unsigned int (*)(_menuItem *,_object *,int))OpenAbout,0},
 	{0,0,0}
 };

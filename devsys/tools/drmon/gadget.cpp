@@ -180,7 +180,7 @@ AddSysGadgets(_window *pWindow)
 	gPtr->ySize = 1;
 	gPtr->xPos = 1;
 	gPtr->yPos = 0;
-	gPtr->gadgText = "þ";
+	gPtr->gadgText = "\xFE";
 	gPtr->routine = NULL;
 	gPtr->gNum = GGAD_CLOSE;
 	gPtr->gadgAttr = windowBorderAttr;
@@ -193,7 +193,7 @@ AddSysGadgets(_window *pWindow)
 		gPtr->ySize = 1;
 		gPtr->xPos = pWindow->xSize-1;
 		gPtr->yPos = pWindow->ySize-1;
-		gPtr->gadgText = "¼";								// OLD: "+";
+		gPtr->gadgText = "\xBC";								// OLD: "+";
 		gPtr->routine = NULL;
 		gPtr->gNum = GGAD_RESIZE;
 		gPtr->gadgAttr = windowBorderAttr;
@@ -220,7 +220,7 @@ AddSysGadgets(_window *pWindow)
 
 
 #define DTLEN 50
-char dragText[(DTLEN*2)+1] = "°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n°\n";
+char dragText[(DTLEN*2)+1] = "\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n\xB0\n";
 
 void
 AddVScrollGadgetsCoord(_window* pWindow,int upNum,int downNum,int scrollNum,int scBoxNum,int xPos,int yTop, int yBot)
@@ -262,7 +262,7 @@ AddVScrollGadgetsCoord(_window* pWindow,int upNum,int downNum,int scrollNum,int 
 		gPtr->ySize = 1;
 		gPtr->xPos = xPos;
 		gPtr->yPos = yTop+1;
-		gPtr->gadgText = strdup( "Û" );
+		gPtr->gadgText = strdup( "\xDB" );
 		gPtr->gNum = scBoxNum;
 		gPtr->pGNum = scrollNum;					// remember your parent
 		gPtr->gadgAttr = gadgPropAttr;
@@ -316,14 +316,14 @@ UpdateVScrollGadg( _window *pWindow, unsigned gNum,
 			assert( gPtr->gadgText );
 			strncpy( gPtr->gadgText,
 				"\
-Û\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\n\
-Û\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\n\
-Û\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\n\
-Û\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\n\
-Û\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\n\
-Û\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\n\
-Û\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\n\
-Û\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\nÛ\n\
+\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\
+\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\
+\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\
+\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\
+\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\
+\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\
+\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\
+\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\xDB\n\
 				",
 				gPtr->ySize*2 );
 			*( gPtr->gadgText + gPtr->ySize*2 ) = '\0';

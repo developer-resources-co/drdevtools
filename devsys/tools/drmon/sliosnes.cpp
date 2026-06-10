@@ -402,12 +402,12 @@ boolean SingleStep( void )
 
 		switch ( (unsigned char)*xBuffer++ )
 			{
-			case 0x10:	// û BPL r
+			case 0x10:	// âˆš BPL r
 				if ( !(GetReg( REG_FLAGS ) & 0x80 ) )
 					NextInstruction += long( *xBuffer );
 				break;
 
-			case 0x30:	// û BMI r
+			case 0x30:	// âˆš BMI r
 				if ( (GetReg( REG_FLAGS ) & 0x80 ) )
 					NextInstruction += long( *xBuffer );
 				break;
@@ -422,44 +422,44 @@ boolean SingleStep( void )
 					NextInstruction += long( *xBuffer );
 				break;
 
-			case 0x90:	// û BCC r
+			case 0x90:	// âˆš BCC r
 				if ( !(GetReg( REG_FLAGS ) & 0x01 ) )
 					NextInstruction += long( *xBuffer );
 				break;
 
-			case 0xB0:	// û BCS r
+			case 0xB0:	// âˆš BCS r
 				if ( (GetReg( REG_FLAGS ) & 0x01 ) )
 					NextInstruction += long( *xBuffer );
 				break;
 
-			case 0xD0:	// û BNE r
+			case 0xD0:	// âˆš BNE r
 				if ( !(GetReg( REG_FLAGS ) & 0x02 ) )
 					NextInstruction += long( *xBuffer );
 				break;
 
-			case 0xF0:	// û BEQ r
+			case 0xF0:	// âˆš BEQ r
 				if ( (GetReg( REG_FLAGS ) & 0x02 ) )
 					NextInstruction += long( *xBuffer );
 				break;
 
-			case 0x80:	// û BRA r
+			case 0x80:	// âˆš BRA r
 				NextInstruction += long( *xBuffer );
 				break;
 
-			case 0x82:	// û BRL rl
+			case 0x82:	// âˆš BRL rl
 				offset  = (ubyte)*xBuffer++;
 				offset |= (*xBuffer++)<<8;
 				NextInstruction += offset;
 				break;
 
-			case 0x20:	// û JSR a
-			case 0x4C:	// û JMP a
+			case 0x20:	// âˆš JSR a
+			case 0x4C:	// âˆš JMP a
 				NextInstruction &= ~0xFFFFL;				// retain same bank
 				NextInstruction |= (ubyte)*xBuffer++;
 				NextInstruction |= (uword)(*xBuffer++)<<8;
 				break;
 
-			case 0x6C:	// û JMP (a)
+			case 0x6C:	// âˆš JMP (a)
 				{
 				ulong addr = 0;
 
@@ -473,8 +473,8 @@ boolean SingleStep( void )
 				break;
 				}
 
-			case 0xFC:	// û JSR (a,x)
-			case 0x7C:	// û JMP (a,x)
+			case 0xFC:	// âˆš JSR (a,x)
+			case 0x7C:	// âˆš JMP (a,x)
 				{
 				ulong addr = 0;
 
@@ -486,7 +486,7 @@ boolean SingleStep( void )
 				break;
 				}
 
-			case 0x60:	// û RTS s
+			case 0x60:	// âˆš RTS s
 				{
 				uword rts;
 				ulong SP = GetReg( REG_STACKPOINTER );
@@ -497,15 +497,15 @@ boolean SingleStep( void )
 				break;
 				}
 
-			case 0x22:	// û JSL al
-			case 0x5C:	// û JMP al (JML al)
+			case 0x22:	// âˆš JSL al
+			case 0x5C:	// âˆš JMP al (JML al)
 				offset  = (ubyte)*xBuffer++;
 				offset |= (uword)(*xBuffer++)<<8;
 				offset |= (ulong)(*xBuffer++)<<16;
 				NextInstruction = offset;
 				break;
 
-			case 0x6B:	// û RTL s
+			case 0x6B:	// âˆš RTL s
 				{
 				ulong rtl = 0;
 				ulong SP = GetReg( REG_STACKPOINTER );
@@ -515,7 +515,7 @@ boolean SingleStep( void )
 				break;
 				}
 
-			case 0xDC:	// û JML (a)
+			case 0xDC:	// âˆš JML (a)
 				{
 				ulong addr = 0;
 				addr  = (ubyte)*xBuffer++;

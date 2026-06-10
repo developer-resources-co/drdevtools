@@ -10,9 +10,9 @@ Documentation:
 
 	Class Hierarchy:
 					node
-                     �
+                     │
 				nodeInterface<template>
-                     �
+                     │
 				    list
 
 	Dependancies:
