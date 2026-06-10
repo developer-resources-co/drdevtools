@@ -192,6 +192,10 @@ SetupDisplay(void)
 
 						// kts check for no memory
 #if defined(__MSDOS__) || defined(__GNUC__)
+	// The mouse-pointer backdrop (ErasePointer) caches a raw pointer into scrBuffer;
+	// drop it before we free scrBuffer so a later ErasePointer can't write through the
+	// dangling pointer after a resize realloc (use-after-free caught by ASan).
+	InvalidatePointer();
 	if ( scrBuffer ) free( scrBuffer );
 	scrBuffer = (char far *)farmalloc(screenSize);
 #endif

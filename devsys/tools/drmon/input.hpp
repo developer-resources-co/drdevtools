@@ -94,6 +94,9 @@ void
 ErasePointer(void);
 
 void
+InvalidatePointer(void);
+
+void
 DrawPointer(char far *screen,int mouseX, int mouseY,int screenWidth,int screenHeight);
 
 void

@@ -90,6 +90,17 @@ ErasePointer()
 }
 
 //=============================================================================
+// Drop the saved pointer backdrop without restoring it. Call before freeing the
+// buffer `pointerScreen` points into (SetupDisplay reallocs scrBuffer on resize),
+// so a later ErasePointer() can't write through the now-dangling pointer.
+
+void
+InvalidatePointer()
+{
+	pointerDrawn = boolean::FALSE;
+}
+
+//=============================================================================
 
 void
 DrawPointer( char far *screen,int mouseX, int mouseY,int screenWidth, int screenHeight)
