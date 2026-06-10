@@ -26,3 +26,7 @@ _$*
 *.ln
 core
 # CVS default ignores end
+
+# Local Claude Code / md-tooling artifacts (not part of the project)
+.history/
+docs/transcripts/
