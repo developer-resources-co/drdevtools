@@ -27,6 +27,10 @@ Plan-first: non-trivial work gets a `docs/plans/YYYY-MM-DD-<topic>.md` and a TOD
 
 ## DRMON — UI / UX
 
+- [ ] **Viewport fill — size the screen to the terminal.** Replace the hardcoded 80×25 in
+  `SetupScreen`'s `__GNUC__` branch with the ncurses `COLS`×`LINES` so the desktop + menu bar fill
+  the window (chrome fills, windows fixed); Phase B handles live `KEY_RESIZE`/`SIGWINCH` re-fill.
+  — [plan](docs/plans/2026-06-10-drmon-viewport-fill.md)
 - [ ] **Genesis target (`SYSTEM=GEN`).** Currently SNES-only; add a `genmon` build variant
   (68000 disassembler, `genmon.prc`, `sliogen.cpp` path) once SNES is solid.
 
