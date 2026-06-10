@@ -7,17 +7,20 @@ exact wording is reproducible.
 
 ## Where to post it
 
-- **Wiki home** — [sourceforge.net/p/drdevtools/wiki/Home/](https://sourceforge.net/p/drdevtools/wiki/Home/)
-  → *Edit* → prepend the Markdown block below (the SF wiki renders Markdown).
-- **Project summary / long description** — [sourceforge.net/p/drdevtools/admin/overview](https://sourceforge.net/p/drdevtools/admin/overview)
-  → set the short description to the one-liner below.
-- *(optional)* **News post** — [sourceforge.net/p/drdevtools/news/](https://sourceforge.net/p/drdevtools/news/)
-  for a dated announcement.
+The project has **no Wiki and no News tool enabled** — only Activity, Bugs, and
+Code (CVS). So the notice goes in the **project description**, which is what every
+visitor lands on at the [project summary](https://sourceforge.net/projects/drdevtools/).
+
+- **Full / long description** — admin at [sourceforge.net/p/drdevtools/admin/overview](https://sourceforge.net/p/drdevtools/admin/overview)
+  → *Description* field → prepend the Markdown block below (SF renders Markdown there).
+- **Short description / summary line** — same admin page → set it to the plain one-liner below.
+- *(optional, if you want a dedicated page)* enable the Wiki via admin → *Tools* → add **Wiki**,
+  then post the block to the new wiki home.
 
 Posting requires being logged in to the SourceForge account that owns the project;
 there is no unauthenticated path.
 
-## Wiki block (Markdown — paste verbatim)
+## Description block (Markdown — paste verbatim)
 
 ```markdown
 # ⚠ This project has moved to GitHub

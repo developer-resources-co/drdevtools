@@ -107,9 +107,9 @@ the empty org once at [github.com/account/organizations/new](https://github.com/
 
 ### 7. Leave SourceForge as archived origin + post migration notice
 - No deletion; keep SourceForge as a read-only archive.
-- Post a notice pointing to GitHub. Exact wording and locations are in
-  [docs/sourceforge-notice.md](../sourceforge-notice.md): prepend the Markdown block to the
-  [wiki home](https://sourceforge.net/p/drdevtools/wiki/Home/) and set the short description via
+- The project has **no Wiki/News tool** (only Activity, Bugs, Code), so the notice goes in the
+  **project description**. Exact wording in [docs/sourceforge-notice.md](../sourceforge-notice.md):
+  prepend the Markdown block to the *Description* field and set the short summary via
   [admin/overview](https://sourceforge.net/p/drdevtools/admin/overview). Requires SF login —
   a single manual paste (no unauthenticated path).
 
