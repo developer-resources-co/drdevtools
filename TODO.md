@@ -65,14 +65,12 @@ Plan-first: non-trivial work gets a `docs/plans/YYYY-MM-DD-<topic>.md` and a TOD
 ## VERIFY
 ### implemented; run the plan's verification steps + record, then promote to DONE
 
-- [verify] **CP437 → UTF-8-safe source conversion** (14 files). Implemented + spot-checked
-  (binary no-op, valid UTF-8, render), but the verification steps in
-  [the plan](docs/plans/2026-06-10-cp437-ascii-conversion.md) aren't recorded in the plan yet.
-  Run them, paste raw output + PASS/FAIL into the plan's Verification section, then promote.
+_(none)_
 
 
 ## DONE
 
+- [x] 2026-06-10 — Convert all CP437 high bytes → UTF-8-safe (`\xNN` literals / UTF-8 comments), 14 files; verified no-op (binary differs only in build timestamp+build-id) — [plan](docs/plans/2026-06-10-cp437-ascii-conversion.md)
 - [x] 2026-06-10 — Fix borders: force UTF-8 locale + restore menu.cpp's Edit-corrupted CP437 border string; menus/About render correct box-drawing
 - [x] 2026-06-10 — Wire Alt-combos (alt-Q/X/M/…) + wide-ncurses Unicode box-drawing (CP437→Unicode); fixes ACS-fallback borders
 - [x] 2026-06-10 — Phase 1.5: drmon **runs** on Linux — ncurses TUI (menu bar, windows, status line, clock) + keyboard input; disconnected (no target) — [plan](docs/plans/2026-06-10-port-drmon-linux.md)

@@ -71,6 +71,32 @@ All `*.cpp` / `*.hpp` / `*.c` / `*.h` under `devsys/tools/drmon/` that contain b
    chart (alt-Y) render correctly.
 5. Build still 0 errors.
 
+## Verification results — executed 2026-06-10
+
+1. **No-op build check** — PASS
+
+        $ cmp -l /build/drmon.baseline /build/drmon | wc -l
+        24      # all in __TIME__ (4 digits) + its 20-byte build-id hash; no other bytes differ
+
+2. **Round-trip check** — PASS — 13/14 files are byte-for-byte `converter(pre-conversion)`
+   (deterministic, no stray edits); `list.hpp` is the exception only because it was restored
+   from the original import (it had been Edit-corrupted) before converting — verified on its
+   own: `this->next` intact, 0 `U+FFFD`, valid UTF-8.
+
+3. **Valid UTF-8 / no U+FFFD** — PASS
+
+        PASS: all valid UTF-8, no U+FFFD   (all converted .cpp/.hpp in drmon + pclib)
+
+4. **Render check** — PASS
+
+        ┌■─ASCII Chart─────────────────────────────────1─┐   (alt-Y: box + table dividers)
+        │    MSD │  0 │  1 │  2 │  3 │  4 │  5 │  6 │  7 │
+        ╔═File═════════════════1═╗                          (F10→Enter: double-line menu)
+
+5. **Build 0 errors** — PASS.
+
+**Outcome:** conversion is a verified no-op; promoted to `[x]` in TODO.
+
 ## Rollback
 
 Pure git revert of the conversion commit (single mechanical commit, easy to drop).
