@@ -9,6 +9,8 @@
 //=============================================================================
 #define _XOPEN_SOURCE_EXTENDED 1
 #include <locale.h>
+#include <langinfo.h>
+#include <string.h>
 #include <ncurses.h>
 #include <stdlib.h>
 #include <wchar.h>
@@ -41,7 +43,12 @@ void drmon_nc_shutdown(void)
 void drmon_nc_init(void)
 {
     if (g_inited) return;
-    setlocale(LC_ALL, "");                // enable UTF-8 output of box-drawing glyphs
+    // ncurses can only emit the Unicode box-drawing glyphs in a UTF-8 locale.
+    // Honour the user's locale, but force UTF-8 if it isn't (e.g. a bare C locale
+    // in a container) so the borders never silently drop out.
+    setlocale(LC_ALL, "");
+    if (strcmp(nl_langinfo(CODESET), "UTF-8") != 0)
+        setlocale(LC_ALL, "C.UTF-8");
     initscr();
     cbreak();
     noecho();

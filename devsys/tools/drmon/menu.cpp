@@ -408,7 +408,7 @@ MenuInput(_input *in,_object *oPtr)
 void
 _menu::Render(_object *pObject)
 {
-	pWindow = new _window(xPos,yPos,xSize,ySize,text,(unsigned char)menuAttr,(char)menuChar,"�ͻ���ͼ");
+	pWindow = new _window(xPos,yPos,xSize,ySize,text,(unsigned char)menuAttr,(char)menuChar,"\xC9\xCD\xBB\xBA\xBA\xC8\xCD\xBC");
 	pWindow->windowNum = 0;
 	pWindow->data = pObject;
 	ForceWindowResize( pWindow, (_object*)pWindow->data,
