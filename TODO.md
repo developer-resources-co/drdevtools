@@ -1,19 +1,83 @@
 # TODO
 
-## drmon — Linux port
+drmon = the "DR Monitor" source-level debugger being brought from 1990s DOS to Linux.
+See [docs/plans/2026-06-10-port-drmon-linux.md](docs/plans/2026-06-10-port-drmon-linux.md)
+for the phased roadmap.
 
-See [docs/plans/2026-06-10-port-drmon-linux.md](docs/plans/2026-06-10-port-drmon-linux.md).
+**Status markers:** `[ ]` open · `[wip]` in progress · `[verify]` implemented, verification
+not yet run+recorded (run the linked plan's verification steps, paste raw output + PASS/FAIL
+back into the plan, then promote to `[x]`) · `[x]` done (moved to DONE, one tight line).
+Plan-first: non-trivial work gets a `docs/plans/YYYY-MM-DD-<topic>.md` and a TODO entry.
 
-- [ ] **Drop Borland / Watcom / OS2 / DOS-extender (PharLap) support** — make the tree
-  Linux / modern-C++ only; strip the `__BORLANDC__` / `__WATCOMC__` / `__OS2__` /
-  `DOSX286` / `__MSDOS__` `#ifdef` arms as files are touched.
-- [ ] **Phase 2 — MAME backend**: replace the SLIO transport stub with a bridge to MAME's
-  Lua debugger / gdbstub, so drmon drives a SNES game running in MAME.
-- [ ] **Phase 3 — DAP front end** (confirm approach first): expose drmon-core as a DAP
-  server (cppdap) so VS Code / nvim-dap is the UI — likely instead of porting the ncurses TUI.
-- [ ] **Docs**: USER's manual (seed from `snesmon.hlp`/`genmon.hlp`), installation, configuration.
 
-## Done
+## DRMON — DEBUGGER BACKEND
 
-- [x] 2026-06-10 — Phase 1.5: drmon **runs on Linux** — ncurses front end renders the TUI (menu bar, windows, status line, clock) + keyboard input (F10/arrows/F-keys); runs disconnected (no target). See [linux/README.md](devsys/tools/drmon/linux/README.md).
-- [x] 2026-06-10 — Phase 1: drmon compiles + links on Linux (SYSTEM=SNES) via Dockerized g++/CMake; 52 TUs → x86-64 ELF. Transport/screen/input stubbed. See [linux/README.md](devsys/tools/drmon/linux/README.md).
+- [ ] **Phase 2 — MAME backend.** Replace the stubbed SLIO transport
+  ([`devsys/tools/drmon/linux/slio_stub.cpp`](devsys/tools/drmon/linux/slio_stub.cpp) — the
+  designed seam) with a bridge that translates drmon's opcode protocol (read/write mem+regs,
+  set/clear breakpoint, step, continue, async-exception) to MAME debugger ops over its
+  [Lua debugger API](https://docs.mamedev.org/luascript/ref-debugger.html) or
+  [gdbstub](https://docs.mamedev.org/plugins/gdbstub.html) (`127.0.0.1:2159`). Load a SNES
+  game in MAME; drmon drives it. Needs a plan before starting.
+- [ ] **Phase 3 — DAP front end (confirm approach first).** Wrap drmon-core (65816/68000
+  disassemblers, `.sld`/COFF parsers, breakpoint/expr engine) behind a
+  [cppdap](https://github.com/google/cppdap) DAP server so VS Code / nvim-dap is the UI —
+  likely *instead of* maintaining the ncurses TUI long-term. Decide TUI-vs-DAP before building.
+
+
+## DRMON — UI / UX
+
+- [ ] **Wire the mouse.** ncurses front end handles keyboard (letters/arrows/F-keys/Alt-combos)
+  but not the mouse; drmon's UI supports click-to-focus/select (`GetMouse`/`CheckMouse` in
+  [`input.cpp`](devsys/tools/drmon/input.cpp), stubbed in
+  [`linux/dos_stubs.cpp`](devsys/tools/drmon/linux/dos_stubs.cpp)). Route ncurses
+  `mousemask`/`getmouse` into the stubs.
+- [ ] **Suppress the stray window-number `1` on dropdown menus.** Menu windows draw their
+  window-number gadget into the menu-bar row (visible as a `1` next to the open menu). Find the
+  menu window-number gadget draw and skip it for dropdowns.
+- [ ] **Genesis target (`SYSTEM=GEN`).** Currently SNES-only; add a `genmon` build variant
+  (68000 disassembler, `genmon.prc`, `sliogen.cpp` path) once SNES is solid.
+
+
+## DRMON — CLEANUP
+
+- [ ] **Finish dropping Borland / Watcom / OS2 / DOS-extender support.** `compat.hpp` is
+  Linux-only now, but legacy `#ifdef __BORLANDC__` / `__WATCOMC__` / `__OS2__` / `DOSX286` /
+  `__MSDOS__` arms remain scattered across the tree. Strip them as files are touched so the
+  source carries a single modern/Linux path.
+
+
+## DRMON — DOCS
+
+- [ ] **USER's manual + installation + configuration.** Seed the key reference from the
+  plaintext `snesmon.hlp`/`genmon.hlp`; document the console command/expression language,
+  install (Dockerized build now, `.deb` later), and config (`DR_SNESPORT`/`DR_SNESMEMBUFFER`
+  env vars, `.scr` startup scripts, saved layout). Detail in the
+  [port plan](docs/plans/2026-06-10-port-drmon-linux.md) "Documentation deliverables".
+
+
+## PACKAGING
+
+- [ ] **Package drmon as a `.deb`** for the foundry apt repo once it does something useful
+  (Phase 2+). Build is reproducible via the Docker toolchain today.
+
+
+## VERIFY
+### implemented; run the plan's verification steps + record, then promote to DONE
+
+- [verify] **CP437 → UTF-8-safe source conversion** (14 files). Implemented + spot-checked
+  (binary no-op, valid UTF-8, render), but the verification steps in
+  [the plan](docs/plans/2026-06-10-cp437-ascii-conversion.md) aren't recorded in the plan yet.
+  Run them, paste raw output + PASS/FAIL into the plan's Verification section, then promote.
+
+
+## DONE
+
+- [x] 2026-06-10 — Fix borders: force UTF-8 locale + restore menu.cpp's Edit-corrupted CP437 border string; menus/About render correct box-drawing
+- [x] 2026-06-10 — Wire Alt-combos (alt-Q/X/M/…) + wide-ncurses Unicode box-drawing (CP437→Unicode); fixes ACS-fallback borders
+- [x] 2026-06-10 — Phase 1.5: drmon **runs** on Linux — ncurses TUI (menu bar, windows, status line, clock) + keyboard input; disconnected (no target) — [plan](docs/plans/2026-06-10-port-drmon-linux.md)
+- [x] 2026-06-10 — Phase 1: drmon **compiles + links** on Linux (SYSTEM=SNES) via Dockerized g++/CMake; 52 TUs → x86-64 ELF; verification recorded — [plan](docs/plans/2026-06-10-port-drmon-linux.md)
+- [x] 2026-06-10 — Add Taskfile (`task image/build/run/debug/shot/clean/rebuild`) capturing the Dockerized workflow
+- [x] 2026-06-10 — Post SourceForge "moved to GitHub" notice (project status `moved` + description) — [text](docs/sourceforge-notice.md)
+- [x] 2026-06-10 — Migrate drdevtools CVS → [github.com/developer-resources-co/drdevtools](https://github.com/developer-resources-co/drdevtools) (cvs-fast-export, history preserved, public); verification recorded — [plan](docs/plans/2026-06-10-migrate-cvs-to-github.md)
+- [x] 2026-06-10 — Investigate hosting: SourceForge-only, no prior GitHub migration — [investigation](docs/investigations/2026-06-10-hosting-sourceforge-vs-github.md)
