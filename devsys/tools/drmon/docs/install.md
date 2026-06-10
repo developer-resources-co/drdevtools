@@ -1,6 +1,6 @@
 # Installing drmon (Linux)
 
-drmon is the **DR Monitor** — a source-level debugger/monitor for the SNES (65816) and
+drmon is the **Developer Resources Monitor** — a source-level debugger/monitor for the SNES (65816) and
 Genesis (68000), originally a 1990s DOS product, now ported to Linux/ncurses. This page
 covers building and launching it. For day-to-day use see the [User Manual](drmon-manual.md);
 for tuning see [Configuration](configuration.md).

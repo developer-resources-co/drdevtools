@@ -137,7 +137,7 @@ keyboard macros, with scripting (`.scr`). **↑/↓** walk the command history.
 Source-level debugging: load a `.sld` file (`Ctrl+L`) to view the source the code was assembled
 from and set breakpoints by line.
 
-<img src="img/source.png" width="600">
+<img src="img/source.png" width="480">
 
 | Key | Action |
 |-----|--------|
@@ -152,7 +152,7 @@ from and set breakpoints by line.
 ### Text View — `Alt+T`
 A generic text-file viewer. Arrows move the cursor; PgUp/PgDn page.
 
-<img src="img/textview.png" width="600">
+<img src="img/textview.png" width="480">
 
 | Key | Action |
 |-----|--------|

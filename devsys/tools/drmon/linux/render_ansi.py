@@ -112,12 +112,14 @@ def render(ansi_file, out_file, scale=2):
               for r in rows]
 
     # --- crop to the bounding box of box-drawing border characters ---
-    # Box-drawing chars (U+2500–U+257F) mark the exact window extent; everything
-    # outside them is desktop or drop-shadow and should be excluded.
+    # Box-drawing chars (U+2500–U+257F) on non-desktop background mark the exact
+    # window extent. The DESKTOP_BG guard excludes the status bar "1991─1994" (its
+    # ─ sits on blue) and the menu bar. Scanning from row 0 captures top borders.
     r1 = r2 = c1 = c2 = None
-    for ri in range(1, len(padded) - 1):
+    for ri in range(len(padded)):
         for ci in range(n_cols):
-            if _is_box(padded[ri][ci][0]):
+            ch, fg, bg = padded[ri][ci]
+            if _is_box(ch) and bg != DESKTOP_BG:
                 if r1 is None:
                     r1 = ri
                 r2 = ri

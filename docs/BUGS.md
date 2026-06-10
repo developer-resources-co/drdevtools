@@ -1,6 +1,6 @@
 # BUGS
 
-Genuine bugs that lay dormant for years before something surfaced them — here, mostly the act of bringing the early-1990s DR Monitor (`drmon`) source to Linux. Not TODOs, not feature gaps: bugs that shipped in the DOS product because they *worked anyway*, were masked by a dead path, were never exercised, or were purely cosmetic and nobody bothered.
+Genuine bugs that lay dormant for years before something surfaced them — here, mostly the act of bringing the early-1990s Developer Resources Monitor (`drmon`) source to Linux. Not TODOs, not feature gaps: bugs that shipped in the DOS product because they *worked anyway*, were masked by a dead path, were never exercised, or were purely cosmetic and nobody bothered.
 
 **Eligibility:** Only bugs whose buggy code was **authored before 2026-01-01** belong here. drmon's source entered version control via the SourceForge CVS import [`c835c3b`](https://github.com/developer-resources-co/drdevtools/commit/c835c3b) (2003-08-15); the code itself is ~1993–1994 vintage (drmon 2.1.30, 1994; many files carry `kts` date markers like `06-15-93`). Anything written in 2026+ as part of the Linux port is fresh-author error, not a dormant bug, and does not qualify. Verify origin with `git log --diff-filter=A -- <file>` / `git blame` before adding an entry.
 

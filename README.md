@@ -25,6 +25,21 @@ Background on the company and its tools: [Kevin Seghetti interview (Sega-16)](ht
 | `runtime/` | On-console runtime libraries and sample games (Genesis/SNES) |
 | `libs/` | Shared host libraries (e.g. `pclib`) |
 
+## Current Status — drmon Linux Port (Phase 1.5)
+
+`drmon` builds and runs on Linux (x86-64) for `SYSTEM=SNES`, rendering its full
+text UI via an ncurses front end. See [devsys/tools/drmon/linux/README.md](devsys/tools/drmon/linux/README.md)
+for build instructions and the full port notes.
+
+**Known limitations (by design, this phase)**
+
+- Runs **disconnected** — no target yet (dev-link transport stubbed); a real target
+  arrives via the Phase 2 MAME bridge.
+- Keyboard covers letters/arrows/F-keys/Enter/Esc and **Alt-combos** (alt-Q close,
+  alt-X exit, alt-M/alt-R/… open windows). **Mouse** isn't wired yet.
+- Genesis (`SYSTEM=GEN`) not built yet (SNES first).
+- Fixed 80×25; terminal must be at least that size.
+
 ## License
 
 Per the [SourceForge project](https://sourceforge.net/projects/drdevtools/) metadata, the
