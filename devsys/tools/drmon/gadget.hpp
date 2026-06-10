@@ -131,6 +131,9 @@ PropGadgUp(_object* pObject, _input* in);
 void
 ActivateStrGadget(_window* pWindow,_gadget* gPtr);
 
+void
+SetGadgString(_gadget* gPtr,const char* text);
+
 FLAG
 StrGadgInput(_window* pWindow,_gadget* gPtr,_input* in);
 

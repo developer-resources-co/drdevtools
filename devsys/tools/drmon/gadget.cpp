@@ -58,6 +58,28 @@ NewGadget(_gadget *gList)
 }
 
 //=============================================================================
+// Give a string gadget writable, editable text. String gadgets are edited in
+// place: the key handlers (StrGadgInput) and PadString() write directly into
+// gadgText, padding out to xSize. Modern toolchains place string literals in
+// read-only memory, so the old DOS idiom `gPtr->gadgText = "...."` followed by
+// editing segfaults (those compilers put literals in writable memory). Copy the
+// initial text into a heap buffer big enough for in-place editing: at least
+// xSize+1 bytes, since PadString pads to xSize and then writes a NUL at [xSize].
+// Callers must set xSize before calling so the buffer is sized correctly.
+
+void
+SetGadgString(_gadget *gPtr,const char *text)
+{
+	int len = (int)strlen(text);
+	int cap = (int)gPtr->xSize + 1;		// room for PadString's pad-to-xSize + NUL
+	if(len + 1 > cap)
+		cap = len + 1;
+	gPtr->gadgText = (char *)malloc(cap);
+	if(gPtr->gadgText)
+		memcpy(gPtr->gadgText,text,len + 1);
+}
+
+//=============================================================================
 
 _gadget *
 MakeGadget(_window *pWindow, int xPos,int yPos,int xSize,int ySize,int gNum)

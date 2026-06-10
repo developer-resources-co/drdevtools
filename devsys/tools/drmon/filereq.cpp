@@ -243,7 +243,7 @@ AddFileReqGadgets(_window *pWindow)
 	gPtr->ySize = 1;
 	gPtr->xPos = 2;
 	gPtr->yPos = FREQ_YSIZE-5;
-	gPtr->gadgText = "            ";
+	SetGadgString(gPtr,"            ");
 	gPtr->gNum = FRGAD_DIR;
 	gPtr->gadgAttr = windowBorderAttr;
 
@@ -253,8 +253,7 @@ AddFileReqGadgets(_window *pWindow)
 	gPtr->ySize = 1;
 	gPtr->xPos = 22;
 	gPtr->yPos = FREQ_YSIZE-5;
-	gPtr->gadgText = fileReqFileName;
-	gPtr->gadgText = "            ";
+	gPtr->gadgText = fileReqFileName;	// writable module buffer (char[13]); edited in place
 	gPtr->gNum = FRGAD_FILE;
 	gPtr->gadgAttr = windowBorderAttr;
 
@@ -264,7 +263,7 @@ AddFileReqGadgets(_window *pWindow)
 	gPtr->ySize = 1;
 	gPtr->xPos = 2;
 	gPtr->yPos = FREQ_YSIZE-3;
-	gPtr->gadgText = " ";
+	SetGadgString(gPtr," ");
 	gPtr->gadgText[0] = getdisk()+'A';
 	gPtr->gNum = FRGAD_DRIVE;
 	gPtr->gadgAttr = windowBorderAttr;

@@ -64,6 +64,12 @@ tasks:
           tmux capture-pane -t d -p;
           tmux kill-server 2>/dev/null || true'
 
+  smoke:
+    desc: Smoke test — open each window via its Alt-key under gdb; fail on any crash (SIGSEGV)
+    deps: [build]
+    cmds:
+      - '{{.DOCKER}} bash linux/smoke-test.sh /build/drmon'
+
   clean:
     desc: Remove the build tree
     cmds:

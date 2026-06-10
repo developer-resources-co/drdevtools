@@ -272,7 +272,7 @@ AddCmdGadgets(_object* pObject,_window* pWindow)
 	gPtr->ySize = 1;
 	gPtr->yPos = pWindow->ySize -2;
 	gPtr->xPos = 1;
-	gPtr->gadgText = "                                                                      ";
+	SetGadgString(gPtr,"                                                                      ");
 	gPtr->gNum = CMDGAD_CMD;
 	gPtr->gadgAttr = windowBorderAttr;
 	gPtr->gType = GADTYPE_STRING;

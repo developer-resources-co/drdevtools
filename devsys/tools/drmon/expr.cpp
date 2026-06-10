@@ -117,7 +117,7 @@ AddExpWinGadgets(_window *pWindow)
 	gPtr->ySize = 1;
 	gPtr->xPos = EXP_EXPX;
 	gPtr->yPos = EXP_EXPY;
-	gPtr->gadgText = "                                                     ";
+	SetGadgString(gPtr,"                                                     ");
 	gPtr->gNum = EXPGAD_EXP;
 	gPtr->gadgAttr = windowBorderAttr;
 	gPtr->gType = GADTYPE_STRING;
@@ -128,7 +128,7 @@ AddExpWinGadgets(_window *pWindow)
 	gPtr->ySize = 1;
 	gPtr->xPos = EXP_HEXRESX;
 	gPtr->yPos = EXP_HEXRESY;
-	gPtr->gadgText = "$00000000";
+	SetGadgString(gPtr,"$00000000");
 	gPtr->gNum = EXPGAD_RES;
 	gPtr->gadgAttr = windowBorderAttr;
 	gPtr->gType = GADTYPE_STRING;
@@ -139,7 +139,7 @@ AddExpWinGadgets(_window *pWindow)
 	gPtr->ySize = 1;
 	gPtr->xPos = EXP_DECRESX;
 	gPtr->yPos = EXP_DECRESY;
-	gPtr->gadgText = "0000000000";
+	SetGadgString(gPtr,"0000000000");
 	gPtr->gNum = EXPGAD_RESDEC;
 	gPtr->gadgAttr = windowBorderAttr;
 	gPtr->gType = GADTYPE_STRING;
@@ -150,7 +150,7 @@ AddExpWinGadgets(_window *pWindow)
 	gPtr->ySize = 1;
 	gPtr->xPos = EXP_BINRESX;
 	gPtr->yPos = EXP_BINRESY;
-	gPtr->gadgText = "00000000000000000000000000000000";
+	SetGadgString(gPtr,"00000000000000000000000000000000");
 	gPtr->gNum = EXPGAD_RESBIN;
 	gPtr->gadgAttr = windowBorderAttr;
 	gPtr->gType = GADTYPE_STRING;
@@ -161,7 +161,7 @@ AddExpWinGadgets(_window *pWindow)
 	gPtr->ySize = 1;
 	gPtr->xPos = EXP_SYMRESX;
 	gPtr->yPos = EXP_SYMRESY;
-	gPtr->gadgText = "                             ";
+	SetGadgString(gPtr,"                             ");
 	gPtr->gNum = EXPGAD_RESSYM;
 	gPtr->gadgAttr = windowBorderAttr;
 	gPtr->gType = GADTYPE_STRING;
