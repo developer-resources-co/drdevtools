@@ -207,6 +207,7 @@ void DapSession::registerHandlers() {
             snprintf(buf, sizeof(buf), "0x%lx", r.v[i]);
             v.value              = buf;
             v.variablesReference = 0;
+            v.memoryReference    = hexAddr((uint32_t)r.v[i]);
             resp.variables.push_back(v);
         }
         return resp;
