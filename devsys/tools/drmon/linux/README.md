@@ -82,7 +82,9 @@ files stay close to original:
 | `linux/test_bridge.sh` | Integration test: launches MAME headless (SNES=Lua bridge, GEN=gdbstub), runs the appropriate test suite, tears down on exit. |
 | `linux/test_bridge.py` | SNES protocol test suite: V/REGS, G field count, R/W round-trip in WRAM, RP (PPU VRAM read), WP±/BW± (watchpoint toggles), B+/B-, S `<next>` step with PC-advance assertion, bp-while-running, RESET. |
 | `linux/test_gdb.py` | Genesis GDB RSP test suite: g-packet layout, m/M round-trip, Z0/z0, `c`+bp, `s` step, break-in 0x03. |
-| `linux/test-roms/` | `drmon-test.md` + `drmon-test.sfc` — minimal test ROMs. Regenerate with `python3 test-roms/generate_test_roms.py`. SNES ROMs from `roms/snes/` take precedence for the SNES test. |
+| `linux/spikes/verify_features.py` | Deep feature checks (reproduce the stub-lift evidence): PPU seed→readback, watchpoint fire, ROM-write drop. Launches headless MAME per check. `python3 spikes/verify_features.py` → 8/8. |
+| `linux/spikes/connected_shot.sh` | Capture a *connected* `snesmon` TUI as text (host MAME + container `snesmon` via `--network=host`). Proves the live pipeline (status `Running`, live target memory). `KEYS=` drives tmux keys. |
+| `linux/test-roms/` | `drmon-test.sfc` (NOP sled), `drmon-test-writer.sfc` (loops `STA $8250` — fires watchpoints), `drmon-test.md` (Genesis) — homebrew, committed. Regenerate with `python3 test-roms/generate_test_roms.py`. SNES ROMs from `roms/snes/` take precedence for the SNES test. |
 | `CMakeLists.txt` | Builds `snesmon` (`-DSNES -DSYSTEMSNES`) and `genmon` (`-DGENESIS -DSYSTEMGEN`), both with `MAMEBACKEND` by default. `DRMON_MAME_BACKEND=OFF` falls back to `slio_stub.cpp`. |
 
 ## Environment variables

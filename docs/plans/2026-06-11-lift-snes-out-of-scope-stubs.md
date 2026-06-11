@@ -263,9 +263,24 @@ End-to-end, with MAME 0.277 from apt and a SNES test ROM (`task mame SYS=snes CA
    M-w M-b M-s M-i M-o M-a M-y) + typed into Expression — no SIGSEGV" (no crash from the
    rebuilt binary carrying the new MemOps menu entry).
 
-### Not verified headlessly (manual TUI step)
-- **PPU window in the TUI** and **interactive mem-search** (typing addr/len/value at the
-  GetExpr prompts) need a connected `snesmon` in a terminal — the bridge-side paths are
-  proven above, but the on-screen rendering / prompt flow is a manual check.
+### Connected-TUI pass (2026-06-11) — `spikes/connected_shot.sh`
+
+Drove the real `snesmon` against a live host MAME (`--network=host` → Lua bridge) over tmux:
+
+- **PASS — connection live**: status bar reads `Running` (disconnected shows `Slave Dead`).
+- **PASS — live target reads**: a Memory window disassembles live target bytes
+  (`000000: 55 55  EOR $55,X`); byte view shows `55`. Disconnected this is all `00`. Confirms
+  `ReadSlaveData` end-to-end through the binary, not just the protocol harness.
+
+Reproduce: `linux/spikes/connected_shot.sh test-roms/drmon-test.sfc mame_bridge.lua`
+(use `AUTOBOOT=spikes/verify_ppu.lua` + `KEYS=…` to seed VRAM for a PPU-window attempt).
+
+### Still a manual (interactive) step — not driven headlessly
+- The **PPU window** (Memory → Type → PPU), **mem-search** (MemOps → Search…), and **Break on
+  ROM Write** (F10 → Control) all sit behind menus that don't drive cleanly via `capture-pane`:
+  the Memory local menu needs a **right-click** (`ncurses_io.cpp:219` doesn't map Ctrl+F10), and
+  the F10 menu-bar highlight is reverse-video that plain capture strips. The underlying
+  functions are all proven by `spikes/verify_features.py` (8/8); only the on-screen menu walk
+  to reach them is unverified — do it interactively with `task run SYS=snes` and MAME up.
 
 Cost: $0 — entirely local (host MAME from apt, drmon in the existing Docker toolchain).
