@@ -1,9 +1,13 @@
 # Phase 2 — MAME backend for drmon (SNES + Genesis)
 
 **Date:** 2026-06-11
-**Status:** In progress — both binaries build + transport works; architecture **resolved**
-after spikes (SNES = custom bridge + `emu.pause` + software step; Genesis = MAME gdbstub /
-native step). See **[Final implementation plan](#final-implementation-plan-post-spike--split-architecture)** — it is the authoritative spec; the
+**Status:** **Done (2026-06-11)** — both binaries build and drive a live target: SNES via the
+custom Lua bridge (`emu.pause` + software step), Genesis via MAME's native gdbstub. 19/19 SNES +
+11/11 GEN protocol tests; EOF recovery, orphan immunity, disconnected TUI, fresh-clone all verified.
+The SNES out-of-scope stubs were subsequently lifted — see
+[Lifting the SNES out-of-scope stubs](2026-06-11-lift-snes-out-of-scope-stubs.md) (PPU reads,
+watchpoints, mem-search, ROM-write warning); SPC700 and Genesis non-CPU state remain deferred.
+See **[Final implementation plan](#final-implementation-plan-post-spike--split-architecture)** — it is the authoritative spec; the
 Architecture/Protocol/Implementation-steps sections above it are the original unified-bridge
 design, superseded for Genesis.
 **Predecessor:** [2026-06-10-port-drmon-linux.md](2026-06-10-port-drmon-linux.md) (Phases 1/1.5)

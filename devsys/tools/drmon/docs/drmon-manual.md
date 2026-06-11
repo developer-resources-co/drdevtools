@@ -8,12 +8,15 @@ reads **SNESMon V2.1.30**), it has been ported to Linux as a wide-ncurses termin
 This manual covers everything you can do today. To install/launch see
 [Installation](install.md); to configure see [Configuration](configuration.md).
 
-> ### ⚠ It runs disconnected (no target yet)
+> ### ⚠ Connect to a MAME target — or it runs disconnected
 > The Linux port renders the full UI and lets you drive every window, evaluate expressions, load
-> symbols, and script commands — but the dev-link transport to a target is **stubbed**. There is
-> **no live target**: Run/Stop/Step do nothing, target memory and registers read as zero, and the
-> Console stays empty. A real target arrives with the **Phase 2 MAME backend**. Throughout this
-> manual, anything that needs a live target is marked **(needs a backend — Phase 2+)**.
+> symbols, and script commands. The **Phase 2 MAME backend (done)** adds a live target: launch MAME
+> with your cart and the bridge (`task mame SYS=snes|gen CART=…` — see [Installation](install.md)),
+> then `snesmon`/`genmon` connects and Run/Stop/Step, target memory, registers, and breakpoints all
+> operate on the running game. **Without a connection**, drmon runs *disconnected*: the UI still
+> works, but target memory/registers read as zero and Run/Stop/Step do nothing. Throughout this
+> manual, features that need a live connection are marked **(needs a connected target)**. (One thing
+> stays unwired even when connected: the target's print channel → Console — see Limitations.)
 
 ---
 
@@ -53,11 +56,11 @@ the version and run state (`Running` / `Stopped`).
 |---------|-----------|
 | **Symbols** | Named values/addresses (e.g. `Main = $8000`). Created by hand, or loaded from a `.sld` (Source-Level Debug) or COFF object file. They drive source-level debugging: set a breakpoint on `Main`, watch `score`, jump to a label. |
 | **Source-level debug info** | A `.sld` or COFF file maps source file + line ↔ address, so the Source window can show the line your PC is on and you can break by line. |
-| **Breakpoints** | Stop execution at an address. Variants: plain, **once** (clears after firing), **count** (fires N times then clears), and **conditional** (an expression must be true). *(needs a backend — Phase 2+ to actually fire)* |
+| **Breakpoints** | Stop execution at an address. Variants: plain, **once** (clears after firing), **count** (fires N times then clears), and **conditional** (an expression must be true). *(needs a connected target to actually fire)* |
 | **Watchpoints** | Expressions re-evaluated every frame and displayed as `value : expression`. Pure monitor-side — handy for tracking a variable or a computed value. |
-| **Step / Step Over / Run** | Single-step one instruction (**F7**), step over a call (**F8**), or run freely (**F2**) / stop (**F3**). Source- and assembly-level step variants exist (see key reference). *(needs a backend — Phase 2+)* |
+| **Step / Step Over / Run** | Single-step one instruction (**F7**), step over a call (**F8**), or run freely (**F2**) / stop (**F3**). Source- and assembly-level step variants exist (see key reference). *(needs a connected target)* |
 | **65816 disassembler** | Decodes SNES machine code to assembly; powers the Memory window's disassembly view. |
-| **Dev-link (SLIO)** | The command protocol that talks to the target (read/write memory+registers, set/clear breakpoints, step, run). On Linux it is **stubbed** (`linux/slio_stub.cpp`) — this is the seam the Phase 2 MAME bridge plugs into. |
+| **Dev-link (SLIO)** | The command protocol that talks to the target (read/write memory+registers, set/clear breakpoints, step, run). The **Phase 2 MAME backend** implements it: `sliomame.cpp` drives `mame_bridge.lua` over TCP (SNES), `sliogdb.cpp` speaks GDB RSP to MAME's gdbstub (Genesis). `linux/slio_stub.cpp` is the no-op fallback when `DRMON_MAME_BACKEND=OFF`. |
 
 ---
 
@@ -69,7 +72,7 @@ global keys are in the [Key reference](#key-reference).
 
 ### Memory — `Alt+M`
 Examine memory as bytes, words, long words, ASCII, or disassembled code. Navigate with the
-arrows / PgUp / PgDn. *(values read as zero until a backend is wired)*
+arrows / PgUp / PgDn. *(values read as zero when disconnected)*
 
 <img src="img/memory.png" width="336">
 
@@ -95,7 +98,7 @@ arrows / PgUp / PgDn. *(values read as zero until a backend is wired)*
 ### Register — `Alt+R` (single)
 View and set the current 65816 registers (A, X, Y, P/flags, D, DB, PB, SP, PC); flags are shown
 individually. Click a register to open an Expression window prompting for a new value.
-*(live values need a backend)*
+*(live values need a connected target)*
 
 <img src="img/register.png" width="208">
 
@@ -182,7 +185,7 @@ A generic text-file viewer. Arrows move the cursor; PgUp/PgDn page.
 
 ### Console — `Alt+O` (single)
 Read-only output the *target program* prints via the dev-package print routines. `Ctrl+C` clears
-it. *(empty until a backend is wired)*
+it. *(empty until connected)*
 
 <img src="img/console.png" width="320">
 
@@ -270,12 +273,12 @@ Open the Command window (**Alt+K**) and type commands; one per line. Scripts (`.
 
 **Symbols & memory.**
 - `name = value` — define/assign a symbol (e.g. `pcl = $C00000`).
-- `@[size]addr = value` — write target memory *(needs a backend)*.
+- `@[size]addr = value` — write target memory *(needs a connected target)*.
 - `BSET <addr>` / `BCLEAR <addr>` — set / clear a breakpoint.
 - `LOADSYM <file>` / `SAVESYM <file>` · `SCLEAR <symbol>`.
 - `LOADBINARY <addr> <file>` / `SAVEBINARY <addr> <len> <file>` *(backend)*.
 
-**Execution** *(all need a backend)*: `STEP`, `OVER`, `STOP`, `RUNWITHUPDATE`, `RUNNOUPDATE`,
+**Execution** *(all need a connected target)*: `STEP`, `OVER`, `STOP`, `RUNWITHUPDATE`, `RUNNOUPDATE`,
 `RESET`, `RESTART`, `HIT`.
 
 **Scripting & misc.** `EXECUTE <file>` (run a `.scr`), `WAIT <ms>`, `SET <param> <value>`,
@@ -317,7 +320,7 @@ shell (grammar in `expr.l` / `expr.y`).
 (creating it if new). Assign with `name = expr`.
 
 **Memory read.** `@size(addr)` reads `size` bytes at `addr` — e.g. `@2($1000)` reads a 16-bit
-word. *(returns 0 until a backend is wired)*
+word. *(returns 0 when disconnected)*
 
 **Functions.** `numberofones(x)` — population count (number of set bits). Function calls use
 `name(arg)` syntax.
@@ -328,7 +331,7 @@ Results display in hex, decimal, and binary, plus the first symbol matching the 
 
 ## A typical session
 
-The intended source-level workflow (live steps need the Phase 2 backend):
+The intended source-level workflow (live steps need a connected target):
 
 1. **Load symbols / source.** Symbol window (`Alt+S`, `Ctrl+L`) → load your `.sld`/COFF; or
    `loadsym game.sld` in the Command window. Open Source (`Alt+L`, `Ctrl+L`).
@@ -345,16 +348,24 @@ layout) and scripting; steps 3–4 and live memory/register/console come online 
 
 ---
 
-## Limitations (Phase 1 — disconnected)
+## Connected vs disconnected
 
-Everything that needs a live target is inert until the **Phase 2 MAME backend** lands:
+drmon needs a live MAME target for execution and target I/O. Connect by launching MAME with the
+bridge (`task mame SYS=snes|gen CART=…`) before or while running `snesmon`/`genmon`; the client
+reconnects automatically. **When connected**, Run/Stop/Step, target memory & registers, breakpoints,
+the SNES PPU memory window, and SNES write-protect / break-on-ROM-write all work. **When
+disconnected** (no MAME running, or the bridge socket is down):
 
 - **Run / Stop / Step** (F2/F3/F7/F8 and the `STEP`/`OVER`/`RUN…` commands) have no effect.
 - **Target memory & registers** read as zero; memory/register *edits* and `@…` reads/writes go
   nowhere.
 - **Breakpoints / watches / conditional breaks** can be created but never fire.
-- **Console** receives nothing (the target's print channel is stubbed).
-- **Genesis** (`SYSTEM=GEN`) isn't built; only SNES.
+
+Wired in Phase 2 but still incomplete, even when connected:
+
+- **Console** receives nothing — the target's print channel isn't carried over the bridge yet.
+- **SPC700 (SNES audio CPU)** and **all Genesis non-CPU state** (VDP/CRAM/VSRAM, Z80) are still
+  stubbed; the SNES PPU window does read live VRAM. (See the project TODO / stub-lift plan.)
 - **`Alt+D` shell** is a DOS-era no-op on Linux.
 
 See [BUGS.md](../../../../docs/BUGS.md) for fixed issues and the

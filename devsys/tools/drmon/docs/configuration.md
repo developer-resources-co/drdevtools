@@ -18,10 +18,11 @@ target hardware (`board.cpp`):
 Values are parsed as hex (`sscanf("%x")`), e.g. `export DR_SNESPORT=0x378`. The generic form is
 `DR<PLATFORM>PORT` / `DR<PLATFORM>MEMBUFFER` (so a Genesis build would read `DR_GENESISPORT`).
 
-> **No effect yet (needs a backend, Phase 2+).** These are legacy hardware knobs for the
-> original parallel-port dev cartridge. The Linux port runs **disconnected** — the transport is
-> stubbed and the comram is backed by a plain 64 KB buffer — so setting these changes nothing
-> today. Under the Phase 2 MAME bridge they're superseded by the bridge endpoint.
+> **No effect — superseded by the MAME bridge.** These are legacy hardware knobs for the original
+> parallel-port dev cartridge. The Phase 2 backend talks to MAME over TCP instead, so the live
+> endpoint is configured with **`DRMON_MAME_ADDR`** (SNES Lua bridge, default `127.0.0.1:41816`) or
+> **`DRMON_GDB_ADDR`** (Genesis GDB RSP, default `127.0.0.1:23946`) — not these. `DR_SNESPORT` /
+> `DR_SNESMEMBUFFER` change nothing today.
 
 ## Startup scripts (`.scr`)
 
@@ -48,8 +49,8 @@ open memory dynamicrunning pcl
 ```
 
 That opens the Register window, sets the symbol `pcl` to `$C00000`, and opens a Memory window
-tracking that address. (Commands that touch a target — memory reads, run/step — need a backend;
-window-opening and symbol assignment work today.)
+tracking that address. (Commands that touch a target — memory reads, run/step — need a connected
+MAME target; window-opening and symbol assignment work with or without one.)
 
 ## Saved settings (`.ini`)
 

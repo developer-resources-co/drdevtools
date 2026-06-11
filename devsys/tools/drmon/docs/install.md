@@ -5,10 +5,12 @@ Genesis (68000), originally a 1990s DOS product, now ported to Linux/ncurses. Th
 covers building and launching it. For day-to-day use see the [User Manual](drmon-manual.md);
 for tuning see [Configuration](configuration.md).
 
-> **Current status — runs disconnected.** drmon builds and runs its full text UI, but the
-> dev-link transport to a target is still stubbed: there is **no live target yet**. Wiring a
-> real target (MAME) is Phase 2. Everything below works today; target-dependent features are
-> flagged "needs a backend (Phase 2+)" throughout the manual.
+> **Current status — Phase 2 MAME backend is in.** drmon builds and runs its full text UI, and the
+> dev-link transport is wired to a live target: `snesmon` talks to MAME via the Lua bridge
+> (`mame_bridge.lua`, `:41816`) and `genmon` via MAME's GDB RSP (`:23946`). Launch a target with
+> `task mame SYS=snes|gen CART=…`, then run the matching binary. **Without a connection** drmon runs
+> *disconnected* (UI works; target reads return zero); features needing a live link are flagged
+> "needs a connected target" throughout the manual.
 
 ## Prerequisites
 
@@ -75,12 +77,16 @@ docker run --rm -it -v "$PWD":/src -v /tmp/drmon-build:/build \
 
 The historical DOS/Borland `.cpp`/`.hpp` files compile almost unmodified; all the Linux
 portability lives in `devsys/tools/drmon/linux/` and is injected by CMake. For the full
-breakdown (compat shims, the ncurses front end, the stubbed transport seam) see
+breakdown (compat shims, the ncurses front end, the MAME bridge transport) see
 [`linux/README.md`](../linux/README.md).
 
 ## Roadmap
 
-- **Phase 2** — replace the stubbed dev-link (`linux/slio_stub.cpp`) with a bridge to a real
-  target via MAME's debugger; live memory/registers/run/step/breakpoints come alive here.
-- **Packaging** — a `.deb` for the foundry apt repo once drmon drives a target.
-- **Genesis** — a `SYSTEM=GEN` build variant (68000); SNES is the only build today.
+- **Phase 2 — done.** The dev-link is wired to MAME: `sliomame.cpp` ↔ `mame_bridge.lua` (SNES) and
+  `sliogdb.cpp` ↔ MAME GDB RSP (Genesis). Live memory/registers/run/step/breakpoints, the SNES PPU
+  window, and SNES write-protect / break-on-ROM-write all work against a connected target.
+- **Genesis — done.** Both `snesmon` (65816) and `genmon` (68000) build and run.
+- **Phase 3** — a DAP front end so VS Code / nvim-dap can drive drmon-core (confirm approach first).
+- **Packaging** — a `.deb` for the foundry apt repo.
+- **Deferred** — SPC700 (SNES audio CPU; needs a UI surface) and Genesis non-CPU state
+  (VDP/CRAM/VSRAM, Z80; needs a side-channel Lua companion). See the project TODO.
