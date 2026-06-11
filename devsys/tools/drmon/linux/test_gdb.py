@@ -143,30 +143,21 @@ def run():
     r.connect()
     print("Connected.")
 
-    # Drain initial stop notification (MAME sends T05 on connect under -debug)
-    init = r.recv_any(2)
-    check("Initial notification present (T05 or None)", init,
-          lambda s: s is None or "05" in (s or ""))
+    # MAME 0.277 gdbstub: machine starts RUNNING at connect (no initial T05).
+    # Registers (g) can't be read until the machine stops at a breakpoint.
+    # Strategy: do memory ops first (work while running), then stop via bp.
 
     # qSupported
     reply = r.cmd("qSupported:xmlRegisters+;swbreak+")
     check("qSupported returns non-empty reply", reply,
           lambda s: s is not None and len(s) > 0)
 
-    # g — register dump
-    g = r.cmd("g")
-    check(f"g returns {G_HEXLEN} hex chars", g,
-          lambda s: s is not None and len(s) == G_HEXLEN and
-          all(c in "0123456789abcdefABCDEF" for c in s))
+    # Fetch target description — MAME 0.277 gdbstub requires this before g works.
+    # Without it, g always returns E01 (register layout uninitialized).
+    r.cmd("qXfer:features:read:target.xml:0,4000")
+    r.cmd("Hg0")
 
-    if g and len(g) == G_HEXLEN:
-        pc_at_reset = be32(g[PC_HEX_OFF:PC_HEX_OFF+8])
-        print(f"  PC at reset: 0x{pc_at_reset:08x} (expected 0x200)")
-        check("PC at reset is 0x200", pc_at_reset, lambda v: v == 0x200)
-    else:
-        pc_at_reset = 0x200
-
-    # m — memory read (16 bytes from ROM at 0x200)
+    # m — memory read while running (16 bytes from ROM at 0x200)
     mem = r.cmd("m200,10")
     check("m200,10 returns 32 hex chars", mem,
           lambda s: s is not None and len(s) == 32 and
@@ -176,19 +167,23 @@ def run():
     reply = r.cmd("Z0,202,2")
     check("Z0,202,2 returns OK", reply, lambda s: s == "OK")
 
-    # c — continue until bp fires
-    print("  [c] continuing to bp at 0x202...")
+    # c — machine is stopped at reset (MAME gdbstub halts before first instruction).
+    # g returns E01 until the machine executes at least one instruction; run to bp first.
+    print("  [c] running to bp at 0x202...")
     r.cmd("c", wait_reply=False)
     stop = r.recv_any(5)
-    check("stop reply after c (T05)", stop,
+    check("stop reply after c at 0x202 (T05)", stop,
           lambda s: s is not None and "T05" in (s or "").upper() or
           (s is not None and s.startswith("T") and "05" in s[:3]))
 
-    if stop:
-        g2 = r.cmd("g")
-        if g2 and len(g2) == G_HEXLEN:
-            pc_at_bp = be32(g2[PC_HEX_OFF:PC_HEX_OFF+8])
-            check("PC at bp is 0x202", pc_at_bp, lambda v: v == 0x202)
+    # g — machine is now stopped at bp; registers are readable
+    g2 = r.cmd("g")
+    check(f"g returns {G_HEXLEN} hex chars", g2,
+          lambda s: s is not None and len(s) == G_HEXLEN and
+          all(c in "0123456789abcdefABCDEF" for c in s))
+    if g2 and len(g2) == G_HEXLEN:
+        pc_at_bp = be32(g2[PC_HEX_OFF:PC_HEX_OFF+8])
+        check("PC at bp is 0x202", pc_at_bp, lambda v: v == 0x202)
 
     # s — single step from 0x202 (NOP = 4e71 = 2 bytes → PC should → 0x204)
     print("  [s] single step from 0x202...")

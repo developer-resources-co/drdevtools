@@ -282,6 +282,12 @@ static void gdb_maybe_reconnect(void) {
         gdb_close(); return;
     }
 
+    // Fetch target description — MAME 0.277 gdbstub requires this before g works.
+    // Without it, g always returns E01 (register layout uninitialized on the MAME side).
+    char xml_buf[4096];
+    rsp_cmd("qXfer:features:read:target.xml:0,4000", xml_buf, sizeof(xml_buf), 2000);
+    rsp_cmd("Hg0", reply, sizeof(reply), 2000);
+
     g_dead = 0;
     g_gdb_running = 0;
     gcache_invalidate();

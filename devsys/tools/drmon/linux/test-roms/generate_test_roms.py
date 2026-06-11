@@ -2,7 +2,7 @@
 """generate_test_roms.py — generate minimal test ROMs for drmon bridge tests.
 
 Outputs:
-  drmon-test.sfc  — 32 KB SNES LoROM; NOP sled from $008000; reset vector → $8000
+  drmon-test.sfc  — 32 KB SNES LoROM; NOP sled $8000–$FFBB; JML $8000 at $FFBC (loop); reset → $8000
   drmon-test.md   — 4 KB Genesis ROM (recreate/verify); NOP sled from $200; BRA.w $200 at $0FFC
 
 Run from any directory:
@@ -19,9 +19,19 @@ OUT_DIR = os.path.dirname(os.path.abspath(__file__))
 # LoROM bank 0: ROM maps to $008000–$00FFFF (32 KB page).
 # Reset vector lives at $00FFFC–$00FFFD (file offset 0x7FFC–0x7FFD).
 # Header region: $00FFC0–$00FFDF (file offset 0x7FC0–0x7FDF).
+# NOP sled: $8000–$FFBB (file 0x0000–0x7FBB).
+# Loop:     JML $008000 at $FFBC–$FFBF (file 0x7FBC–0x7FBF) — keeps CPU in sled forever,
+#           never reaching the header area with its non-NOP bytes.
 def make_snes():
     SIZE = 0x8000   # 32 KB
     rom = bytearray(b'\xEA' * SIZE)   # NOP sled (0xEA = NOP on 65816)
+
+    # JML $008000 at offset 0x7FBC (SNES $FFBC) — loop back before the header.
+    # JML abs24 opcode 0x5C followed by 24-bit little-endian address.
+    rom[0x7FBC] = 0x5C  # JML abs24
+    rom[0x7FBD] = 0x00  # low  byte of $008000
+    rom[0x7FBE] = 0x80  # high byte of $008000
+    rom[0x7FBF] = 0x00  # bank byte
 
     # Minimal LoROM header at offset 0x7FC0
     hdr_off = 0x7FC0

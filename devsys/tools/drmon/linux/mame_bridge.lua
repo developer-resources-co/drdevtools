@@ -44,7 +44,8 @@ local shortname   = nil
 local reg_order   = {}          -- drmon names in announced order (from REGS cmd)
 local bp_map      = {}          -- addr(int) → bp_index(int)  — user breakpoints
 local step_bps    = {}          -- addr(int) → bp_index(int)  — one-shot step bps (separate!)
-local clog_pos    = 0           -- last consumed consolelog index
+local clog_pos    = 0           -- last consumed consolelog index (for bpset index scanning)
+local bp_clog_scan = 0          -- consolelog scan position for bp-fire marker detection
 local pending_reply = nil       -- "step" when waiting for a step bp to fire
 local step_tick_count = 0       -- watchdog counter
 local halt_reason = nil         -- last stop reason: "halt"|"bp"|"step"|"step-timeout"|nil
@@ -240,11 +241,18 @@ local function dispatch(line)
     end
 
     -- B+ addr — set user breakpoint
+    -- The bpset action uses printf to write "drmon_bp_fired" to the consolelog
+    -- so the periodic can detect bp fires reliably (consolelog persists; exec_state
+    -- window is too narrow for -debugger none).
     local bpset_addr = line:match("^B%+ (%x+)$")
     if bpset_addr then
         local addr = tonumber(bpset_addr, 16)
-        local idx = bpset(addr)
-        if idx then bp_map[addr] = idx end
+        -- Record consolelog position BEFORE setting so we skip existing entries.
+        pcall(function() bp_clog_scan = #db.consolelog; clog_pos = bp_clog_scan end)
+        local idx = pcall(function()
+            db:command(string.format('bpset %x,,printf "drmon_bp_fired"', addr))
+        end) and scan_clog("Breakpoint (%d+) set") or nil
+        if idx then bp_map[addr] = tonumber(idx) end
         sock_send("ok")
         return
     end
@@ -257,6 +265,10 @@ local function dispatch(line)
         if idx then
             pcall(function() db:command("bpclear " .. idx) end)
             bp_map[addr] = nil
+        end
+        -- Advance scan past any existing markers so cleared bps don't re-trigger.
+        if next(bp_map) == nil then
+            pcall(function() bp_clog_scan = #db.consolelog end)
         end
         sock_send("ok")
         return
@@ -338,6 +350,7 @@ local function dispatch(line)
     if line == "BYE" then
         bp_map = {}; step_bps = {}; reg_order = {}
         pending_reply = nil; step_tick_count = 0; halt_reason = nil
+        pcall(function() bp_clog_scan = #db.consolelog end)
         open_server()
         return
     end
@@ -376,6 +389,32 @@ emu.register_periodic(function()
             end
         end
         return
+    end
+
+    -- Active user-bp detection.  Two mechanisms, both checked every tick:
+    --   1. exec_state fast path: visible when the periodic fires within the
+    --      wait_for_debugger window (reliable when that window is wide enough).
+    --   2. consolelog fallback: bpset action writes "drmon_bp_fired" to consolelog;
+    --      this persists regardless of timing, so we never miss a bp fire.
+    if not is_paused() and next(bp_map) ~= nil then
+        local triggered = false
+        -- Fast path: exec_state (may be invisible if wait_for_debugger is a no-op)
+        if exec_state() == "stop" then triggered = true end
+        -- Reliable fallback: scan consolelog for bp-fire marker
+        if not triggered and db then
+            local cl = db.consolelog
+            for i = bp_clog_scan + 1, #cl do
+                bp_clog_scan = i
+                if tostring(cl[i]):match("drmon_bp_fired") then
+                    triggered = true
+                    break
+                end
+            end
+        end
+        if triggered then
+            emu.pause()
+            halt_reason = "bp"
+        end
     end
 
     -- Normal command dispatch (one per tick for predictable latency)

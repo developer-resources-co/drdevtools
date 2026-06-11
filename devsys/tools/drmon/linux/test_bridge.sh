@@ -21,11 +21,11 @@ esac
 
 # Port used by this backend; kill any stale MAME that still holds it.
 if [ "$SYS" = "gen" ]; then
-    PORT="${DRMON_GDB_ADDR##*:}"
-    PORT="${PORT:-23946}"
+    _addr="${DRMON_GDB_ADDR:-127.0.0.1:23946}"
+    PORT="${_addr##*:}"
 else
-    PORT="${DRMON_MAME_ADDR##*:}"
-    PORT="${PORT:-41816}"
+    _addr="${DRMON_MAME_ADDR:-127.0.0.1:41816}"
+    PORT="${_addr##*:}"
 fi
 
 # Kill any stale process holding the port so the test gets a clean socket.
@@ -37,10 +37,13 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
 ROM_DIR="$SCRIPT_DIR/test-roms"
 
 if [ "$SYS" = "snes" ]; then
-    ROM=$(find "$REPO_ROOT/roms/snes" "$ROM_DIR" -maxdepth 1 \( -name "*.sfc" -o -name "*.smc" \) 2>/dev/null | head -1 || true)
+    # Prefer the vendored test ROM (deterministic NOP sled); fall back to any SNES ROM.
+    ROM=$(find "$ROM_DIR" -maxdepth 1 -name "drmon-test.sfc" 2>/dev/null | head -1 || true)
     if [ -z "$ROM" ]; then
-        echo "No SNES ROM found in $REPO_ROOT/roms/snes or $ROM_DIR (*.sfc / *.smc)."
-        echo "Generate one: python3 $ROM_DIR/generate_test_roms.py"
+        ROM=$(find "$REPO_ROOT/roms/snes" "$ROM_DIR" -maxdepth 1 \( -name "*.sfc" -o -name "*.smc" \) 2>/dev/null | head -1 || true)
+    fi
+    if [ -z "$ROM" ]; then
+        echo "No SNES ROM found in $ROM_DIR (run python3 $ROM_DIR/generate_test_roms.py) or $REPO_ROOT/roms/snes."
         exit 1
     fi
 else
@@ -56,7 +59,11 @@ fi
 echo "=== test_bridge.sh: SYS=$SYS driver=$DRIVER ROM=$(basename "$ROM") ==="
 
 # Start MAME headless in the background.
+# SDL_VIDEODRIVER=offscreen prevents MAME from creating a real SDL window even
+# with -video none (which suppresses game rendering but not the host window).
+# SDL_AUDIODRIVER=dummy avoids PulseAudio/ALSA errors on headless hosts.
 if [ "$SYS" = "gen" ]; then
+    env SDL_VIDEODRIVER=offscreen SDL_AUDIODRIVER=dummy \
     mame "$DRIVER" \
         -cart "$ROM" \
         -debug -debugger gdbstub \
@@ -65,6 +72,7 @@ if [ "$SYS" = "gen" ]; then
         -nothrottle \
         &>/tmp/mame_bridge_test.log &
 else
+    env SDL_VIDEODRIVER=offscreen SDL_AUDIODRIVER=dummy \
     mame "$DRIVER" \
         -cart "$ROM" \
         -debug -debugger none \

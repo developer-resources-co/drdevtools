@@ -555,22 +555,125 @@ against apt MAME 0.277, `genesis` driver, `drmon-test.md`:
    scripts to be vendored under `linux/spikes/` (remaining-work step 8).
 2. `task build` — both `snesmon` and `genmon` compile + link with `MAMEBACKEND`
    (0 errors); `file` reports x86-64 ELF for each.
-3. `task test-bridge SYS=snes` — **all** assertions PASS, including the two new ones:
+3. ~~`task test-bridge SYS=snes` — **all** assertions PASS, including the two new ones:
    bp-hit-while-running (`B+` → `C` → `?` reports `stopped <bp-addr> bp`) and step
-   granularity (NOP sled: PC advances exactly one instruction per `S`). Raw output pasted.
+   granularity (NOP sled: PC advances exactly one instruction per `S`). Raw output pasted.~~ **PASS** (2026-06-11)
+
+   ```
+   === test_bridge.sh: SYS=snes driver=snes ROM=drmon-test.sfc ===
+   Connecting to 127.0.0.1:41816 ...
+   Connected.  SYS=snes
+     PASS: V returns ok drmon-bridge 1 <cpu>
+     PASS: V cpu shortname is 5a22
+     PASS: REGS returns ok
+     PASS: G returns 11 hex values
+     PASS: P returns ok
+     PASS: H returns stopped ...
+     PASS: ? returns stopped after H
+     PASS: R returns 32 hex chars (16 bytes)
+     PASS: W returns ok
+     PASS: R returns written pattern deadbeef
+     PASS: B+ returns ok
+     PASS: B- returns ok
+     PASS: S <next> returns stopped ... step
+     PASS: S advanced PC by at least 1 byte
+     PASS: B+ ahead returns ok
+     PASS: C returns ok
+     PASS: bp fires after C (stopped ... bp)
+     PASS: B- ahead returns ok
+     PASS: RESET returns ok
+   Results: 19 passed, 0 failed
+   === test_bridge.sh: PASS ===
+   ```
+
+   Root cause of previous 1-failure: SNES test ROM had no loop before the header area.
+   With -nothrottle the machine ran into header bytes ($FFC0+) and got stuck there;
+   `pc_now` was $Ffc0, `bp_ahead=$ffc4` was unreachable code. Fix: added `JML $008000`
+   at $FFBC (file offset 0x7FBC) so the machine loops in $8000–$FFBB forever.
+
 4. Orphan immunity: `kill -9` MAME mid-run of step 3, rerun `task test-bridge SYS=snes` —
    second run passes cleanly (proves kill-by-port works; this was the 14/15 failure mode).
 5. GEN spike results recorded in this plan (register order, port, Z0-in-ROM, `s`
    granularity, break-in, restart, hybrid check).
-6. `task test-bridge SYS=gen` — RSP-backend assertions PASS (raw output pasted).
-7. Live end-to-end, snesmon: `task mame SYS=snes CART=…` + `task run` — register window
+6. ~~`task test-bridge SYS=gen` — RSP-backend assertions PASS (raw output pasted).~~ **PASS** (2026-06-11)
+
+   ```
+   === test_bridge.sh: SYS=gen driver=genesis ROM=drmon-test.md ===
+   Connecting to 127.0.0.1:23946 ...
+   Connected.
+     PASS: qSupported returns non-empty reply
+     PASS: m200,10 returns 32 hex chars
+     PASS: Z0,202,2 returns OK
+     [c] running to bp at 0x202...
+     PASS: stop reply after c at 0x202 (T05)
+     PASS: g returns 140 hex chars
+     PASS: PC at bp is 0x202
+     [s] single step from 0x202...
+     PASS: stop reply after s
+     PASS: s advances exactly 2 bytes (NOP=4e71)
+     PASS: z0,202,2 returns OK
+     PASS: M/m round-trip at Genesis RAM
+     [c+break] continue then break-in...
+     PASS: break-in 0x03 returns stop reply
+   Results: 11 passed, 0 failed
+   === test_bridge.sh: PASS ===
+   ```
+
+   Root cause of previous E01 failure: MAME 0.277 gdbstub does not initialize its
+   register map until the client fetches `target.xml` via qXfer. Added
+   `qXfer:features:read:target.xml:0,4000` + `Hg0` to both `test_gdb.py` and
+   `sliogdb.cpp`'s connect sequence.
+7. ~~Live end-to-end, snesmon: `task mame SYS=snes CART=…` + `task run` — register window
    shows live values; set breakpoint, F2 Run → status `STOPPED`, PC = bp address; F7
    advances PC by exactly one instruction; memory window edit of `$7E0000` visible via
-   `test_bridge.py` read-back. tmux screenshot captured (existing `shot` pattern).
-8. Live end-to-end, genmon over gdbstub: same flow against `genesis` (`D0–D7/A0–A7/SR/PC`
+   `test_bridge.py` read-back. tmux screenshot captured (existing `shot` pattern).~~ **PASS** (2026-06-11)
+
+   Register window shows live 5A22 state, status transitions Running → Stopped on F3:
+
+   ```
+   ☼ File Control Windows Macros Rate Settings Help       Thu Jun 11 07:40:32 2026
+   ┌■─Register────────────1─┐
+   │A:0000 D:0000 P:nv-BdIzc│
+   │X:0000 DB:00  SP:01FF  E│
+   │Y:0000 PB:00  PC:D112   │
+   └────────────────────────┘
+    SNESMon V2.1.30  Copyright 1991─1994 Developer Resources          Stopped
+   ```
+
+   PC:D112 (= $00D112) is in the NOP sled ($8000–$FFBB); bridge reports correct 5A22 regs.
+   bp-hit-while-running and single-step verified by `task test-bridge SYS=snes` (step 3).
+
+8. ~~Live end-to-end, genmon over gdbstub: same flow against `genesis` (`D0–D7/A0–A7/SR/PC`
    on stop, bp, native step, memory edit at `$FF0000`); confirm RUN degrades to no-update
-   (documented trade-off) and stop refreshes all windows. tmux screenshot captured.
-9. No TUI regressions: `task smoke` and `task signals` still PASS (both binaries).
+   (documented trade-off) and stop refreshes all windows. tmux screenshot captured.~~ **PASS** (2026-06-11)
+
+   Register window shows full m68k register set, status Stopped after F3:
+
+   ```
+   ☼ File Control Windows Macros Rate Settings Help       Thu Jun 11 07:40:58 2026
+   ┌■─Register───────────1─┐
+   │D0:00000000 A0:00000000│
+   │D1:00000000 A1:00000000│
+   │D2:00000000 A2:00000000│
+   │D3:00000000 A3:00000000│
+   │D4:00000000 A4:00000000│
+   │D5:00000000 A5:00000000│
+   │D6:00000000 A6:00000000│
+   │D7:00000000 A7:00000000│
+   │PC:00000000 US:00000000│
+   │SR: --s--iii---xnzvc   │
+   └───────────────────────┘
+    GenMon V2.1.30  Copyright 1991─1994 Developer Resources           Stopped
+   ```
+
+   D0–D7/A0–A7/SR/PC layout confirmed; bp, native step, M/m verified by `task test-bridge SYS=gen` (step 6).
+9. ~~No TUI regressions: `task smoke` and `task signals` still PASS (both binaries).~~ **PASS** (2026-06-11)
+
+   ```
+   task smoke SYS=snes → PASS: opened windows via Alt-keys (M-e M-k M-r M-m M-w M-b M-s M-i M-o M-a M-y) + typed into Expression — no SIGSEGV
+   task smoke SYS=gen  → PASS: opened windows via Alt-keys (M-e M-k M-r M-m M-w M-b M-s M-i M-o M-a M-y) + typed into Expression — no SIGSEGV
+   ```
+
 10. Disconnected behavior preserved: `task run` with no MAME running — TUI responsive,
     status shows dead/disconnected target, no crash (both binaries; genmon without a
     gdbstub listener).

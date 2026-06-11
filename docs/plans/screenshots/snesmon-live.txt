@@ -1,0 +1,25 @@
+☼ File Control Windows Macros Rate Settings Help       Thu Jun 11 07:40:32 2026
+┌■─Register────────────1─┐
+│A:0000 D:0000 P:nv-BdIzc│
+│X:0000 DB:00  SP:01FF  E│
+│Y:0000 PB:00  PC:D112   │
+└────────────────────────┘
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ SNESMon V2.1.30  Copyright 1991─1994 Developer Resources          Stopped
