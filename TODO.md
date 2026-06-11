@@ -72,8 +72,7 @@ _(none)_
 
 ## PACKAGING
 
-- [ ] **Package drmon as a `.deb`** for the foundry apt repo once it does something useful
-  (Phase 2+). Build is reproducible via the Docker toolchain today.
+_(none)_
 
 
 ## VERIFY
@@ -84,6 +83,7 @@ _(none)_
 
 ## DONE
 
+- [x] 2026-06-12 — Package drmon as `drmon_1.0.1_amd64.deb` (snesmon + genmon, cmake/debhelper, lintian-clean PIE ELFs) in foundry-apt — [plan](docs/plans/2026-06-12-package-drmon.md)
 - [x] 2026-06-11 — Lift SNES out-of-scope stubs: `ReadSlavePPU` reads VRAM via MAME save-item (`RP`), write-protect/BRK-on-write → MAME watchpoints (`WP±`/`BW±`), ROM-write warning (readback compare), client-side mem-search (MemOps→Search…); also fixed a latent `mame_cmd` reply stack-overflow; 24/24 bridge tests — [plan](docs/plans/2026-06-11-lift-snes-out-of-scope-stubs.md)
 - [x] 2026-06-11 — Phase 2 — MAME backend: snesmon (Lua bridge :41816) + genmon (GDB RSP gdbstub); 19/19 SNES + 11/11 GEN protocol tests; EOF recovery, orphan immunity, disconnected TUI, fresh-clone all verified — [plan](docs/plans/2026-06-11-drmon-mame-backend.md)
 - [x] 2026-06-11 — Genesis target (SYSTEM=GEN) bring-up — folded into Phase 2 MAME backend — [plan](docs/plans/2026-06-11-drmon-mame-backend.md)
