@@ -12,17 +12,20 @@ Plan-first: non-trivial work gets a `docs/plans/YYYY-MM-DD-<topic>.md` and a TOD
 
 ## DRMON — DEBUGGER BACKEND
 
-- [ ] **PPU/CRAM/OBJRAM reads return zeros.** `ReadSlavePPU` is stubbed safe
-  (zeros, no crash); real PPU/CRAM/OBJ reads need the MAME backend (Phase 2+).
-- [ ] **SPC700 ops are stubbed / no-op.** Audio CPU (SPC700) memory and register
-  ops are not wired; needs Phase 2 MAME bridge.
-- [ ] **Write-protect and BRK-on-write are no-ops.** The stub accepts the protocol
-  command but doesn't enforce protection; needs a live target (Phase 2+).
-- [ ] **SNES_SEARCH not implemented.** Memory-search command is stubbed; needs
-  Phase 2 backend to read target memory.
-- [ ] **ROM-region writes won't stick.** MAME maps SNES ROM as read-only; writes
-  to ROM addresses ($008000+) are silently dropped. WRAM ($7E0000+) writes work.
-  Document prominently in the manual's Phase 2 section when the backend lands.
+- [ ] **Genesis non-CPU state (VDP/CRAM/VSRAM/Z80) still stubbed.** genmon's transport is
+  MAME's native GDB RSP, which only reaches the M68K bus — VDP VRAM/CRAM/VSRAM and the Z80
+  are unreachable there, so `ReadSlaveVDP`/`ReadSlaveCRAM`/`ReadSlaveVSRAM` stay zero-stubbed
+  in `sliogdb.cpp`. Recommended approach: a **side-channel Lua companion socket** alongside
+  the gdbstub — keep GDB RSP for M68K/step/breakpoints, add a small `-autoboot_script` Lua
+  opening a 2nd socket for `:vdp`/`:z80snd` device reads (the SNES bridge proves the
+  device-access path). Deferred from the
+  [SNES stub-lift](docs/plans/2026-06-11-lift-snes-out-of-scope-stubs.md); revisit on concrete need.
+- [ ] **SPC700 (SNES audio CPU) debugging — needs a UI surface first.** MAME-side wiring is
+  trivial (`:soundcpu` exposes program/data spaces, regs `PC S P A X Y`, and the `:aram` 64K
+  RAM share — confirmed by the spike), but there is *no* UI consumer in the Linux build (only
+  protocol enums, gated behind `#ifdef SPC700`). Build a CPU-selector / SPC register + APU-RAM
+  window, then wire the (easy) bridge read path.
+  [plan](docs/plans/2026-06-11-lift-snes-out-of-scope-stubs.md).
 - [ ] **Phase 3 — DAP front end (confirm approach first).** Wrap drmon-core (65816/68000
   disassemblers, `.sld`/COFF parsers, breakpoint/expr engine) behind a
   [cppdap](https://github.com/google/cppdap) DAP server so VS Code / nvim-dap is the UI —
@@ -32,6 +35,12 @@ Plan-first: non-trivial work gets a `docs/plans/YYYY-MM-DD-<topic>.md` and a TOD
 ## DRMON — UI / UX
 
 - [ ] **Support multiple "monitors"** (as windows)
+- [ ] **Revive the scrollable mem-search results window.** `search.cpp`'s results-window
+  scaffold (`OpenMemSearchWindow`, `SearchInput`, gadgets) is `#if 0`'d — its local-menu
+  calls use the old parallel-array form but `CreateMenuWithItems` now takes a `menuItems[]`
+  table. Today the search (MemOps → Search…) reports hits on the message bar (first cut);
+  a scrollable list with go-to-address would be the full UX.
+  [plan](docs/plans/2026-06-11-lift-snes-out-of-scope-stubs.md).
 
 ## DRMON — CLEANUP
 
@@ -75,6 +84,7 @@ _(none)_
 
 ## DONE
 
+- [x] 2026-06-11 — Lift SNES out-of-scope stubs: `ReadSlavePPU` reads VRAM via MAME save-item (`RP`), write-protect/BRK-on-write → MAME watchpoints (`WP±`/`BW±`), ROM-write warning (readback compare), client-side mem-search (MemOps→Search…); also fixed a latent `mame_cmd` reply stack-overflow; 24/24 bridge tests — [plan](docs/plans/2026-06-11-lift-snes-out-of-scope-stubs.md)
 - [x] 2026-06-11 — Phase 2 — MAME backend: snesmon (Lua bridge :41816) + genmon (GDB RSP gdbstub); 19/19 SNES + 11/11 GEN protocol tests; EOF recovery, orphan immunity, disconnected TUI, fresh-clone all verified — [plan](docs/plans/2026-06-11-drmon-mame-backend.md)
 - [x] 2026-06-11 — Genesis target (SYSTEM=GEN) bring-up — folded into Phase 2 MAME backend — [plan](docs/plans/2026-06-11-drmon-mame-backend.md)
 - [x] 2026-06-11 — drmon user docs (manual + install + config) under `devsys/tools/drmon/docs/`, seeded from `snesmon.hlp` but reconciled against source (keys/commands/expr verified vs `monkeys.hpp`/`command.cpp`/`expr.*`); target-dependent features flagged Phase 2 — [plan](docs/plans/2026-06-10-drmon-user-manual-installation-configuration-docs.md)

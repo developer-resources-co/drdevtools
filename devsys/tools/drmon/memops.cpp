@@ -405,6 +405,7 @@ DoMemSave(_menuItem *iPtr,_object *oPtr,int choice)
 
 menuItems memopsMenu[] =
 {
+	{"&Search...   ",DoMemSearch,0},
 	{"&Fill...     ",DoMemFill,0},
 	{"&Copy...     ",DoMemCopy,0},
 	{"&Load Data...",DoMemLoad,0},

@@ -80,7 +80,7 @@ files stay close to original:
 | `linux/slio_stub.cpp` | Link residue for `board.cpp` when `DRMON_MAME_BACKEND=OFF`. Provides `SwapWord`/`GetSlaveBus`/`SendCmd`/… as stubs. Excluded from the build when the MAME backend is on. |
 | `linux/mame_bridge.lua` | **Phase 2 SNES bridge server.** Lua autoboot script loaded by MAME (`-autoboot_script`). Listens on `127.0.0.1:41816`, dispatches drmon protocol commands. SNES only — Genesis uses MAME's native GDB RSP. |
 | `linux/test_bridge.sh` | Integration test: launches MAME headless (SNES=Lua bridge, GEN=gdbstub), runs the appropriate test suite, tears down on exit. |
-| `linux/test_bridge.py` | SNES protocol test suite: V/REGS, G field count, R/W round-trip in WRAM, B+/B-, S `<next>` step with PC-advance assertion, bp-while-running, RESET. |
+| `linux/test_bridge.py` | SNES protocol test suite: V/REGS, G field count, R/W round-trip in WRAM, RP (PPU VRAM read), WP±/BW± (watchpoint toggles), B+/B-, S `<next>` step with PC-advance assertion, bp-while-running, RESET. |
 | `linux/test_gdb.py` | Genesis GDB RSP test suite: g-packet layout, m/M round-trip, Z0/z0, `c`+bp, `s` step, break-in 0x03. |
 | `linux/test-roms/` | `drmon-test.md` + `drmon-test.sfc` — minimal test ROMs. Regenerate with `python3 test-roms/generate_test_roms.py`. SNES ROMs from `roms/snes/` take precedence for the SNES test. |
 | `CMakeLists.txt` | Builds `snesmon` (`-DSNES -DSYSTEMSNES`) and `genmon` (`-DGENESIS -DSYSTEMGEN`), both with `MAMEBACKEND` by default. `DRMON_MAME_BACKEND=OFF` falls back to `slio_stub.cpp`. |
@@ -104,7 +104,10 @@ The bridge uses a minimal newline-terminated ASCII protocol, hand-debuggable wit
 | `G` | `val val ...` | Get registers in announced order (hex) |
 | `P val val ...` | `ok` | Put registers in announced order (hex) |
 | `R addr len` | `hexbytes` | Read memory (program space, hex addr/len) |
+| `RP addr len` | `hexbytes` | Read PPU VRAM (snes_ppu `m_vram` save-item; addr = 0..0xffff VRAM offset) |
 | `W addr hexbytes` | `ok` | Write memory |
+| `WP+` / `WP-` | `ok` | Write-protect: arm/clear a write-watchpoint over the ROM window ($8000-$FFFF) |
+| `BW+` / `BW-` | `ok` | Break-on-ROM-write: same watchpoint primitive (both halt on write) |
 | `B+ addr` | `ok` | Set breakpoint |
 | `B- addr` | `ok` | Clear breakpoint |
 | `S <next> [<alt>]` | `stopped <pc> step` | Single step via one-shot bps at candidate next-PC(s); reply deferred until bp fires (SNES only) |

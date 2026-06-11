@@ -22,7 +22,7 @@ set(DRMON_CXX_SRC
     textview.cpp console.cpp help.cpp command.cpp error.cpp cmdmacro.cpp
     charts.cpp source.cpp which.cpp watch.cpp mem.cpp sld.cpp coff.cpp
     zardoz.cpp monmenu.cpp about.cpp general.cpp config.cpp filereq.cpp
-    profile.cpp filename.cpp
+    profile.cpp filename.cpp search.cpp
     # Linux port shims:
     linux/dos_stubs.cpp linux/ncurses_io.cpp
 )

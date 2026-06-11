@@ -10,6 +10,10 @@ extern menuItems *memOpsMenu;
 FLAG
 OpenMemSearchWindow(_menuItem *iPtr,_object *oPtr,int choice);
 
+// Client-side memory search (defined in search.cpp); wired into memopsMenu.
+FLAG
+DoMemSearch(_menuItem *iPtr,_object *oPtr,int choice);
+
 FLAG
 OpenMemNextWindow(_menuItem *iPtr,_object *oPtr,int choice);
 

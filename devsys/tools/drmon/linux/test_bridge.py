@@ -138,6 +138,21 @@ def run():
     check(f"R returns written pattern {pattern}", r,
           lambda s: s.lower() == pattern.lower())
 
+    # RP — PPU VRAM read (MTYPE_PPU window).  The NOP-sled ROM leaves VRAM zeroed,
+    # so we only assert a well-formed 16-byte hex reply (live-data check is the
+    # spikes/verify_ppu.lua seed test).
+    r = b.cmd("RP 0 10")
+    check("RP returns 32 hex chars (16 VRAM bytes)", r,
+          lambda s: len(s) == 32 and all(c in "0123456789abcdefABCDEF" for c in s))
+
+    # WP± / BW± — write-protect / break-on-write watchpoint toggles.  Set+clear
+    # while halted (the NOP sled never writes, so they won't fire here; the firing
+    # path is covered by the writer-ROM test).
+    check("WP+ returns ok", b.cmd("WP+"), lambda s: s == "ok")
+    check("WP- returns ok", b.cmd("WP-"), lambda s: s == "ok")
+    check("BW+ returns ok", b.cmd("BW+"), lambda s: s == "ok")
+    check("BW- returns ok", b.cmd("BW-"), lambda s: s == "ok")
+
     # B+ / B- — breakpoint set/clear
     BP_ADDR = 0x8000
     r = b.cmd(f"B+ {BP_ADDR:x}")

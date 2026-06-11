@@ -24,8 +24,22 @@
 #include	"memops.hpp"
 #include	"drmon.hpp"
 
+// Declared in slaveio.hpp, which search.cpp does not include (it uses explicit
+// headers, and slaveio.hpp is unguarded).  slaveio.hpp wraps the slave calls in
+// extern "C", so match that linkage or the reference goes unresolved at link time.
+extern "C" void ReadSlaveData(unsigned long addr, char far *data, unsigned int len);
+
 //=============================================================================
 
+// ---------------------------------------------------------------------------
+// Scrollable search-results window — scaffold from the DOS original, never
+// ported/compiled on Linux.  Disabled: its local-menu calls use the old parallel
+// char*[]/routine-array form, but CreateMenuWithItems now takes a menuItems[]
+// table (API drifted during the port).  The first-cut search (MemSearchGUI below)
+// reports hits on the message bar and needs none of this.  Reviving the results
+// window is future work — see TODO (DRMON — UI/UX).
+// ---------------------------------------------------------------------------
+#if 0
 enum
 	{
 	SGAD_UP = GAD_USER+1,
@@ -197,13 +211,87 @@ SearchInput(_input *in,_object *oPtr)
 	 }
     return(inputUsed);
 }
+#endif  // results-window scaffold (future work)
 
 //=============================================================================
 
 void
-MemSearchGUI(ULONG value,void *dataPtr)
+MemSearchGUI(ULONG value,void * /*dataPtr*/)
 {
-	//SlaveCompMem(globTemp,globTemp2,value);
+	// Client-side memory search (the MAME bridge has no search primitive — the
+	// legacy SlaveCompMem ran on dev-cart firmware).  Collected during the input
+	// chain: globTemp2 = start address, globTemp = # bytes to search, value = the
+	// value to find.  The value is matched as a little-endian byte sequence of its
+	// natural width (SNES is little-endian): 0x42 -> [42], 0x1234 -> [34 12].  (A
+	// value whose high byte is zero is searched at the narrower width — enter a
+	// wider range value if you need the explicit width.)  Hits are reported on the
+	// message bar (first cut; a scrollable results window is future work — TODO).
+	unsigned long start = (unsigned long)globTemp2;
+	unsigned long len   = (unsigned long)globTemp;
+
+	int w = 1;
+	if      (value > 0xFFFFFFUL) w = 4;
+	else if (value > 0xFFFFUL)   w = 3;
+	else if (value > 0xFFUL)     w = 2;
+
+	if (len < (unsigned long)w)
+	 {
+		PrintWarning("Search: range smaller than the value width");
+		return;
+	 }
+
+	unsigned char pat[4];
+	for (int i = 0; i < w; i++)
+		pat[i] = (unsigned char)((value >> (8 * i)) & 0xFF);
+
+	const unsigned int CHUNK = 4096;
+	unsigned char buf[CHUNK];
+	unsigned long matches[64];
+	int nmatch = 0;
+	int capped = 0;
+
+	unsigned long addr = start;
+	unsigned long end  = start + len;                 // exclusive
+	while (addr + (unsigned long)w <= end)
+	 {
+		unsigned long room = end - addr;
+		unsigned int  want = (unsigned int)(room < CHUNK ? room : CHUNK);
+		ReadSlaveData(addr, (char far *)buf, want);
+
+		unsigned int limit = want - (unsigned int)w + 1;   // valid start positions
+		for (unsigned int i = 0; i < limit; i++)
+		 {
+			int hit = 1;
+			for (int k = 0; k < w; k++)
+				if (buf[i + k] != pat[k]) { hit = 0; break; }
+			if (hit)
+			 {
+				if (nmatch < 64) matches[nmatch++] = addr + i;
+				else             capped = 1;
+			 }
+		 }
+		if (want < CHUNK) break;                       // final (short) window done
+		addr += CHUNK - (unsigned long)(w - 1);        // overlap w-1 for span hits
+	 }
+
+	char msg[256];
+	if (nmatch == 0)
+	 {
+		snprintf(msg, sizeof(msg),
+		         "Search: no match for %lX in %lu bytes @ %06lX",
+		         (unsigned long)value, len, start);
+	 }
+	else
+	 {
+		int shown = nmatch < 8 ? nmatch : 8;
+		int pos = snprintf(msg, sizeof(msg), "Search: %d%s hit%s @",
+		                   nmatch, capped ? "+" : "", nmatch == 1 ? "" : "s");
+		for (int i = 0; i < shown && pos < (int)sizeof(msg) - 8; i++)
+			pos += snprintf(msg + pos, sizeof(msg) - pos, " %06lX", matches[i]);
+		if (nmatch > shown && pos < (int)sizeof(msg) - 5)
+			snprintf(msg + pos, sizeof(msg) - pos, " ...");
+	 }
+	PrintWarning(msg);
 }
 
 void

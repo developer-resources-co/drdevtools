@@ -246,7 +246,10 @@ Press **F10** for the menu bar (Ctrl+F10 for a window's local menu). The top-lev
 
 - **File** — Load binary / COFF, *Execute Script…*, Exit (Alt+X).
 - **Control** — Run (F2), Stop (F3), Run no Update (F4), Step (F7), Step Over (F8), Reset Slave,
-  Reset to Monitor, Write-Protect ▸ On/Off, Break on ROM Write ▸ On/Off. *(most need a backend)*
+  Reset to Monitor, Write-Protect ▸ On/Off, Break on ROM Write ▸ On/Off. *(need a connected
+  MAME target. On **snesmon**, Write-Protect / Break on ROM Write arm a MAME write-watchpoint
+  over the ROM window — both halt the CPU on a write, since MAME can't silently block one.
+  Still no-ops on **genmon** (GDB RSP has no watchpoint channel here).)*
 - **Windows** — open any window (mirrors the Alt-keys above).
 - **Macros** — Create Macro, Load / Save Macro File, Delete All Macros.
 - **Rate** — screen update speed: Full Speed, 18 FPS, 9 FPS, 4 FPS.

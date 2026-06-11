@@ -187,6 +187,14 @@ zeros) and Z80; write-protect / BRK-on-write (no-ops); `SNES_SEARCH`. ROM-region
 won't stick (MAME ROM) — work-RAM writes do (SNES `$7E0000+`, GEN `$FF0000+`); documented
 in the manual.
 
+> **Update (2026-06-11):** the SNES half of this was lifted — `ReadSlavePPU` now reads VRAM
+> via MAME's save-state item (`RP`), write-protect/BRK-on-write map to MAME watchpoints
+> (`WP±`/`BW±`), `SNES_SEARCH` is a client-side scan (MemOps → Search…), and ROM-region
+> writes now raise a UI warning instead of failing silently. Still deferred: **SPC700**
+> (no UI surface yet) and **all Genesis non-CPU state** (GDB RSP can't reach the VDP/Z80 —
+> needs a side-channel Lua companion). See
+> [Lifting the SNES out-of-scope stubs](2026-06-11-lift-snes-out-of-scope-stubs.md).
+
 ## Implementation steps (original — status annotated; remaining work lives in the [final plan](#final-implementation-plan-post-spike--split-architecture))
 
 1. ~~**TODO** — Phase 2 entry → `[wip]`, linked to this plan; fold the separate "Genesis target (SYSTEM=GEN)" TODO item into this phase.~~ **Done** — both entries `[wip]` in `TODO.md`, GEN item folded.
