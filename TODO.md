@@ -38,12 +38,16 @@ Plan-first: non-trivial work gets a `docs/plans/YYYY-MM-DD-<topic>.md` and a TOD
 
 ## DRMON — CLEANUP
 
-- [ ] **`OPEN <window>` typed command is broken in SNES builds.** `OPEN MEMORY` / `OPEN SYMBOL`
-  / `OPEN SEARCHLIST` all return "No such window" — the command name table (`command.cpp` ~78),
-  the `RW_*` enum (`word.hpp`), and the window-type table (`command.cpp` ~120) have drifted out
-  of index-alignment (a commented/`#ifdef`'d entry mismatch), so the parsed name-table index ≠
-  the `RW_*` value the `WT_HARDWINDOW` switch (`command.cpp:646`) keys on. Audit the three
-  parallel tables and re-align. Found while wiring `OPEN SEARCHLIST` — see
+- [ ] **`OPEN <window>` typed command returns "No such window" (pre-existing, not the tables).**
+  `OPEN MEMORY` / `OPEN SYMBOL` / `OPEN SEARCHLIST` all fail. Initially suspected table
+  misalignment, but verified the three parallel tables actually align: `RESVDWORD` (`command.cpp:38`,
+  67 entries + NULL), `WORDTYPE` (`command.cpp:120`, 67 + `WT_INVALID`), and the `RW_*` enum
+  (`word.hpp`, 67 + `RW_MACRODEF`) — `MEMORY`→idx 29, `SEARCHLIST`→50, both `WT_HARDWINDOW`. And
+  `git diff c835c3b HEAD -- command.cpp` shows these tables are **byte-identical to the original
+  1990s DOS import** (the Linux port never touched them). So the bug is in `ParseWord`/`RW_OPEN`
+  *logic* (`command.cpp:371,638`), not the tables, and almost certainly predates the port — windows
+  are normally opened via Alt-keys/menus, so the typed `OPEN` path is vestigial. Root cause TBD
+  (instrument `windowName` in `RW_OPEN`). Found wiring `OPEN SEARCHLIST` — see
   [search-results-window plan](docs/plans/2026-06-12-search-results-window.md).
 - [ ] **Finish dropping Borland / Watcom / OS2 / DOS-extender support.** `compat.hpp` is
   Linux-only now, but legacy `#ifdef __BORLANDC__` / `__WATCOMC__` / `__OS2__` / `DOSX286` /
