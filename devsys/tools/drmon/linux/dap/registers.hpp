@@ -8,8 +8,9 @@ struct RegTable {
     const char* const* names;
     const unsigned long* masks;
     int count;
-    int pcIndex;   // index of the PC (or PCL for SNES) register
-    int pbIndex;   // index of the bank register, or -1
+    int pcIndex;     // index of the PC (or PCL for SNES) register
+    int pbIndex;     // index of the bank register, or -1
+    int flagsIndex;  // index of the flags/status register, or -1
 };
 
 // ---------------------------------------------------------------------------
@@ -32,7 +33,7 @@ static const int kSnesPBIdx  = 7;
 
 static constexpr RegTable kSnesRegs = {
     kSnesRegNames, kSnesRegMasks, 11,
-    /*pcIndex=*/10, /*pbIndex=*/7
+    /*pcIndex=*/10, /*pbIndex=*/7, /*flagsIndex=*/3
 };
 
 // ---------------------------------------------------------------------------
@@ -54,5 +55,5 @@ static const unsigned long kGenRegMasks[19] = {
 
 static constexpr RegTable kGenRegs = {
     kGenRegNames, kGenRegMasks, 19,
-    /*pcIndex=*/18, /*pbIndex=*/-1
+    /*pcIndex=*/18, /*pbIndex=*/-1, /*flagsIndex=*/-1
 };

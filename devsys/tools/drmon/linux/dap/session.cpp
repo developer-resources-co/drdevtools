@@ -11,6 +11,11 @@
 #include <cstdio>
 #include <cstring>
 #include <string>
+#include <vector>
+
+// Provided by the per-system disassembler wrapper (dis816_dap.cpp / dis68000_dap.cpp)
+extern int procMode;
+unsigned int Disassem(unsigned long addr, char* inBuff, char* outBuff, int disMode);
 
 DapSession::DapSession(std::string host, int port, const RegTable& regs)
     : backend_(std::move(host), port, regs)
@@ -59,6 +64,7 @@ void DapSession::registerHandlers() {
         resp.supportsConfigurationDoneRequest    = true;
         resp.supportsReadMemoryRequest           = true;
         resp.supportsInstructionBreakpoints      = true;
+        resp.supportsDisassembleRequest          = true;
         session_->send(dap::InitializedEvent{});
         return resp;
     });
@@ -257,6 +263,55 @@ void DapSession::registerHandlers() {
             }
             if (resp.result.empty())
                 resp.result = "<unknown expression>";
+        }
+        return resp;
+    });
+
+    // --- disassemble ----------------------------------------------------------
+    s->registerHandler([&](const dap::DisassembleRequest& req)
+                        -> dap::DisassembleResponse {
+        dap::DisassembleResponse resp;
+        uint32_t base  = (uint32_t)strtoul(req.memoryReference.c_str(), nullptr, 0);
+        int64_t  ioff  = req.instructionOffset.has_value()
+                             ? (int64_t)req.instructionOffset.value() : 0;
+        int      count = (int)req.instructionCount;
+
+        // instructionOffset treated as byte offset (Tier 2 approximation).
+        uint32_t addr = (uint32_t)((int64_t)base + ioff);
+
+        uint32_t buflen = (uint32_t)(count * 4 + 16);
+        std::vector<uint8_t> mem(buflen, 0);
+        backend_.readMemory(addr, mem.data(), buflen);
+
+        // Derive procMode from live FLAGS (SNES: M/X bits → immediate operand size)
+        const RegTable& rt = backend_.regTable();
+        if (rt.flagsIndex >= 0) {
+            MameRegs r     = backend_.getRegisters();
+            uint32_t flags = (uint32_t)r.v[rt.flagsIndex];
+            int m = (flags >> 5) & 1;   // M=1 → 8-bit accumulator immediate
+            int x = (flags >> 4) & 1;   // X=1 → 8-bit index immediate
+            procMode = (m == 0 ? 1 : 0) | (x == 0 ? 2 : 0);
+        }
+
+        uint32_t cur = addr;
+        size_t   idx = 0;
+        while ((int)resp.instructions.size() < count && idx + 1 <= mem.size()) {
+            char obuf[128] = {};
+            unsigned int len = Disassem(cur, (char*)&mem[idx], obuf, 0);
+            if (len == 0) len = 1;
+
+            dap::DisassembledInstruction di;
+            di.address     = hexAddr(cur);
+            di.instruction = obuf;
+            char hbuf[32] = {}; char* h = hbuf;
+            for (unsigned i = 0; i < len && idx + i < mem.size(); i++)
+                h += sprintf(h, "%02X ", mem[idx + i]);
+            if (h > hbuf) *(h - 1) = 0;  // trim trailing space
+            di.instructionBytes = hbuf;
+            resp.instructions.push_back(di);
+
+            cur += len;
+            idx += len;
         }
         return resp;
     });

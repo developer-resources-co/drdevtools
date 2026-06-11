@@ -17,7 +17,7 @@ option(DRMON_MAME_BACKEND "Build with MAME TCP bridge backend" ON)
 set(DRMON_CXX_SRC
     symbol.cpp board.cpp listrect.cpp menu.cpp object.cpp layer.cpp
     app.cpp info.cpp drmon.cpp display.cpp screen.cpp list.cpp memory.cpp
-    reg.cpp mouse.cpp window.cpp gadget.cpp input.cpp macro.cpp manager.cpp
+    reg.cpp spc_reg.cpp mouse.cpp window.cpp gadget.cpp input.cpp macro.cpp manager.cpp
     menubar.cpp message.cpp memops.cpp break.cpp expr.cpp control.cpp shell.cpp
     textview.cpp console.cpp help.cpp command.cpp error.cpp cmdmacro.cpp
     charts.cpp source.cpp which.cpp watch.cpp mem.cpp sld.cpp coff.cpp
@@ -96,18 +96,25 @@ FetchContent_MakeAvailable(cppdap)
 
 find_package(Threads REQUIRED)
 
-set(DRMON_DAP_SRC
+# Common DAP sources (shared by both SNES and GEN targets)
+set(DRMON_DAP_SRC_COMMON
     linux/dap/main.cpp
     linux/dap/session.cpp
     linux/dap/backend.cpp
     linux/dap/breakpoints.cpp
+    linux/dap/disasm_stubs.cpp
 )
 
-function(drmon_dap_target TARGET SYSTEM_DEFINE)
-    add_executable(${TARGET} ${DRMON_DAP_SRC})
+function(drmon_dap_target TARGET SYSTEM_DEFINE DISASM_WRAPPER)
+    add_executable(${TARGET} ${DRMON_DAP_SRC_COMMON} ${DISASM_WRAPPER})
+    # Legacy disassembler source: suppress modern-warning noise, allow C-style casts.
+    set_source_files_properties(${DISASM_WRAPPER}
+        PROPERTIES COMPILE_OPTIONS "-w;-fpermissive")
     target_link_libraries(${TARGET} PRIVATE cppdap Threads::Threads)
     target_compile_definitions(${TARGET} PRIVATE ${SYSTEM_DEFINE})
-    target_compile_options(${TARGET} PRIVATE -std=c++17 -Wall -Wextra)
+    target_compile_options(${TARGET} PRIVATE
+        -include ${CMAKE_CURRENT_SOURCE_DIR}/linux/linux_compat.hpp
+        -std=c++17 -Wall -Wextra)
     target_include_directories(${TARGET} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/linux/dap
         ${CMAKE_CURRENT_SOURCE_DIR}
@@ -116,5 +123,5 @@ function(drmon_dap_target TARGET SYSTEM_DEFINE)
     )
 endfunction()
 
-drmon_dap_target(drmon-dap-snes DRMON_DAP_SNES)
-drmon_dap_target(drmon-dap-gen  DRMON_DAP_GEN)
+drmon_dap_target(drmon-dap-snes DRMON_DAP_SNES linux/dap/dis816_dap.cpp)
+drmon_dap_target(drmon-dap-gen  DRMON_DAP_GEN  linux/dap/dis68000_dap.cpp)

@@ -29,10 +29,15 @@ Plan-first: non-trivial work gets a `docs/plans/YYYY-MM-DD-<topic>.md` and a TOD
 - [wip] **Phase 3 — DAP front end Tier 1 built; Tiers 2–3 remain.** `drmon-dap-snes` / `drmon-dap-gen`
   DAP adapters ship alongside `snesmon`/`genmon` (two binaries in parallel; TUI stays indefinitely).
   Tier 1 (done 2026-06-12): initialize/attach/continue/pause/step/registers/readMemory/instruction
-  breakpoints; SNES 65816 step engine with correct branch targets. Tier 2: disassembly view (wire
-  `dis816.cpp` via a stub preamble). Tier 3: symbol file loading (`.sld`/COFF). Verification items
-  3–8 (connected session, breakpoint, registers, memory, disassembly, regression) need live MAME.
-  [plan](docs/plans/2026-06-12-phase-3-dap.md) (see also plan in `~/.claude/plans/`).
+  breakpoints; SNES 65816 step engine with correct branch targets. Tier 3: symbol file loading
+  (`.sld`/COFF). Verification items 3–8 (connected session, breakpoint, registers, memory,
+  disassembly, regression) need live MAME.
+  [plan](docs/plans/2026-06-12-phase-3-dap.md).
+- [wip] **Phase 3 Tier 2 — DAP disassembly view.** Wire `dis816.cpp`/`dis68000.cpp` into the DAP
+  binaries via a stub preamble + stubs TU (forward-declare `_object`, stub `_symbolList`/Print*
+  to break the `moninc.hpp` dependency chain); add `disassemble` DAP request handler with
+  `procMode` derived from live FLAGS register for correct 65816 immediate operand sizes.
+  [plan](docs/plans/2026-06-12-phase-3-drmon-dap-tier-2-disassembly-view.md).
 
 
 ## DRMON — UI / UX
