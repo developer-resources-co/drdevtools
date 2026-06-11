@@ -35,6 +35,7 @@
 #include	"monwind.hpp"
 #include	"textview.hpp"
 #include	"reg.hpp"
+#include	"spc_reg.hpp"
 #include	"slaveio.hpp"
 #include	"monmenu.hpp"
 #include	"help.hpp"
@@ -297,6 +298,11 @@ GlobInput(_input *in,_object *oPtr)
 				case CMD_OPENREG:
 	    			OpenReg();
 					break;
+#ifdef SPC700
+				case CMD_OPENSPCREG:
+	    			OpenSpcReg();
+					break;
+#endif
 				case CMD_OPENEXPR:
 	    			OpenExpWindow();
 					break;

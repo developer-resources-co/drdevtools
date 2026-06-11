@@ -51,6 +51,8 @@ local EOF_TICKS = 300
 local cpu         = nil
 local db          = nil
 local ppu_vram    = nil         -- emu.item for snes_ppu m_vram (RP command; SNES only)
+local apu_cpu     = nil         -- :soundcpu (SPC700 s_smp) device — GA/PA commands (SPC700 only)
+local apu_ram     = nil         -- :soundcpu program space (64K APU RAM) — RA command (SPC700 only)
 local wp_idx      = nil         -- write-protect watchpoint index (nil = off)
 local bw_idx      = nil         -- break-on-write watchpoint index (nil = off)
 local shortname   = nil
@@ -83,6 +85,14 @@ local function init_machine()
         if ppu and ppu.items and ppu.items["0/m_vram"] then
             ppu_vram = emu.item(ppu.items["0/m_vram"])
         end
+    end)
+
+    -- SNES SPC700 (s_smp) audio co-CPU: registers via .state, 64K APU RAM via program space.
+    apu_cpu = nil
+    apu_ram = nil
+    pcall(function()
+        apu_cpu = manager.machine.devices[":soundcpu"]
+        if apu_cpu then apu_ram = apu_cpu.spaces["program"] end
     end)
 end
 
@@ -267,6 +277,25 @@ local function dispatch(line)
         return
     end
 
+    -- RA addr len — SPC700 APU RAM read (MTYPE_SPC window).  Reads the :soundcpu
+    -- program space (64K); addr is a 0..0xffff offset.  Same reply shape as R/RP.
+    local ra_addr, ra_len = line:match("^RA (%x+) (%x+)$")
+    if ra_addr then
+        local addr = tonumber(ra_addr, 16)
+        local len  = math.min(tonumber(ra_len, 16), 4096)
+        if apu_ram then
+            local out = {}
+            for i = 0, len-1 do
+                local ok, b = pcall(function() return apu_ram:read_u8(addr + i) end)
+                out[i+1] = ok and string.format("%02x", b & 0xff) or "00"
+            end
+            sock_send(table.concat(out))
+        else
+            sock_send(string.rep("00", len))
+        end
+        return
+    end
+
     -- W addr hexbytes — memory write
     local w_addr, w_hex = line:match("^W (%x+) (%x+)$")
     if w_addr then
@@ -293,6 +322,34 @@ local function dispatch(line)
             vals[#vals+1] = entry and string.format("%x", entry.value) or "0"
         end
         sock_send(table.concat(vals, " "))
+        return
+    end
+
+    -- SPC700 register order: drmon PC A X Y SP PSW → :soundcpu state PC A X Y S P.
+    local SPC_STATE = {"PC","A","X","Y","S","P"}
+
+    -- GA — get SPC700 registers (fixed order, space-separated hex)
+    if line == "GA" then
+        local vals = {}
+        for _, n in ipairs(SPC_STATE) do
+            local entry = apu_cpu and apu_cpu.state[n]
+            vals[#vals+1] = entry and string.format("%x", entry.value) or "0"
+        end
+        sock_send(table.concat(vals, " "))
+        return
+    end
+
+    -- PA pc a x y sp psw — put SPC700 registers (fixed order)
+    local pa_data = line:match("^PA (.+)$")
+    if pa_data then
+        local i = 1
+        for val_str in pa_data:gmatch("%S+") do
+            local n = SPC_STATE[i]
+            local entry = n and apu_cpu and apu_cpu.state[n]
+            if entry then pcall(function() entry.value = tonumber(val_str, 16) or 0 end) end
+            i = i + 1
+        end
+        sock_send("ok")
         return
     end
 

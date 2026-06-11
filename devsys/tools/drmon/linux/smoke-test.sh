@@ -29,8 +29,9 @@ export TERM=xterm-256color
 # Alt-keys that open windows. The bug class lives in windows with string gadgets
 # (Expression, Command, file requester), but we open the full set so any gadget
 # with read-only text is caught.  E=Expr K=Cmd R=Reg M=Mem W=Watch B=Break
-# S=Symbol I=ProjInfo O=Console A=About Y=AsciiChart
-KEYS=(M-e M-k M-r M-m M-w M-b M-s M-i M-o M-a M-y)
+# S=Symbol I=ProjInfo O=Console A=About Y=AsciiChart N=SpcReg(SPC700/SNES only;
+# a no-op accelerator on genmon, so safe to send unconditionally)
+KEYS=(M-e M-k M-r M-n M-m M-w M-b M-s M-i M-o M-a M-y)
 
 tmux kill-session -t "$SESSION" 2>/dev/null || true
 tmux new-session -d -s "$SESSION" -x 80 -y 25
@@ -42,6 +43,15 @@ for combo in "${KEYS[@]}"; do
 	tmux send-keys -t "$SESSION" "$combo"; sleep 0.6
 	tmux send-keys -t "$SESSION" Escape;  sleep 0.3
 done
+
+# Exercise the SPC RAM memory type (SPC700/SNES): switch a Memory window to SPC
+# RAM (Ctrl-R) and let it render its status line. Guards a NULL-deref regression —
+# the mTypeText[] status-line table had no MTYPE_SPC slot, so rendering the SPC RAM
+# type dereferenced the array's 0 terminator. Renders even disconnected (the status
+# line draws before the slave-alive check). Harmless no-op accelerator on genmon.
+tmux send-keys -t "$SESSION" M-m;       sleep 0.6
+tmux send-keys -t "$SESSION" C-r;       sleep 0.6
+tmux send-keys -t "$SESSION" Escape;    sleep 0.3
 
 # Exercise the in-place edit path: open Expression and type into the gadget,
 # which writes through gadgText exactly like PadString does.

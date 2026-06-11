@@ -134,6 +134,12 @@ extern "C" {
 	void ReadSlavePPU(unsigned long addr,char far *data,unsigned int len);
 #endif
 
+#ifdef SPC700
+	void ReadSlaveApuRam(unsigned long addr,char far *data,unsigned int len);
+	void GetSpc700Regs(ULONG regs[]);
+	void PutSpc700Regs(ULONG regs[]);
+#endif
+
 	}
 
 //============================================================================

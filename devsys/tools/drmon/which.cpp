@@ -39,7 +39,7 @@
 #endif
 
 #ifdef SPC700
-#include "dis700.cpp"
+// #include "dis700.cpp"   // TODO: SPC700 disassembler never written — SPC RAM window is byte/ascii
 #endif
 
 #ifdef MASTERSYSTEM

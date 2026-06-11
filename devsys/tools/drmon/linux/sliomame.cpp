@@ -714,6 +714,63 @@ void ReadSlavePPU(unsigned long addr, char far *data, unsigned int len) {
 }
 #endif
 
+#ifdef SPC700
+// SPC700 (SNES audio co-CPU) access via the bridge's RA/GA/PA commands.
+
+// APU RAM read for the MTYPE_SPC memory window — mirror of ReadSlavePPU (RA, not RP).
+// Reads the :soundcpu program space (64K); addr masked to 0xffff by memory.cpp.  Live, uncached.
+void ReadSlaveApuRam(unsigned long addr, char far *data, unsigned int len) {
+    if (g_fd < 0) { memset(data, 0, len); return; }
+    unsigned int done = 0;
+    while (done < len) {
+        unsigned int chunk = len - done;
+        if (chunk > CACHE_BLOCK_SIZE) chunk = CACHE_BLOCK_SIZE;
+        char cmd[64];
+        snprintf(cmd, sizeof(cmd), "RA %lx %x", (unsigned long)(addr + done), chunk);
+        char reply[CACHE_BLOCK_SIZE * 2 + 4];
+        if (mame_cmd(cmd, reply, sizeof(reply)) < 0) {
+            memset(data + done, 0, len - done);
+            return;
+        }
+        unsigned int off = 0;
+        const char *p = reply;
+        while (off < chunk && *p && *(p + 1)) {
+            char h[3] = { *p, *(p + 1), 0 };
+            data[done + off] = (char)strtoul(h, NULL, 16);
+            p += 2;
+            off++;
+        }
+        for (; off < chunk; off++) data[done + off] = 0;
+        done += chunk;
+    }
+}
+
+// SPC700 registers, fixed order PC A X Y SP PSW (6 slots) via GA/PA.
+void GetSpc700Regs(ULONG regs_out[]) {
+    if (g_fd < 0) return;
+    char reply[128];
+    if (mame_cmd("GA", reply, sizeof(reply)) < 0) return;
+    char *p = reply;
+    for (int i = 0; i < 6; i++) {
+        while (*p == ' ') p++;
+        if (!*p) break;
+        char *end;
+        regs_out[i] = (ULONG)strtoul(p, &end, 16);
+        p = end;
+    }
+}
+
+void PutSpc700Regs(ULONG regs_in[]) {
+    if (g_fd < 0) return;
+    char cmd[128];
+    int pos = snprintf(cmd, sizeof(cmd), "PA");
+    for (int i = 0; i < 6; i++)
+        pos += snprintf(cmd + pos, sizeof(cmd) - pos, " %lx", (unsigned long)regs_in[i]);
+    char reply[16];
+    mame_cmd(cmd, reply, sizeof(reply));
+}
+#endif
+
 #ifdef GENESIS
 void ReadSlaveVDP(unsigned long /*addr*/, char far *data, unsigned int len) {
     memset(data, 0, len);

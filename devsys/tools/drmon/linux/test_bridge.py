@@ -145,6 +145,24 @@ def run():
     check("RP returns 32 hex chars (16 VRAM bytes)", r,
           lambda s: len(s) == 32 and all(c in "0123456789abcdefABCDEF" for c in s))
 
+    # GA / RA / PA — SPC700 audio co-CPU (SPC Register window + MTYPE_SPC mem window).
+    # GA reads the 6 SPC regs (PC A X Y SP PSW); RA reads APU RAM; PA writes regs back.
+    r = b.cmd("GA")
+    spc_vals = r.split()
+    check("GA returns 6 SPC700 reg hex values", r,
+          lambda s: len(s.split()) == 6 and all(
+              all(c in "0123456789abcdefABCDEF" for c in v) for v in s.split()))
+
+    # RA — APU RAM read.  The IPL boot ROM is live at $FFC0+, but at low addresses
+    # the contents are program-dependent, so assert only a well-formed 16-byte reply.
+    r = b.cmd("RA 0 10")
+    check("RA returns 32 hex chars (16 APU-RAM bytes)", r,
+          lambda s: len(s) == 32 and all(c in "0123456789abcdefABCDEF" for c in s))
+
+    # PA — round-trip: write back the same SPC regs we just read.
+    r = b.cmd("PA " + " ".join(spc_vals if len(spc_vals) == 6 else ["0"] * 6))
+    check("PA returns ok", r, lambda s: s == "ok")
+
     # WP± / BW± — write-protect / break-on-write watchpoint toggles.  Set+clear
     # while halted (the NOP sled never writes, so they won't fire here; the firing
     # path is covered by the writer-ROM test).

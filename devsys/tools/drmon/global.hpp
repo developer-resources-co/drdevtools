@@ -40,6 +40,7 @@
 
 #ifdef SYSTEMSNES
 #define SNES
+#define SPC700		// SNES has an SPC700 audio co-CPU (feature, not platform)
 #endif
 
 #ifdef DEBUGCOFF

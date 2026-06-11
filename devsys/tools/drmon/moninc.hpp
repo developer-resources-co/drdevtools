@@ -38,6 +38,7 @@
 #include	"break.hpp"
 #include	"watch.hpp"
 #include	"reg.hpp"
+#include	"spc_reg.hpp"
 							// slave io headers
 #include	"send.hpp"
 #include	"dis.hpp"

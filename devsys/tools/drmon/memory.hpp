@@ -36,7 +36,10 @@ enum
 	MEMORY_LONG,
 	MEMORY_CODE,
 	MEMORY_ASCII,
-	MEMORY_GOTO
+	MEMORY_GOTO,
+#ifdef SPC700
+	MEMORY_SPC			// SPC700 APU-RAM view (SPC700 feature)
+#endif
 };
 
 //==============================================================================

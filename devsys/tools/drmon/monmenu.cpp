@@ -190,6 +190,9 @@ menuItems windowMenu[] =
 {
 	{"&Memory       Alt-M",(unsigned int (*)(_menuItem *,_object *,int))OpenMemory,      0},
 	{"&Register     Alt-R",(unsigned int (*)(_menuItem *,_object *,int))OpenReg,         0},
+#ifdef SPC700
+	{"SPC Register  Alt-N",(unsigned int (*)(_menuItem *,_object *,int))OpenSpcReg,      0},
+#endif
 	{"&BreakPoints  Alt-B",(unsigned int (*)(_menuItem *,_object *,int))OpenBreak,       0},
 	{"Source       Alt-L",(unsigned int (*)(_menuItem *,_object *,int))OpenSource,      0},
 	{"C&onsole      Alt-O",(unsigned int (*)(_menuItem *,_object *,int))OpenConsole,     0},

@@ -20,12 +20,6 @@ Plan-first: non-trivial work gets a `docs/plans/YYYY-MM-DD-<topic>.md` and a TOD
   opening a 2nd socket for `:vdp`/`:z80snd` device reads (the SNES bridge proves the
   device-access path). Deferred from the
   [SNES stub-lift](docs/plans/2026-06-11-lift-snes-out-of-scope-stubs.md); revisit on concrete need.
-- [ ] **SPC700 (SNES audio CPU) debugging — needs a UI surface first.** MAME-side wiring is
-  trivial (`:soundcpu` exposes program/data spaces, regs `PC S P A X Y`, and the `:aram` 64K
-  RAM share — confirmed by the spike), but there is *no* UI consumer in the Linux build (only
-  protocol enums, gated behind `#ifdef SPC700`). Build a CPU-selector / SPC register + APU-RAM
-  window, then wire the (easy) bridge read path.
-  [plan](docs/plans/2026-06-11-lift-snes-out-of-scope-stubs.md).
 - [wip] **Phase 3 — DAP front end Tier 1 built; Tiers 2–3 remain.** `drmon-dap-snes` / `drmon-dap-gen`
   DAP adapters ship alongside `snesmon`/`genmon` (two binaries in parallel; TUI stays indefinitely).
   Tier 1 (done 2026-06-12): initialize/attach/continue/pause/step/registers/readMemory/instruction
@@ -85,6 +79,7 @@ _(none)_
 
 ## DONE
 
+- [x] 2026-06-12 — SPC700 (SNES audio co-CPU) debugging UI: editable **SPC register window** (Alt-N, `PC/A/X/Y/SP/PSW` via bridge `GA`/`PA`) + **APU-RAM memory window** (`MTYPE_SPC`, Type→SPC RAM or Ctrl-R, byte dump via `RA`/`ReadSlaveApuRam`); guarded `#ifdef SPC700` (feature, not platform — SNES block `#define`s it, genmon excludes all of it); caught+fixed a `mTypeText[]` NULL-deref; 27/27 bridge tests, smoke + connected TUI clean — [plan](docs/plans/2026-06-12-spc700-window.md)
 - [x] 2026-06-12 — Revive `EvalCommand`: the whole command-verb dispatcher (OPEN/CLOSE/RUN/STOP/STEP/OVER/RESET/BSET/SET/LOAD/SAVE/macros/…) shipped `#if 0`'d since the 2003 DOS import, so every typed command + script was a no-op; un-`#if 0`'d `EvalCommand`+`GetNumbers`, routed expr/number args through the live flex/bison `DoExp` (not the obsolete hand-written eval); zero signature drift; `OPEN MEMORY`/`OPEN SEARCHLIST` open windows, smoke clean — [plan](docs/plans/2026-06-12-revive-evalcommand.md)
 - [x] 2026-06-12 — Revive scrollable mem-search results window: hits land in a `_searchList` list-rect window (mirrors symbol/break), Enter/Ctrl-G → Memory window at the hit, Del clears; `OpenMemoryAt()` helper; build + smoke clean (visual = manual via MemOps→Search) — [plan](docs/plans/2026-06-12-search-results-window.md)
 - [x] 2026-06-12 — Package drmon as `drmon_1.0.1_amd64.deb` (snesmon + genmon, cmake/debhelper, lintian-clean PIE ELFs) in foundry-apt — [plan](docs/plans/2026-06-12-package-drmon.md)

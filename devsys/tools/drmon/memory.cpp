@@ -47,13 +47,25 @@ int memorySize[] =
 #ifdef SNES
 	2,                                                                // 1 ppu mode
 #endif
+#ifdef SPC700
+	1,                                                                // spc ram (byte memory)
+#endif
 	2                                                                // diff mode(not implemented)
 };
 
 int dWidthTbl[] =
 {
-	2,3,5,9,1,
-	5,5,5,5
+	2,3,5,9,1,                                                        // dis, byte, word, long, ascii
+#ifdef GENESIS
+	5,5,5,                                                            // 3 vdp modes
+#endif
+#ifdef SNES
+	5,                                                                // ppu (word)
+#endif
+#ifdef SPC700
+	3,                                                                // spc ram (byte width)
+#endif
+	5                                                                // diff
 };
 
 //=============================================================================
@@ -77,6 +89,9 @@ enum
 #ifdef SNES
 	MTYPE_PPU,
 #endif
+#ifdef SPC700
+	MTYPE_SPC,
+#endif
 	MTYPE_DIFF
 };
 
@@ -96,6 +111,9 @@ char *mTypeText[] =
 #endif
 #ifdef SNES
 	"PPU ",
+#endif
+#ifdef SPC700
+	"SPC RAM ",
 #endif
 	0
 };
@@ -302,6 +320,9 @@ menuItems memoryTypeMenu[] =
 #endif
 #ifdef SNES
 	{"PPU        ",MemoryType,0},
+#endif
+#ifdef SPC700
+	{"SPC RAM    ",MemoryType,0},
 #endif
 	{0,0,0}
 };
@@ -745,6 +766,11 @@ MemoryInput(_input *in,_object *oPtr)
 					case MEMORY_ASCII:
 						oPtr->mType = MTYPE_ASCII;
 						break;
+#ifdef SPC700
+					case MEMORY_SPC:
+						oPtr->mType = MTYPE_SPC;
+						break;
+#endif
 					case MEMORY_GOTO:
 		                MemoryGotoDynamicRunning(NULL,oPtr,0);
 						break;
@@ -975,6 +1001,9 @@ MemoryGetLineAddr(_object *oPtr,int line)
 #ifdef SNES
 	        case MTYPE_PPU:
 #endif
+#ifdef SPC700
+	        case MTYPE_SPC:
+#endif
                     pWidth = lPtr->xSize-(2+6);
 	                if(pWidth < 0 )
 	                        pWidth = 0;
@@ -1001,6 +1030,11 @@ MemoryGetLineAddr(_object *oPtr,int line)
 #endif
 #ifdef SNES
 	                        case MTYPE_PPU:
+	                                addr &= 0xffff;
+	                                break;
+#endif
+#ifdef SPC700
+	                        case MTYPE_SPC:
 	                                addr &= 0xffff;
 	                                break;
 #endif
@@ -1191,6 +1225,9 @@ MemoryRoutine(_object *oPtr)
 #ifdef SNES
 	        case MTYPE_PPU:
 #endif
+#ifdef SPC700
+	        case MTYPE_SPC:
+#endif
 	        case MTYPE_BYTE:
 	        case MTYPE_WORD:
 	        case MTYPE_LONG:
@@ -1225,6 +1262,12 @@ MemoryRoutine(_object *oPtr)
 	                        case MTYPE_PPU:
 	                                addr &= 0xffff;
 	                                ReadSlavePPU(addr,xferBuffer,bytesNeeded);
+	                                break;
+#endif
+#ifdef SPC700
+	                        case MTYPE_SPC:
+	                                addr &= 0xffff;
+	                                ReadSlaveApuRam(addr,xferBuffer,bytesNeeded);
 	                                break;
 #endif
 	                 }
@@ -1263,6 +1306,9 @@ MemoryRoutine(_object *oPtr)
 	                                        switch(oPtr->mType)
 	                                          {
 	                                                case MTYPE_BYTE:
+#ifdef SPC700
+	                                                case MTYPE_SPC:		// SPC RAM: byte memory, byte dump
+#endif
 	                                                    buffer = Print8Bits(buffer,*buff++);
 	                                                        break;
 	                                                case MTYPE_WORD:
@@ -1324,6 +1370,12 @@ MemoryRoutine(_object *oPtr)
 #endif
 #ifdef SNES
 	                                                case MTYPE_PPU:
+	                                                        if(addr > 0xffff)
+	                                                                abort = boolean::TRUE;
+	                                                        break;
+#endif
+#ifdef SPC700
+	                                                case MTYPE_SPC:
 	                                                        if(addr > 0xffff)
 	                                                                abort = boolean::TRUE;
 	                                                        break;
@@ -1391,6 +1443,9 @@ struct _inputKeyRemap memoryKeys[] =
 	{KEY_CTRLD,MEMORY_CODE	       },
 	{KEY_CTRLY,MEMORY_ASCII      },
 	{KEY_CTRLG,MEMORY_GOTO        },
+#ifdef SPC700
+	{KEY_CTRLR,MEMORY_SPC        },		// SPC700 APU-RAM view (SPC700 feature)
+#endif
 	{0,0}
 };
 
