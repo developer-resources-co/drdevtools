@@ -110,28 +110,31 @@ static void close_conn(void) {
 static int mame_cmd(const char *cmd, char *reply, int reply_sz) {
     if (g_fd < 0) return -1;
 
-    // Send command + newline
-    char buf[256];
-    int len = snprintf(buf, sizeof(buf), "%s\n", cmd);
-    if (len <= 0 || len >= (int)sizeof(buf)) return -1;
+    // Send command + newline (commands are short; the bridge caps payloads).
+    char sbuf[256];
+    int len = snprintf(sbuf, sizeof(sbuf), "%s\n", cmd);
+    if (len <= 0 || len >= (int)sizeof(sbuf)) return -1;
 
-    int n = (int)send(g_fd, buf, len, MSG_NOSIGNAL);
+    int n = (int)send(g_fd, sbuf, len, MSG_NOSIGNAL);
     if (n != len) { close_conn(); return -1; }
 
-    // Receive reply line (read until newline or 1 s timeout)
+    // Receive reply line directly into the caller's buffer, bounded by reply_sz.
+    // (Reading into a fixed local but bounding by reply_sz would overflow it for
+    // the large hex replies of R/RP — block reads return up to 2048 chars.)
     struct timeval tv = {1, 0};
     int rpos = 0;
     for (;;) {
         fd_set fds; FD_ZERO(&fds); FD_SET(g_fd, &fds);
         int rc = select(g_fd + 1, &fds, 0, 0, &tv);
         if (rc <= 0) { close_conn(); return -1; }   // timeout or error
-        int got = (int)recv(g_fd, buf + rpos, 1, 0);
+        char c;
+        int got = (int)recv(g_fd, &c, 1, 0);
         if (got <= 0) { close_conn(); return -1; }
-        if (buf[rpos] == '\n') { buf[rpos] = 0; break; }
-        rpos++;
-        if (rpos >= reply_sz - 1) { buf[rpos] = 0; break; }
+        if (c == '\n') break;
+        if (reply && rpos < reply_sz - 1) reply[rpos] = c;   // store if room; else drop
+        rpos++;                                              // keep consuming to end of line
     }
-    if (reply) strncpy(reply, buf, reply_sz - 1), reply[reply_sz - 1] = 0;
+    if (reply) reply[(rpos < reply_sz - 1) ? rpos : (reply_sz - 1)] = 0;
     return 0;
 }
 
@@ -407,6 +410,23 @@ void WriteSlaveData(unsigned long addr, char far *data, unsigned int len) {
     char reply[16];
     mame_cmd(cmd, reply, sizeof(reply));
     cache_invalidate();
+
+    // ROM-write warning: MAME silently drops writes to ROM-mapped addresses.
+    // For interactive datum-sized writes, read the first byte back; if it didn't
+    // take, the target is ROM/unmapped — surface a message instead of failing
+    // silently.  Skipped for bulk writes/loads (len > 4) to avoid an extra
+    // round-trip and message spam.  (Write-only I/O regs may read back differently
+    // and trip a benign false warning — acceptable; data writes target RAM/ROM.)
+    if (len > 0 && len <= 4) {
+        const unsigned char *p = cache_fetch(addr);
+        if (p && *p != (unsigned char)data[0]) {
+            char warn[64];
+            snprintf(warn, sizeof(warn),
+                     "ROM write @ %06lX ignored (MAME ROM is read-only)",
+                     (unsigned long)addr);
+            PrintWarning(warn);
+        }
+    }
 }
 
 unsigned long MemRead(unsigned long addr, UBYTE size) {
@@ -646,16 +666,51 @@ boolean SlaveBkClr(long addr, unsigned int /*inst*/) {
     return boolean::TRUE;
 }
 
-void SlaveSetWriteProtect(void)   {}
-void SlaveClearWriteProtect(void) {}
-void SlaveSetBRKOnWrite(void)     {}
-void SlaveClearBRKOnWrite(void)   {}
+// Write-protect / break-on-write map to a MAME write watchpoint over the ROM
+// window (bridge commands WP+/WP-/BW+/BW-).  MAME watchpoints *break* on write —
+// they cannot silently *block* one — so both manifest as a halt on write.
+static void wp_cmd(const char *c) {
+    if (g_fd < 0) return;
+    char reply[16];
+    mame_cmd(c, reply, sizeof(reply));
+}
+void SlaveSetWriteProtect(void)   { wp_cmd("WP+"); }
+void SlaveClearWriteProtect(void) { wp_cmd("WP-"); }
+void SlaveSetBRKOnWrite(void)     { wp_cmd("BW+"); }
+void SlaveClearBRKOnWrite(void)   { wp_cmd("BW-"); }
 
 // --- Platform-specific stubs (PPU/VDP/etc.) ----------------------------------
 
 #ifdef SNES
-void ReadSlavePPU(unsigned long /*addr*/, char far *data, unsigned int len) {
-    memset(data, 0, len);
+// PPU VRAM read for the MTYPE_PPU memory window.  Sources bytes from MAME's
+// snes_ppu m_vram save-state item via the bridge's `RP` command (non-intrusive —
+// no PPU port latch side effects).  addr is masked to 0xffff (VRAM) by memory.cpp.
+// Not cached: VRAM updates continuously while the CPU runs, so a per-call read is
+// both simpler and correct (the user inspects PPU windows while halted).
+void ReadSlavePPU(unsigned long addr, char far *data, unsigned int len) {
+    if (g_fd < 0) { memset(data, 0, len); return; }
+    unsigned int done = 0;
+    while (done < len) {
+        unsigned int chunk = len - done;
+        if (chunk > CACHE_BLOCK_SIZE) chunk = CACHE_BLOCK_SIZE;
+        char cmd[64];
+        snprintf(cmd, sizeof(cmd), "RP %lx %x", (unsigned long)(addr + done), chunk);
+        char reply[CACHE_BLOCK_SIZE * 2 + 4];
+        if (mame_cmd(cmd, reply, sizeof(reply)) < 0) {
+            memset(data + done, 0, len - done);
+            return;
+        }
+        unsigned int off = 0;
+        const char *p = reply;
+        while (off < chunk && *p && *(p + 1)) {
+            char h[3] = { *p, *(p + 1), 0 };
+            data[done + off] = (char)strtoul(h, NULL, 16);
+            p += 2;
+            off++;
+        }
+        for (; off < chunk; off++) data[done + off] = 0;   // short reply → zero-fill
+        done += chunk;
+    }
 }
 #endif
 

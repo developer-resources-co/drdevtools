@@ -23,12 +23,6 @@ Plan-first: non-trivial work gets a `docs/plans/YYYY-MM-DD-<topic>.md` and a TOD
 - [ ] **ROM-region writes won't stick.** MAME maps SNES ROM as read-only; writes
   to ROM addresses ($008000+) are silently dropped. WRAM ($7E0000+) writes work.
   Document prominently in the manual's Phase 2 section when the backend lands.
-- [wip] **Phase 2 — MAME backend.** Replace the stubbed SLIO transport
-  ([`devsys/tools/drmon/linux/slio_stub.cpp`](devsys/tools/drmon/linux/slio_stub.cpp) — the
-  designed seam) with a bridge that translates drmon's opcode protocol (read/write mem+regs,
-  set/clear breakpoint, step, continue, async-exception) to MAME debugger ops over its
-  [Lua debugger API](https://docs.mamedev.org/luascript/ref-debugger.html). Load a SNES
-  (snesmon) or Genesis (genmon) game in MAME; drmon drives it. — [plan](docs/plans/2026-06-11-drmon-mame-backend.md)
 - [ ] **Phase 3 — DAP front end (confirm approach first).** Wrap drmon-core (65816/68000
   disassemblers, `.sld`/COFF parsers, breakpoint/expr engine) behind a
   [cppdap](https://github.com/google/cppdap) DAP server so VS Code / nvim-dap is the UI —
@@ -37,7 +31,6 @@ Plan-first: non-trivial work gets a `docs/plans/YYYY-MM-DD-<topic>.md` and a TOD
 
 ## DRMON — UI / UX
 
-- [wip] **Genesis target (`SYSTEM=GEN`).** Folded into Phase 2 MAME backend — genmon build bring-up is step 4 of that plan.
 - [ ] **Support multiple "monitors"** (as windows)
 
 ## DRMON — CLEANUP
@@ -82,6 +75,8 @@ _(none)_
 
 ## DONE
 
+- [x] 2026-06-11 — Phase 2 — MAME backend: snesmon (Lua bridge :41816) + genmon (GDB RSP gdbstub); 19/19 SNES + 11/11 GEN protocol tests; EOF recovery, orphan immunity, disconnected TUI, fresh-clone all verified — [plan](docs/plans/2026-06-11-drmon-mame-backend.md)
+- [x] 2026-06-11 — Genesis target (SYSTEM=GEN) bring-up — folded into Phase 2 MAME backend — [plan](docs/plans/2026-06-11-drmon-mame-backend.md)
 - [x] 2026-06-11 — drmon user docs (manual + install + config) under `devsys/tools/drmon/docs/`, seeded from `snesmon.hlp` but reconciled against source (keys/commands/expr verified vs `monkeys.hpp`/`command.cpp`/`expr.*`); target-dependent features flagged Phase 2 — [plan](docs/plans/2026-06-10-drmon-user-manual-installation-configuration-docs.md)
 - [x] 2026-06-10 — Viewport fill: size the CGA screen to the terminal's COLS×LINES (chrome fills, windows fixed) + live `KEY_RESIZE` re-fill; root-caused the width≥83 garble/crash to a dormant 64-bit `CopyScreen`/`CopyMem` `len/=4` long-copy (2× over-copy) — fixed w/ `memcpy`; ASan now on by default — [plan](docs/plans/2026-06-10-drmon-viewport-fill.md) · [BUGS.md](docs/BUGS.md)
 - [x] 2026-06-10 — Handle Ctrl+C + restore terminal on signal-death (port gap: DOS `ctrlbrk` was never ported): ignore SIGINT (DOS parity, drmon keeps running) + emergency terminal-restore handler for SIGSEGV/etc. so a crash/kill no longer leaks xterm mouse modes; `task signals` regression guard

@@ -37,9 +37,22 @@ local PCL_DECOMPOSES = { ["5a22"]=true }
 -- Step watchdog: ~500 ms.  Each periodic tick is ~16 ms → 31 ticks.
 local STEP_WATCHDOG_TICKS = 31
 
+-- Write-protect / break-on-write watch region.  drmon's menu toggles are global
+-- and parameterless, so we watch a fixed range: the LoROM bank-0 ROM window
+-- $8000-$FFFF, where running code lives — stray writes into the program halt the
+-- CPU.  Coarse by design (a single CPU-space range); documented in the manual.
+local WP_ADDR, WP_LEN = 0x8000, 0x8000
+
+-- EOF detection: after this many consecutive nil reads on an active connection,
+-- treat the peer as disconnected and reopen the listener (~5 s at 16 ms/tick).
+local EOF_TICKS = 300
+
 -- ── global state ──────────────────────────────────────────────────────────────
 local cpu         = nil
 local db          = nil
+local ppu_vram    = nil         -- emu.item for snes_ppu m_vram (RP command; SNES only)
+local wp_idx      = nil         -- write-protect watchpoint index (nil = off)
+local bw_idx      = nil         -- break-on-write watchpoint index (nil = off)
 local shortname   = nil
 local reg_order   = {}          -- drmon names in announced order (from REGS cmd)
 local bp_map      = {}          -- addr(int) → bp_index(int)  — user breakpoints
@@ -51,6 +64,8 @@ local step_tick_count = 0       -- watchdog counter
 local halt_reason = nil         -- last stop reason: "halt"|"bp"|"step"|"step-timeout"|nil
 local srv         = nil         -- emu.file socket
 local rx_buf      = ""          -- partial line accumulator
+local ever_connected = false    -- true after first dispatch on this socket handle
+local nil_read_ticks = 0        -- consecutive ticks with nil/empty srv:read
 
 -- ── machine init ──────────────────────────────────────────────────────────────
 local function init_machine()
@@ -59,6 +74,16 @@ local function init_machine()
     db  = manager.machine.debugger
     if db then clog_pos = #db.consolelog end
     shortname = cpu and cpu.shortname or nil
+
+    -- SNES PPU VRAM via the save-state item interface (not a space/share/region).
+    -- emu.item(:read(i)) yields each of the 65536 VRAM bytes, non-intrusively.
+    ppu_vram = nil
+    pcall(function()
+        local ppu = manager.machine.devices[":ppu"]
+        if ppu and ppu.items and ppu.items["0/m_vram"] then
+            ppu_vram = emu.item(ppu.items["0/m_vram"])
+        end
+    end)
 end
 
 emu.add_machine_reset_notifier(function() init_machine() end)
@@ -80,6 +105,8 @@ local function open_server()
     pending_reply = nil
     step_tick_count = 0
     halt_reason = nil
+    ever_connected = false
+    nil_read_ticks = 0
 end
 
 local function sock_send(s)
@@ -89,7 +116,18 @@ end
 local function readline()
     if not srv then return nil end
     local chunk = srv:read(4096)
-    if chunk and #chunk > 0 then rx_buf = rx_buf .. chunk end
+    if chunk and #chunk > 0 then
+        rx_buf = rx_buf .. chunk
+        nil_read_ticks = 0
+    else
+        if ever_connected then
+            nil_read_ticks = nil_read_ticks + 1
+            if nil_read_ticks > EOF_TICKS then
+                open_server()
+                return nil
+            end
+        end
+    end
     local line, rest = rx_buf:match("^([^\n]*)\n(.*)")
     if not line then return nil end
     rx_buf = rest
@@ -142,8 +180,35 @@ local function clear_step_bps()
     step_bps = {}
 end
 
+-- Any write-protect / break-on-write watchpoint armed?
+local function wp_active() return wp_idx ~= nil or bw_idx ~= nil end
+
+-- Arm a write watchpoint over the ROM window; returns its MAME index, or nil.
+-- Uses the same "drmon_bp_fired" printf marker as bpset so the periodic's reliable
+-- consolelog-scan path detects the halt (the exec_state fast path is too narrow
+-- under -debugger none).  A watchpoint halt therefore reports reason "bp".
+local function wpset_region()
+    if not db then return nil end
+    pcall(function() clog_pos = #db.consolelog end)
+    local ok = pcall(function()
+        db:command(string.format('wpset %x,%x,w,1,printf "drmon_bp_fired"', WP_ADDR, WP_LEN))
+    end)
+    local idx = ok and scan_clog("Watchpoint (%d+) set") or nil
+    return idx and tonumber(idx) or nil
+end
+
+-- Clear all watchpoints + reset our indices (used on connect/disconnect resets).
+local function clear_watchpoints()
+    pcall(function() if db then db:command("wpclear") end end)
+    wp_idx = nil
+    bw_idx = nil
+end
+
 -- ── command dispatch ──────────────────────────────────────────────────────────
 local function dispatch(line)
+    ever_connected = true
+    nil_read_ticks = 0
+
     if not cpu or not db then
         sock_send("err no target")
         return
@@ -175,6 +240,25 @@ local function dispatch(line)
             for i = 0, len-1 do
                 local ok, b = pcall(function() return sp:read_u8(addr + i) end)
                 out[i+1] = ok and string.format("%02x", b) or "00"
+            end
+            sock_send(table.concat(out))
+        else
+            sock_send(string.rep("00", len))
+        end
+        return
+    end
+
+    -- RP addr len — PPU VRAM read (MTYPE_PPU window).  Reads the snes_ppu m_vram
+    -- save-state item; addr is a 0..0xffff VRAM offset.  Same reply shape as R.
+    local rp_addr, rp_len = line:match("^RP (%x+) (%x+)$")
+    if rp_addr then
+        local addr = tonumber(rp_addr, 16)
+        local len  = math.min(tonumber(rp_len, 16), 4096)
+        if ppu_vram then
+            local out = {}
+            for i = 0, len-1 do
+                local ok, b = pcall(function() return ppu_vram:read(addr + i) end)
+                out[i+1] = (ok and b) and string.format("%02x", b & 0xff) or "00"
             end
             sock_send(table.concat(out))
         else
@@ -274,6 +358,30 @@ local function dispatch(line)
         return
     end
 
+    -- WP+ / WP- — write-protect (ROM-window write watchpoint; halts on write).
+    -- BW+ / BW- — break-on-write.  Same MAME primitive (a write watchpoint that
+    -- halts); MAME cannot silently *block* a write, so both surface as a halt.
+    if line == "WP+" then
+        if not wp_idx then wp_idx = wpset_region() end
+        sock_send("ok")
+        return
+    end
+    if line == "WP-" then
+        if wp_idx then pcall(function() db:command("wpclear " .. wp_idx) end); wp_idx = nil end
+        sock_send("ok")
+        return
+    end
+    if line == "BW+" then
+        if not bw_idx then bw_idx = wpset_region() end
+        sock_send("ok")
+        return
+    end
+    if line == "BW-" then
+        if bw_idx then pcall(function() db:command("wpclear " .. bw_idx) end); bw_idx = nil end
+        sock_send("ok")
+        return
+    end
+
     -- S <next> [<alt>] — software single step via one-shot breakpoints
     -- Client (sliomame.cpp) computes candidate next-PC(s) from instruction decoding.
     local s_next, s_alt = line:match("^S (%x+) (%x+)$")
@@ -349,6 +457,7 @@ local function dispatch(line)
     -- BYE — client disconnect; reopen listener
     if line == "BYE" then
         bp_map = {}; step_bps = {}; reg_order = {}
+        clear_watchpoints()
         pending_reply = nil; step_tick_count = 0; halt_reason = nil
         pcall(function() bp_clog_scan = #db.consolelog end)
         open_server()
@@ -396,7 +505,7 @@ emu.register_periodic(function()
     --      wait_for_debugger window (reliable when that window is wide enough).
     --   2. consolelog fallback: bpset action writes "drmon_bp_fired" to consolelog;
     --      this persists regardless of timing, so we never miss a bp fire.
-    if not is_paused() and next(bp_map) ~= nil then
+    if not is_paused() and (next(bp_map) ~= nil or wp_active()) then
         local triggered = false
         -- Fast path: exec_state (may be invisible if wait_for_debugger is a no-op)
         if exec_state() == "stop" then triggered = true end

@@ -591,8 +591,13 @@ against apt MAME 0.277, `genesis` driver, `drmon-test.md`:
    `pc_now` was $Ffc0, `bp_ahead=$ffc4` was unreachable code. Fix: added `JML $008000`
    at $FFBC (file offset 0x7FBC) so the machine loops in $8000–$FFBB forever.
 
-4. Orphan immunity: `kill -9` MAME mid-run of step 3, rerun `task test-bridge SYS=snes` —
-   second run passes cleanly (proves kill-by-port works; this was the 14/15 failure mode).
+4. ~~Orphan immunity: `kill -9` MAME mid-run of step 3, rerun `task test-bridge SYS=snes` —
+   second run passes cleanly (proves kill-by-port works; this was the 14/15 failure mode).~~ **PASS** (2026-06-11)
+
+   ```
+   kill -9 $MAME_PID → port released immediately by OS
+   task test-bridge SYS=snes → Results: 19 passed, 0 failed
+   ```
 5. GEN spike results recorded in this plan (register order, port, Z0-in-ROM, `s`
    granularity, break-in, restart, hybrid check).
 6. ~~`task test-bridge SYS=gen` — RSP-backend assertions PASS (raw output pasted).~~ **PASS** (2026-06-11)
@@ -674,9 +679,21 @@ against apt MAME 0.277, `genesis` driver, `drmon-test.md`:
    task smoke SYS=gen  → PASS: opened windows via Alt-keys (M-e M-k M-r M-m M-w M-b M-s M-i M-o M-a M-y) + typed into Expression — no SIGSEGV
    ```
 
-10. Disconnected behavior preserved: `task run` with no MAME running — TUI responsive,
+10. ~~Disconnected behavior preserved: `task run` with no MAME running — TUI responsive,
     status shows dead/disconnected target, no crash (both binaries; genmon without a
-    gdbstub listener).
-11. Fresh-clone reproducibility: in a clean worktree, `task test-bridge SYS=snes` and
+    gdbstub listener).~~ **PASS** (2026-06-11)
+
+    ```
+    snesmon (no MAME): SNESMon V2.1.30 … Slave Dead  — no crash
+    genmon  (no MAME): GenMon V2.1.30  … Slave Dead  — no crash
+    ```
+
+11. ~~Fresh-clone reproducibility: in a clean worktree, `task test-bridge SYS=snes` and
     `SYS=gen` pass with **no user-supplied ROM** (committed generators produce the test
-    ROMs).
+    ROMs).~~ **PASS** (2026-06-11)
+
+    ```
+    git worktree add /tmp/drmon-freshclone HEAD  → roms/ absent
+    task test-bridge SYS=snes → Results: 19 passed, 0 failed
+    task test-bridge SYS=gen  → Results: 11 passed, 0 failed
+    ```
