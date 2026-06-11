@@ -31,5 +31,9 @@ core
 .history/
 docs/transcripts/
 
+# Python bytecode (test ROM generator + bridge test scripts)
+__pycache__/
+*.pyc
+
 # User-supplied ROMs (copyrighted; never commit)
 roms/
