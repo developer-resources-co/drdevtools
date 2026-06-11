@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         make \
         file \
         gdb \
+        git \
         tmux \
         libncurses-dev \
         ca-certificates \

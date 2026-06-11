@@ -79,3 +79,42 @@ drmon_target(snesmon "SNES;SYSTEMSNES" "")
 
 # genmon: Genesis / 68000
 drmon_target(genmon "GENESIS;SYSTEMGEN" "")
+
+#==============================================================================
+# Phase 3: drmon-dap — DAP front end (cppdap, C++17, no TUI dependency)
+#==============================================================================
+
+include(FetchContent)
+FetchContent_Declare(cppdap
+    GIT_REPOSITORY https://github.com/google/cppdap.git
+    GIT_TAG        dap-1.58.0-a
+)
+# cppdap's own CMakeLists may try to build tests/examples; suppress them.
+set(CPPDAP_BUILD_TESTS   OFF CACHE BOOL "" FORCE)
+set(CPPDAP_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(cppdap)
+
+find_package(Threads REQUIRED)
+
+set(DRMON_DAP_SRC
+    linux/dap/main.cpp
+    linux/dap/session.cpp
+    linux/dap/backend.cpp
+    linux/dap/breakpoints.cpp
+)
+
+function(drmon_dap_target TARGET SYSTEM_DEFINE)
+    add_executable(${TARGET} ${DRMON_DAP_SRC})
+    target_link_libraries(${TARGET} PRIVATE cppdap Threads::Threads)
+    target_compile_definitions(${TARGET} PRIVATE ${SYSTEM_DEFINE})
+    target_compile_options(${TARGET} PRIVATE -std=c++17 -Wall -Wextra)
+    target_include_directories(${TARGET} PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/linux/dap
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/linux/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../libs
+    )
+endfunction()
+
+drmon_dap_target(drmon-dap-snes DRMON_DAP_SNES)
+drmon_dap_target(drmon-dap-gen  DRMON_DAP_GEN)
