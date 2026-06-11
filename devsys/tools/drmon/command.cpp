@@ -287,37 +287,29 @@ AddCmdGadgets(_object* pObject,_window* pWindow)
 char *
 GetNumbers( char *s, int count, ULONG *answer, errorcode *error)
 {
-#if 0
-	char    c,*s2;
-	int             i;
-	token   *tsPtr,tokenStream[100];
-	char    *delims;
-
-	delims = ",";
+	// Parse `count` numeric arguments, each evaluated through the live flex/bison
+	// expression path (DoExp -> yyparse -> exprAnswer), the same evaluator used by
+	// breakpoints/watch/memory-goto.  Args are separated by space/comma/tab; FindWord
+	// NUL-terminates each one in place so DoExp parses a single isolated expression.
+	// (Command args are single tokens; embedded-space expressions like "$8000 + 1"
+	// aren't supported here — use the Expression window for those.)
+	char    c, *s2;
+	int     i;
 
 	if (!s || !*s)
 	{
 		*error = ERROR_SYNTAX;
 		return s;
 	}
+	*error = NOERR;
 	s = SkipSpace(s);
-	for ( i = 0 ; i < count ; i ++ )
+	for ( i = 0 ; i < count && s && *s ; i++ )
 	{
-		if ( i == (count-1) )
-			delims = DELIMITERS;
-		tsPtr = tokenStream;
-		s2 = FindWord(s,delims,&c);
-		if (!(*error = TokenizeExpression(&tsPtr,&s)))
-		{
-			tsPtr = tokenStream;
-			*error = EvalExpression(answer+i,&tsPtr);
-			if (*error) break;
-		}
-		s = s2;
+		s2 = FindWord(s, (char *)" ,\t", &c);   // isolate one arg (NUL-terminates s)
+		DoExp(s);
+		answer[i] = exprAnswer;
+		s = s2 ? SkipSpace(s2) : NULL;
 	}
-	if (*error && s)
-		s[strlen(s)] = c;
-#endif
 	return s;
 }
 
@@ -594,33 +586,24 @@ EvalWait(char *s, errorcode *error)
 char *
 EvalCommand(unsigned int word, char * s , errorcode *error )
 {
-#if 0
-	token   tokenStream[100];       /* reasonably large */
-	token   *tsPtr;                         /* pointer into the stream */
-	ULONG theAnswer,answer[10];
+	ULONG answer[10];
 	unsigned int windowName;
 	_object *oPtr;
 	_input fakeInput;
 	char    c,*string,*s2;
-	int tempInt;                                            // kts 10/3/91
 
 	*error = NOERR;
-	tsPtr = tokenStream;
 
 	switch(word & 0xff)
 	{
-		case    RW_EVAL:                /* expression evaluator */
-			if (!(*error = TokenizeExpression(&tsPtr,&s)))
+		case    RW_EVAL:                /* expression evaluator (live flex/bison path) */
+			if (s)
 			{
-				tsPtr = tokenStream;
-				*error = EvalExpression(&theAnswer,&tsPtr);
-				if (!(*error))
-				{
-					sprintf(textBuffer,"Decimal: %ld  Hex: %lX\n",theAnswer,theAnswer);
-
-					PrintToCmdWindow(textBuffer);
-				}
-
+				DoExp(s);
+				sprintf(textBuffer,"Decimal: %ld  Hex: %lX\n",
+				        (long)exprAnswer,(unsigned long)exprAnswer);
+				PrintToCmdWindow(textBuffer);
+				s += strlen(s);          // consume the evaluated expression
 			}
 			break;
 
@@ -937,7 +920,6 @@ EvalCommand(unsigned int word, char * s , errorcode *error )
 	if (cmdObjPtr)
 		cmdObjPtr->layer->ToFront();
 	ActivateFrontWindow();
-#endif
 	return(s);
 }
 

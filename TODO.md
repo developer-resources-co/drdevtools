@@ -41,18 +41,6 @@ Plan-first: non-trivial work gets a `docs/plans/YYYY-MM-DD-<topic>.md` and a TOD
 
 ## DRMON — CLEANUP
 
-- [ ] **`OPEN <window>` (and every typed command verb) is a no-op — `EvalCommand` body is
-  `#if 0`'d.** Root-caused by instrumentation (2026-06-12): the active dispatcher `ParseCmdLine`
-  (`command.cpp:1012`) routes `WT_COMMAND` tokens to `EvalCommand` (`command.cpp:596`), whose
-  *entire* body — the `switch(word&0xff)` with `case RW_OPEN`/`RW_EVAL`/… — is wrapped in
-  `#if 0 … #endif` (598–942), leaving just `return(s)`. So `OPEN` does nothing; the loop then hits
-  the bare `SEARCHLIST` token (`WT_HARDWINDOW`) → `ParseHardWindow` finds no *existing* window →
-  `ERROR_NOSUCHWINDOW`. **`git blame` dates that `#if 0` to `c835c3b` (the original 2003 DOS
-  import) — the Linux port never disabled it; it shipped disabled.** Tables/`RW_*` enum are fine
-  (verified aligned). Fix = revive `EvalCommand` (un-`#if 0` + dialect pass), which would make
-  *all* command verbs work. The `RW_SEARCHLIST` case I added lives in that dead block, so it's
-  inert until the revival. Found wiring `OPEN SEARCHLIST` — see
-  [search-results-window plan](docs/plans/2026-06-12-search-results-window.md).
 - [ ] **Finish dropping Borland / Watcom / OS2 / DOS-extender support.** `compat.hpp` is
   Linux-only now, but legacy `#ifdef __BORLANDC__` / `__WATCOMC__` / `__OS2__` / `DOSX286` /
   `__MSDOS__` arms remain scattered across the tree. Strip them as files are touched so the
@@ -92,6 +80,7 @@ _(none)_
 
 ## DONE
 
+- [x] 2026-06-12 — Revive `EvalCommand`: the whole command-verb dispatcher (OPEN/CLOSE/RUN/STOP/STEP/OVER/RESET/BSET/SET/LOAD/SAVE/macros/…) shipped `#if 0`'d since the 2003 DOS import, so every typed command + script was a no-op; un-`#if 0`'d `EvalCommand`+`GetNumbers`, routed expr/number args through the live flex/bison `DoExp` (not the obsolete hand-written eval); zero signature drift; `OPEN MEMORY`/`OPEN SEARCHLIST` open windows, smoke clean — [plan](docs/plans/2026-06-12-revive-evalcommand.md)
 - [x] 2026-06-12 — Revive scrollable mem-search results window: hits land in a `_searchList` list-rect window (mirrors symbol/break), Enter/Ctrl-G → Memory window at the hit, Del clears; `OpenMemoryAt()` helper; build + smoke clean (visual = manual via MemOps→Search) — [plan](docs/plans/2026-06-12-search-results-window.md)
 - [x] 2026-06-12 — Package drmon as `drmon_1.0.1_amd64.deb` (snesmon + genmon, cmake/debhelper, lintian-clean PIE ELFs) in foundry-apt — [plan](docs/plans/2026-06-12-package-drmon.md)
 - [x] 2026-06-11 — Lift SNES out-of-scope stubs: `ReadSlavePPU` reads VRAM via MAME save-item (`RP`), write-protect/BRK-on-write → MAME watchpoints (`WP±`/`BW±`), ROM-write warning (readback compare), client-side mem-search (MemOps→Search…); also fixed a latent `mame_cmd` reply stack-overflow; 24/24 bridge tests — [plan](docs/plans/2026-06-11-lift-snes-out-of-scope-stubs.md)
