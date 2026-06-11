@@ -26,10 +26,13 @@ Plan-first: non-trivial work gets a `docs/plans/YYYY-MM-DD-<topic>.md` and a TOD
   protocol enums, gated behind `#ifdef SPC700`). Build a CPU-selector / SPC register + APU-RAM
   window, then wire the (easy) bridge read path.
   [plan](docs/plans/2026-06-11-lift-snes-out-of-scope-stubs.md).
-- [ ] **Phase 3 — DAP front end (confirm approach first).** Wrap drmon-core (65816/68000
-  disassemblers, `.sld`/COFF parsers, breakpoint/expr engine) behind a
-  [cppdap](https://github.com/google/cppdap) DAP server so VS Code / nvim-dap is the UI —
-  likely *instead of* maintaining the ncurses TUI long-term. Decide TUI-vs-DAP before building.
+- [wip] **Phase 3 — DAP front end Tier 1 built; Tiers 2–3 remain.** `drmon-dap-snes` / `drmon-dap-gen`
+  DAP adapters ship alongside `snesmon`/`genmon` (two binaries in parallel; TUI stays indefinitely).
+  Tier 1 (done 2026-06-12): initialize/attach/continue/pause/step/registers/readMemory/instruction
+  breakpoints; SNES 65816 step engine with correct branch targets. Tier 2: disassembly view (wire
+  `dis816.cpp` via a stub preamble). Tier 3: symbol file loading (`.sld`/COFF). Verification items
+  3–8 (connected session, breakpoint, registers, memory, disassembly, regression) need live MAME.
+  [plan](docs/plans/2026-06-12-phase-3-dap.md) (see also plan in `~/.claude/plans/`).
 
 
 ## DRMON — UI / UX
