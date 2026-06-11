@@ -35,12 +35,12 @@ Plan-first: non-trivial work gets a `docs/plans/YYYY-MM-DD-<topic>.md` and a TOD
 ## DRMON — UI / UX
 
 - [ ] **Support multiple "monitors"** (as windows)
-- [ ] **Revive the scrollable mem-search results window.** `search.cpp`'s results-window
+- [wip] **Revive the scrollable mem-search results window.** `search.cpp`'s results-window
   scaffold (`OpenMemSearchWindow`, `SearchInput`, gadgets) is `#if 0`'d — its local-menu
   calls use the old parallel-array form but `CreateMenuWithItems` now takes a `menuItems[]`
   table. Today the search (MemOps → Search…) reports hits on the message bar (first cut);
   a scrollable list with go-to-address would be the full UX.
-  [plan](docs/plans/2026-06-11-lift-snes-out-of-scope-stubs.md).
+  [plan](docs/plans/2026-06-12-search-results-window.md).
 
 ## DRMON — CLEANUP
 
