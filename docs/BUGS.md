@@ -13,6 +13,41 @@ Format per entry:
 
 ---
 
+## `CmdWinInput` read `oPtr->dataPtr` after `delete oPtr` — Command-window close use-after-free — 2026-06-12
+
+**Status:** FIXED (pending commit) (`devsys/tools/drmon/command.cpp`).
+
+**Symptom:** Closing the Command window (Alt+K, then Esc) after any interaction triggered an AddressSanitizer `heap-use-after-free` (READ) in `CmdWinInput` ([`command.cpp:1385`](../devsys/tools/drmon/command.cpp)). With `halt_on_error=0` the process continued, but the corrupted state caused a subsequent hard crash that left the ncurses terminal in raw mode (keyboard input invisible, no response to Ctrl+C/q/Alt+X). Surfaced during interactive menu-walk testing when the Command window was closed after a "No default window" error on `@$7E1000 = $BABE`.
+
+**Root cause:** The window-close branch in `CmdWinInput` deleted `oPtr`, then dereferenced it one line later:
+
+```cpp
+delete oPtr;                    // command.cpp:1384 — oPtr freed here
+if(!oPtr->dataPtr)              // command.cpp:1385 — read of freed _object
+    cmdOpen = boolean::FALSE;
+```
+
+`oPtr->dataPtr` distinguishes a pop-up Command window from the normal one, but it is read *after* `oPtr` is freed. Identical pattern to the `ExpWinInput` bug ([2026-06-11 entry](#expwininput-read-optrdataptr-after-delete-optr--expression-window-close-use-after-free--2026-06-11)) — the same fix was needed in both window close handlers.
+
+**Why dormant:** Freed-then-immediately-read memory returns the old value until the allocator hands that block to a new allocation; the glibc allocator does not reuse it in the same call frame, so `cmdOpen` was always set correctly and the Command window behaved correctly for ~30 years. ASan (now the default build) flags it unconditionally. The crash that surfaced it was a secondary effect — the stale read itself was benign, but subsequent allocator state corruption (from continued execution after the ASan event) eventually produced a hard fault.
+
+**Fix:** Capture the flag before the deletes:
+
+```diff
++	bool notPopup = !oPtr->dataPtr;   // capture BEFORE delete
+ 	delete pWindow;
+ 	cmdObjPtr = NULL;
+ 	commandWindow = NULL;
+ 	delete oPtr;
+-	if(!oPtr->dataPtr)
++	if(notPopup)
+ 		cmdOpen = boolean::FALSE;
+```
+
+**Origin:** CVS import [`c835c3b`](https://github.com/developer-resources-co/drdevtools/commit/c835c3b) (2003-08-15), ~1993 code. ~30 years dormant.
+
+---
+
 ## `ExpWinInput` read `oPtr->dataPtr` after `delete oPtr` — Expression-window close use-after-free — 2026-06-11
 
 **Status:** FIXED [`0680e84`](https://github.com/developer-resources-co/drdevtools/commit/0680e84) (`devsys/tools/drmon/expr.cpp`).

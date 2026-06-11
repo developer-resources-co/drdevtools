@@ -696,6 +696,11 @@ EvalCommand(unsigned int word, char * s , errorcode *error )
 						commandWindow = GetLastObject();
 						break;
 
+					case RW_SEARCHLIST: /* memory-search results */
+						OpenSearchWindow();
+						commandWindow = GetLastObject();
+						break;
+
 					default:                /* error! */
 					*error = ERROR_NOSUCHWINDOW;
 					commandWindow = NULL;
@@ -1377,12 +1382,13 @@ CmdWinInput(_input *in,_object *oPtr)
 	if(leave)
 	 {
 //		CloseWindow(pWindow);
+		bool notPopup = !oPtr->dataPtr;
 		delete pWindow;
 		cmdObjPtr = NULL;                               // go away
 		commandWindow = NULL;                   // and no default window
 //		DeleteObject(oPtr);
 		delete oPtr;
-		if(!oPtr->dataPtr)                              // if not pop-up
+		if(notPopup)
 			cmdOpen = boolean::FALSE;
 	 }
 	return(inputUsed);
