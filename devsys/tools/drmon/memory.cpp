@@ -1431,3 +1431,41 @@ OpenMemory(void)
 
 //=============================================================================
 
+// Open a Memory window focused at a specific address, in byte view.  Used by the
+// search-results window's "go to hit" action.  Mirrors OpenMemory() but seeds the
+// address and a byte dump (more useful than disassembly for "a value lives here").
+FLAG
+OpenMemoryAt(ULONG addr)
+{
+    _object *oPtr;
+    _window *pWindow;
+    oPtr = AddObject(MemoryRoutine);
+    pWindow = new _window(0,6,42,11,"Memory",(unsigned char)dumpAttr,(char)dumpChar);
+	pWindow->data = (void *)oPtr;
+	pWindow->xMin = MEMORYMINWIDTH;
+	pWindow->xMax = displayWidth;
+	pWindow->yMin = 4;
+	pWindow->yMax = displayHeight;
+	pWindow->cursorY = 0;
+    oPtr->inputRoutine = MemoryInput;
+	oPtr->inputFlags = INPF_MOUSEBUTTONS|INPF_KEY;
+	oPtr->layer = pWindow;
+	oPtr->addr = addr;                       // focus the requested hit address
+	oPtr->mType = MTYPE_BYTE;                // byte view for "value found here"
+	oPtr->pLabels = 3;
+	oPtr->lineInc = 1;
+	oPtr->mode816Size = 1;
+	oPtr->disMode = 0;
+	oPtr->updateMode = UPDATE_STATIC;
+	oPtr->dataPtr2 = NULL;
+	oPtr->remap.keyArray = memoryKeys;
+
+	AddSysGadgets(pWindow);
+	AddMemoryGadgets(pWindow);
+	DrawGadgets(pWindow);
+	ActivateFrontWindow();
+	return(boolean::TRUE);
+}
+
+//=============================================================================
+

@@ -35,15 +35,16 @@ Plan-first: non-trivial work gets a `docs/plans/YYYY-MM-DD-<topic>.md` and a TOD
 ## DRMON — UI / UX
 
 - [ ] **Support multiple "monitors"** (as windows)
-- [wip] **Revive the scrollable mem-search results window.** `search.cpp`'s results-window
-  scaffold (`OpenMemSearchWindow`, `SearchInput`, gadgets) is `#if 0`'d — its local-menu
-  calls use the old parallel-array form but `CreateMenuWithItems` now takes a `menuItems[]`
-  table. Today the search (MemOps → Search…) reports hits on the message bar (first cut);
-  a scrollable list with go-to-address would be the full UX.
-  [plan](docs/plans/2026-06-12-search-results-window.md).
 
 ## DRMON — CLEANUP
 
+- [ ] **`OPEN <window>` typed command is broken in SNES builds.** `OPEN MEMORY` / `OPEN SYMBOL`
+  / `OPEN SEARCHLIST` all return "No such window" — the command name table (`command.cpp` ~78),
+  the `RW_*` enum (`word.hpp`), and the window-type table (`command.cpp` ~120) have drifted out
+  of index-alignment (a commented/`#ifdef`'d entry mismatch), so the parsed name-table index ≠
+  the `RW_*` value the `WT_HARDWINDOW` switch (`command.cpp:646`) keys on. Audit the three
+  parallel tables and re-align. Found while wiring `OPEN SEARCHLIST` — see
+  [search-results-window plan](docs/plans/2026-06-12-search-results-window.md).
 - [ ] **Finish dropping Borland / Watcom / OS2 / DOS-extender support.** `compat.hpp` is
   Linux-only now, but legacy `#ifdef __BORLANDC__` / `__WATCOMC__` / `__OS2__` / `DOSX286` /
   `__MSDOS__` arms remain scattered across the tree. Strip them as files are touched so the
@@ -83,6 +84,7 @@ _(none)_
 
 ## DONE
 
+- [x] 2026-06-12 — Revive scrollable mem-search results window: hits land in a `_searchList` list-rect window (mirrors symbol/break), Enter/Ctrl-G → Memory window at the hit, Del clears; `OpenMemoryAt()` helper; build + smoke clean (visual = manual via MemOps→Search) — [plan](docs/plans/2026-06-12-search-results-window.md)
 - [x] 2026-06-12 — Package drmon as `drmon_1.0.1_amd64.deb` (snesmon + genmon, cmake/debhelper, lintian-clean PIE ELFs) in foundry-apt — [plan](docs/plans/2026-06-12-package-drmon.md)
 - [x] 2026-06-11 — Lift SNES out-of-scope stubs: `ReadSlavePPU` reads VRAM via MAME save-item (`RP`), write-protect/BRK-on-write → MAME watchpoints (`WP±`/`BW±`), ROM-write warning (readback compare), client-side mem-search (MemOps→Search…); also fixed a latent `mame_cmd` reply stack-overflow; 24/24 bridge tests — [plan](docs/plans/2026-06-11-lift-snes-out-of-scope-stubs.md)
 - [x] 2026-06-11 — Phase 2 — MAME backend: snesmon (Lua bridge :41816) + genmon (GDB RSP gdbstub); 19/19 SNES + 11/11 GEN protocol tests; EOF recovery, orphan immunity, disconnected TUI, fresh-clone all verified — [plan](docs/plans/2026-06-11-drmon-mame-backend.md)

@@ -4,6 +4,7 @@
 //============================================================================
 
 FLAG OpenMemory(void);
+FLAG OpenMemoryAt(ULONG addr);
 FLAG OpenConsole(void);
 FLAG OpenHelpFile(void);
 FLAG OpenHelpFile(void);

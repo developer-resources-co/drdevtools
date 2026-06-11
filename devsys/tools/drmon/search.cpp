@@ -23,6 +23,7 @@
 #include	"general.hpp"
 #include	"memops.hpp"
 #include	"drmon.hpp"
+#include	"monwind.hpp"
 
 // Declared in slaveio.hpp, which search.cpp does not include (it uses explicit
 // headers, and slaveio.hpp is unguarded).  slaveio.hpp wraps the slave calls in
@@ -32,14 +33,12 @@ extern "C" void ReadSlaveData(unsigned long addr, char far *data, unsigned int l
 //=============================================================================
 
 // ---------------------------------------------------------------------------
-// Scrollable search-results window — scaffold from the DOS original, never
-// ported/compiled on Linux.  Disabled: its local-menu calls use the old parallel
-// char*[]/routine-array form, but CreateMenuWithItems now takes a menuItems[]
-// table (API drifted during the port).  The first-cut search (MemSearchGUI below)
-// reports hits on the message bar and needs none of this.  Reviving the results
-// window is future work — see TODO (DRMON — UI/UX).
+// Scrollable search-results window.  Mirrors the live symbol/break list windows
+// (same AddListRect / ListRectInput / _stringList / _object plumbing).  Hits from
+// MemSearchGUI land in searchListBase; Enter/Ctrl-G (or the local menu) on a row
+// opens a Memory window at that address.
 // ---------------------------------------------------------------------------
-#if 0
+
 enum
 	{
 	SGAD_UP = GAD_USER+1,
@@ -49,59 +48,26 @@ enum
 	SGAD_LIST
 	};
 
-//=============================================================================
+_searchList searchListBase;             // list head (results live here)
+_object    *searchObjPtr = NULL;        // the open Search window, or NULL
+static FLAG searchOpen    = boolean::FALSE;
 
-FLAG
-MenuSearchSearch(_menuItem *iPtr,_object *oPtr,int choice)
-{
-	return(boolean::TRUE);
-}
-
-FLAG
-MenuSearchList(_menuItem *iPtr,_object *oPtr,int choice)
-{
-	return(boolean::TRUE);
-}
-
-FLAG
-MenuSearchClear(_menuItem *iPtr,_object *oPtr,int choice)
-{
-	return(boolean::TRUE);
-}
+static void SearchClearList(void);
 
 //=============================================================================
 
-char *searchMenuItems[] =
-{
-	"&Search...      ",
-	"Search &List... ",
-	"&Clear List     ",
-	0
-};
-
-FLAG ((*searchRoutines[])(_menuItem *iPtr,_object *oPtr,int choice)) =
-{
-	MenuSearchSearch,
-	MenuSearchList,
-	MenuSearchClear,
-};
-
-//=============================================================================
-
+// Row formatter: print the hit address.
 char *
 SearchPrintListEntry(_stringList *stPtr,unsigned char *attr, unsigned* nLines )
 {
-	_searchList *sPtr;
-	char*string;
-	sPtr = (_searchList *)stPtr;
+	_searchList *sPtr = (_searchList *)stPtr;
+	char *string = textBuffer;
 
 	*attr = ATTR_NORMAL;
-
-	string = textBuffer;
-	*PrintRaw32Bits(string,sPtr->addr)= 0;
+	string = PrintRaw32Bits(string,sPtr->addr);
+	*string = 0;
 
 	*nLines = 1;
-
 	return(textBuffer);
 }
 
@@ -112,13 +78,61 @@ AddSearchGadgets(_window* pWindow,_object* oPtr)
 {
 	assert( pWindow );
 
-	_gadget *gPtr;
 	_listRectDesc *lrPtr;
 
-	lrPtr = AddListRect(pWindow,pWindow->xSize-2,pWindow->ySize-2,(_stringList *)oPtr->dataPtr4,SGAD_LIST);
+	lrPtr = AddListRect(pWindow,pWindow->xSize-2,pWindow->ySize-2,(_stringList *)&searchListBase,SGAD_LIST);
+	assert( lrPtr );
 	lrPtr->drawListEntry = SearchPrintListEntry;
 	oPtr->dataPtr3 = (char*)lrPtr;
 	UpdateListRect(pWindow,lrPtr,SGAD_LIST);
+}
+
+//=============================================================================
+
+menuItems searchMenu[] =
+{
+	{"&Goto address   Enter",SendWindowMessage,SEARCH_GOTO},
+	{"&Clear list       Del",SendWindowMessage,SEARCH_CLEAR},
+	{0,0,0}
+};
+
+// Ctrl-G / Enter -> goto, Del -> clear (routed to SearchInput as window messages).
+struct _inputKeyRemap searchKeys[] =
+{
+	{KEY_CTRLG,SEARCH_GOTO},
+	{KEY_RETURN,SEARCH_GOTO},
+	{KEY_DELETE,SEARCH_CLEAR},
+	{0,0}
+};
+
+//=============================================================================
+
+// Free every result node and refresh the list-rect.
+static void
+SearchClearList(void)
+{
+	_searchList *base = &searchListBase;
+	while(base->Next())
+	 {
+		_searchList *node = (_searchList *)base->Next();
+		if(node->Name())
+			free(node->Name());
+		DeleteListNode((_list *)node);
+	 }
+	if(searchObjPtr)
+		ChangeListRect((_window*)searchObjPtr->layer,(_listRectDesc *)searchObjPtr->dataPtr3,(_stringList *)&searchListBase);
+}
+
+// Open a Memory window at the currently-selected hit.
+static void
+SearchGotoSelected(_object *oPtr)
+{
+	_listRectDesc *lrPtr = (_listRectDesc *)oPtr->dataPtr3;
+	if(!lrPtr || lrPtr->itemCount <= 0)
+		return;
+	_searchList *sPtr = (_searchList *)SkipNodes((_list *)lrPtr->listPtr,lrPtr->selItem+1);
+	if(sPtr)
+		OpenMemoryAt(sPtr->Address());
 }
 
 //=============================================================================
@@ -131,74 +145,67 @@ SearchInput(_input *in,_object *oPtr)
 
     FLAG inputUsed;
 	FLAG listIn;
-    unsigned char far *chr;
 	_gadget *gPtr;
 
     pWindow = (_window *)oPtr->layer;
+	assert( pWindow );
     inputUsed = boolean::TRUE;
 
 	listIn = ListRectInput(in,oPtr,(_listRectDesc *)oPtr->dataPtr3,SGAD_LIST);
 	if((listIn & LRIF_INPUTUSED) == boolean::FALSE)
 		switch(in->inputType)
 	 	{
+			case INP_WINDOW_MESSAGE:
+				switch(in->message)
+				 {
+					case SEARCH_GOTO:
+						SearchGotoSelected(oPtr);
+						break;
+					case SEARCH_CLEAR:
+						SearchClearList();
+						break;
+				 }
+				break;
 			case INP_KEY:
 				switch(in->fullKey)
 	 	 	 	{
 					case CMD_LOCALMENU:
-						mPtr = CreateMenuWithItems(searchMenuItems,searchRoutines,"Search");
+						mPtr = CreateMenuWithItems(searchMenu,"Search");
 						mPtr->xPos = AutoPosition(pWindow->xPos,pWindow->xSize,mPtr->xSize,displayWidth);
 						mPtr->yPos = AutoPosition(pWindow->yPos,pWindow->ySize,mPtr->ySize,displayHeight);
 						DoMenu(mPtr,oPtr);
 						break;
 					case CMD_CLOSEWINDOW:
-//						CloseWindow(pWindow);
 						delete pWindow;
 						delete (_listRectDesc *)oPtr->dataPtr3;
-//						DeleteObject(oPtr);
-						delete oPtr;
+						DeleteObject(oPtr);
 						oPtr = NULL;
+						searchOpen = boolean::FALSE;
+						searchObjPtr = NULL;
 						inputUsed = boolean::TRUE;
-						break;
-					case CMD_SEARCHLIST:
 						break;
 					default:
 						inputUsed = boolean::FALSE;
 	 	 	 	}
 				break;
-			case INP_MOUSEMOVE:
-				break;
-			case INP_MOUSE_LEFTBUTTON_UP:
-				break;
-
 			case INP_MOUSE_LEFTBUTTON_DOWN:
-				if((gPtr = GadgetHit(&pWindow->gadgBase,in->mouseX - pWindow->xPos,in->mouseY - pWindow->yPos)) != 0)
+				if((gPtr = GadgetHit(&pWindow->gadgBase,in->mouseX - pWindow->xPos,in->mouseY - pWindow->yPos)) != 0
+				   && gPtr->gNum == GGAD_CLOSE)
 			 	{
-					switch(gPtr->gNum)
-				 	{
-						case GGAD_CLOSE:
-//							CloseWindow(pWindow);
-							delete pWindow;
-							delete (_listRectDesc *)oPtr->dataPtr3;
-							DeleteObject(oPtr);
-							oPtr = NULL;
-							inputUsed = boolean::TRUE;
-							break;
-						default:
-							inputUsed = boolean::FALSE;
-							break;
-				 	}
+					delete pWindow;
+					delete (_listRectDesc *)oPtr->dataPtr3;
+					DeleteObject(oPtr);
+					oPtr = NULL;
+					searchOpen = boolean::FALSE;
+					searchObjPtr = NULL;
+					inputUsed = boolean::TRUE;
 			 	}
+				else
+					inputUsed = boolean::FALSE;
 				break;
 			case INP_MOUSE_RIGHTBUTTON_DOWN:
-				mPtr = CreateMenuWithItems(searchMenuItems,searchRoutines,"Search");
-//				mPtr->xPos = AutoPosition(pWindow->xPos,pWindow->xSize,mPtr->xSize,displayWidth);
-//				mPtr->yPos = AutoPosition(pWindow->yPos,pWindow->ySize,mPtr->ySize,displayHeight);
+				mPtr = CreateMenuWithItems(searchMenu,"Search");
 				DoLocalMenu(mPtr,oPtr,in);
-				break;
-
-			case INP_RESIZE:
-				delete (_listRectDesc *)oPtr->dataPtr3;
-				AddSearchGadgets(pWindow,oPtr);
 				break;
 			default:
 				inputUsed = boolean::FALSE;
@@ -211,7 +218,47 @@ SearchInput(_input *in,_object *oPtr)
 	 }
     return(inputUsed);
 }
-#endif  // results-window scaffold (future work)
+
+//=============================================================================
+
+FLAG
+OpenSearchWindow(void)
+{
+	if(searchOpen)
+	 {
+		searchObjPtr->layer->ToFront();
+		ActivateFrontWindow();
+		return(boolean::TRUE);
+	 }
+
+	_object *oPtr = AddObject();
+	if(!oPtr)
+		return(boolean::FALSE);
+
+	_window *pWindow = new _window(49,4,24,11,"Search List",(unsigned char)exprAttr,(char)exprChar);
+	if(!pWindow)
+		return(boolean::FALSE);
+
+	searchOpen = boolean::TRUE;
+	searchObjPtr = oPtr;
+
+	pWindow->xMin = 12;
+	pWindow->xMax = displayWidth;
+	pWindow->yMin = 4;
+	pWindow->yMax = displayHeight;
+
+	pWindow->data = (void *)oPtr;
+	oPtr->inputRoutine = SearchInput;
+	oPtr->layer = pWindow;
+	oPtr->inputFlags = INPF_MOUSEBUTTONS|INPF_KEY;
+	oPtr->remap.keyArray = searchKeys;
+
+	AddSysGadgets(pWindow);
+	AddSearchGadgets(pWindow,oPtr);
+	ActivateFrontWindow();
+	DrawGadgets(pWindow);
+	return(boolean::TRUE);
+}
 
 //=============================================================================
 
@@ -224,8 +271,8 @@ MemSearchGUI(ULONG value,void * /*dataPtr*/)
 	// value to find.  The value is matched as a little-endian byte sequence of its
 	// natural width (SNES is little-endian): 0x42 -> [42], 0x1234 -> [34 12].  (A
 	// value whose high byte is zero is searched at the narrower width — enter a
-	// wider range value if you need the explicit width.)  Hits are reported on the
-	// message bar (first cut; a scrollable results window is future work — TODO).
+	// wider range value if you need the explicit width.)  Hits land in the scrollable
+	// Search List window (Enter/Ctrl-G on a row jumps a Memory window there).
 	unsigned long start = (unsigned long)globTemp2;
 	unsigned long len   = (unsigned long)globTemp;
 
@@ -244,9 +291,11 @@ MemSearchGUI(ULONG value,void * /*dataPtr*/)
 	for (int i = 0; i < w; i++)
 		pat[i] = (unsigned char)((value >> (8 * i)) & 0xFF);
 
-	const unsigned int CHUNK = 4096;
+	SearchClearList();                       // fresh results
+
+	const unsigned int CHUNK   = 4096;
+	const int          MAXHITS = 1000;       // cap the list (a NOP search can hit thousands)
 	unsigned char buf[CHUNK];
-	unsigned long matches[64];
 	int nmatch = 0;
 	int capped = 0;
 
@@ -266,31 +315,41 @@ MemSearchGUI(ULONG value,void * /*dataPtr*/)
 				if (buf[i + k] != pat[k]) { hit = 0; break; }
 			if (hit)
 			 {
-				if (nmatch < 64) matches[nmatch++] = addr + i;
-				else             capped = 1;
+				if (nmatch < MAXHITS)
+				 {
+					_searchList *node = new _searchList;
+					if (node)
+					 {
+						node->Address(addr + i);
+						AddListNode((_list *)&searchListBase, (_list *)node);
+					 }
+				 }
+				else
+					capped = 1;
+				nmatch++;
 			 }
 		 }
 		if (want < CHUNK) break;                       // final (short) window done
 		addr += CHUNK - (unsigned long)(w - 1);        // overlap w-1 for span hits
 	 }
 
-	char msg[256];
+	// Show the scrollable results window (created or refreshed) + a one-line summary.
+	if (nmatch > 0)
+	 {
+		OpenSearchWindow();
+		if (searchObjPtr)
+			ChangeListRect((_window*)searchObjPtr->layer,
+			               (_listRectDesc *)searchObjPtr->dataPtr3,(_stringList *)&searchListBase);
+	 }
+
+	char msg[80];
 	if (nmatch == 0)
-	 {
-		snprintf(msg, sizeof(msg),
-		         "Search: no match for %lX in %lu bytes @ %06lX",
+		snprintf(msg, sizeof(msg), "Search: no match for %lX in %lu bytes @ %06lX",
 		         (unsigned long)value, len, start);
-	 }
 	else
-	 {
-		int shown = nmatch < 8 ? nmatch : 8;
-		int pos = snprintf(msg, sizeof(msg), "Search: %d%s hit%s @",
-		                   nmatch, capped ? "+" : "", nmatch == 1 ? "" : "s");
-		for (int i = 0; i < shown && pos < (int)sizeof(msg) - 8; i++)
-			pos += snprintf(msg + pos, sizeof(msg) - pos, " %06lX", matches[i]);
-		if (nmatch > shown && pos < (int)sizeof(msg) - 5)
-			snprintf(msg + pos, sizeof(msg) - pos, " ...");
-	 }
+		snprintf(msg, sizeof(msg), "Search: %d%s hit%s for %lX  (see Search List)",
+		         (nmatch > MAXHITS ? MAXHITS : nmatch), capped ? "+" : "",
+		         nmatch == 1 ? "" : "s", (unsigned long)value);
 	PrintWarning(msg);
 }
 
