@@ -1,9 +1,9 @@
 //=============================================================================
-//  slio_stub.cpp — Phase 1 stub for the SNES dev-link transport. Replaces the
-//  DOS x86 assembly (snesio.asm): provides the C-linkage symbols it exported and
-//  the shared globals it/board.cpp reference (normally defined in the non-built
-//  emul/genesis TUs). No hardware is attached; the Phase 2 MAME bridge replaces
-//  this file. See docs/plans/2026-06-10-port-drmon-linux.md.
+//  slio_stub.cpp — link residue for board.cpp (DRMON_MAME_BACKEND=OFF only).
+//  Provides asm-export symbols (SwapWord, GetAttention, …) that board.cpp and
+//  the expression evaluator reference.  When DRMON_MAME_BACKEND=ON, sliomame.cpp
+//  provides these instead and this file is excluded from the build.
+//  See docs/plans/2026-06-10-port-drmon-linux.md.
 //=============================================================================
 
 extern "C" {

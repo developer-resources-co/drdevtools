@@ -3,6 +3,8 @@ version: '3'
 # drmon Linux port — build/run/debug tasks. Everything runs in throwaway
 # containers spun from a cached toolchain image (nothing installed on the host). See
 # devsys/tools/drmon/linux/README.md and docs/plans/2026-06-10-port-drmon-linux.md.
+# Phase 2: MAME TCP bridge backend — docs/plans/2026-06-11-drmon-mame-backend.md.
+# Use SYS=snes (default) or SYS=gen to select the debugger target.
 
 # Shared tasks from the python-tui-lib library (md preview, memory-viz, old-todos, …).
 # flatten: true exposes them unprefixed (`task md -- file.md`); never copy them in.
@@ -22,6 +24,13 @@ vars:
   ASAN: 'log_path=/build/asan:halt_on_error=0:detect_leaks=0:abort_on_error=0'
   # common container invocation: repo at /src, build tree at /build, cwd = drmon dir
   DOCKER: docker run --rm -v {{.ROOT_DIR}}:/src -v {{.BUILD}}:/build -e ASAN_OPTIONS={{.ASAN}} -w /src/{{.DRMON}} {{.IMAGE}}
+  # SYS selects the target: snes (65816) or gen (68000).  Default: snes.
+  SYS: '{{default "snes" .SYS}}'
+  BIN: '{{if eq .SYS "gen"}}genmon{{else}}snesmon{{end}}'
+  # SNES bridge address (mame_bridge.lua TCP listener, port 41816).
+  DRMON_MAME_ADDR: '{{default "127.0.0.1:41816" .DRMON_MAME_ADDR}}'
+  # Genesis GDB RSP address (MAME -debugger gdbstub, port 23946).
+  DRMON_GDB_ADDR: '{{default "127.0.0.1:23946" .DRMON_GDB_ADDR}}'
 
 tasks:
   default:
@@ -36,26 +45,47 @@ tasks:
       - docker build -t {{.IMAGE}} {{.DRMON}}/linux
 
   build:
-    desc: Configure + compile + link drmon (SYSTEM=SNES) in the container
+    desc: Compile + link both snesmon and genmon in the container
     deps: [image]
     cmds:
       - '{{.DOCKER}} bash -euc "cmake -S . -B /build -G Ninja && ninja -C /build"'
-      - '{{.DOCKER}} bash -euc "file /build/drmon"'
+      - '{{.DOCKER}} bash -euc "file /build/snesmon && file /build/genmon"'
 
   run:
-    desc: Run drmon in a terminal (needs a TTY ≥ 80×25; runs disconnected, no target)
+    desc: "Run drmon in a terminal (SYS=snes|gen; needs TTY ≥ 80×25). With MAME: set DRMON_MAME_ADDR if not on localhost:41816."
     deps: [build]
     cmds:
-      - docker run --rm -it -v {{.ROOT_DIR}}:/src -v {{.BUILD}}:/build -w /build -e TERM=xterm-256color -e ASAN_OPTIONS={{.ASAN}} {{.IMAGE}} ./drmon
+      - docker run --rm -it --network=host -v {{.ROOT_DIR}}:/src -v {{.BUILD}}:/build -w /build -e TERM=xterm-256color -e ASAN_OPTIONS={{.ASAN}} -e DRMON_MAME_ADDR={{.DRMON_MAME_ADDR}} -e DRMON_GDB_ADDR={{.DRMON_GDB_ADDR}} {{.IMAGE}} ./{{.BIN}}
+
+  mame:
+    desc: "Launch MAME with the drmon bridge (SYS=snes|gen, CART=<rom path>). SNES uses Lua bridge on :41816; Genesis uses native gdbstub on :23946."
+    cmds:
+      - |
+        set -euo pipefail
+        LUA="{{.ROOT_DIR}}/{{.DRMON}}/linux/mame_bridge.lua"
+        DRIVER="{{if eq .SYS "gen"}}genesis{{else}}snes{{end}}"
+        CART="{{.CART}}"
+        if [ -z "$CART" ]; then echo "Usage: task mame SYS=snes|gen CART=<rom>"; exit 1; fi
+        if [ "{{.SYS}}" = "gen" ]; then
+          PORT="${DRMON_GDB_ADDR##*:}"; PORT="${PORT:-23946}"
+          mame "$DRIVER" -cart "$CART" -debug -debugger gdbstub -debugger_port "$PORT" -window
+        else
+          mame "$DRIVER" -cart "$CART" -debug -debugger none -autoboot_script "$LUA" -window
+        fi
+
+  test-bridge:
+    desc: "Run the full bridge test suite (SYS=snes|gen). Launches MAME on the host, runs test_bridge.py, tears down on exit."
+    cmds:
+      - 'bash {{.ROOT_DIR}}/{{.DRMON}}/linux/test_bridge.sh {{.SYS}}'
 
   debug:
-    desc: Run drmon under gdb and print a backtrace (for diagnosing crashes)
+    desc: "Run drmon under gdb and print a backtrace for crash diagnosis (SYS=snes|gen)"
     deps: [build]
     cmds:
-      - docker run --rm -v {{.ROOT_DIR}}:/src -v {{.BUILD}}:/build -w /build -e ASAN_OPTIONS={{.ASAN}} {{.IMAGE}} gdb -q -batch -ex run -ex bt ./drmon
+      - docker run --rm --network=host -v {{.ROOT_DIR}}:/src -v {{.BUILD}}:/build -w /build -e ASAN_OPTIONS={{.ASAN}} -e DRMON_MAME_ADDR={{.DRMON_MAME_ADDR}} {{.IMAGE}} gdb -q -batch -ex run -ex bt ./{{.BIN}}
 
   shot:
-    desc: Headless screenshot — launch drmon in tmux and dump the rendered TUI as text
+    desc: "Headless screenshot — launch drmon in tmux and dump TUI as text (SYS=snes|gen)"
     deps: [build]
     cmds:
       - >-
@@ -63,7 +93,7 @@ tasks:
         bash -euc '
           export TERM=xterm-256color;
           tmux new-session -d -s d -x 80 -y 25;
-          tmux send-keys -t d "./drmon 2>/dev/null" Enter;
+          tmux send-keys -t d "./{{.BIN}} 2>/dev/null" Enter;
           sleep 1.5;
           tmux capture-pane -t d -p;
           tmux kill-server 2>/dev/null || true'
@@ -84,14 +114,14 @@ tasks:
           cap1() { local n="$1" k="$2";
             tmux kill-session -t "$SESSION" 2>/dev/null || true;
             tmux new-session -d -s "$SESSION" -x 80 -y 25;
-            tmux send-keys -t "$SESSION" "./drmon 2>/dev/null" Enter; sleep 1.8;
+            tmux send-keys -t "$SESSION" "./snesmon 2>/dev/null" Enter; sleep 1.8;
             [ -n "$k" ] && { sendalt "$k"; sleep 0.6; };
             tmux capture-pane -t "$SESSION" -p -e > "/shots/${n}.ansi";
             tmux kill-session -t "$SESSION" 2>/dev/null || true; };
           capmem() { local n="$1" ctrl="$2";
             tmux kill-session -t "$SESSION" 2>/dev/null || true;
             tmux new-session -d -s "$SESSION" -x 80 -y 25;
-            tmux send-keys -t "$SESSION" "./drmon 2>/dev/null" Enter; sleep 1.8;
+            tmux send-keys -t "$SESSION" "./snesmon 2>/dev/null" Enter; sleep 1.8;
             sendalt m; sleep 0.5;
             sendraw "$ctrl"; sleep 0.3;
             tmux capture-pane -t "$SESSION" -p -e > "/shots/${n}.ansi";
@@ -114,16 +144,16 @@ tasks:
         done
 
   smoke:
-    desc: Smoke test — open each window via its Alt-key under gdb; fail on any crash (SIGSEGV)
+    desc: "Smoke test — open each window via Alt-key; fail on any crash (SYS=snes|gen)"
     deps: [build]
     cmds:
-      - '{{.DOCKER}} bash linux/smoke-test.sh /build/drmon'
+      - '{{.DOCKER}} bash linux/smoke-test.sh /build/{{.BIN}}'
 
   signals:
-    desc: Signal test — Ctrl+C (SIGINT) is ignored; a fatal signal (SIGSEGV) restores the terminal
+    desc: "Signal test — Ctrl+C ignored; fatal signal restores terminal (SYS=snes|gen)"
     deps: [build]
     cmds:
-      - '{{.DOCKER}} bash linux/signal-test.sh /build/drmon'
+      - '{{.DOCKER}} bash linux/signal-test.sh /build/{{.BIN}}'
 
   clean:
     desc: Remove the build tree

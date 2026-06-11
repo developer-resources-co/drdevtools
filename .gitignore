@@ -30,3 +30,6 @@ core
 # Local Claude Code / md-tooling artifacts (not part of the project)
 .history/
 docs/transcripts/
+
+# User-supplied ROMs (copyrighted; never commit)
+roms/
