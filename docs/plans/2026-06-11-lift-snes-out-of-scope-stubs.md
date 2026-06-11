@@ -211,41 +211,40 @@ End-to-end, with MAME 0.277 from apt and a SNES test ROM (`task mame SYS=snes CA
    (non-zero, changes as the ROM draws) rather than the all-zero stub. Cross-check a few bytes
    against MAME's built-in PPU/tilemap viewer.
 
-   **Protocol-level evidence (PASS, 2026-06-11)** — `spikes/verify_ppu.lua` seeds
-   `m_vram[0..15]=A0..AF`, runs the real bridge; `/tmp/ppu_client.py` over the socket:
+   **Protocol-level evidence (PASS, 2026-06-11)** — reproducible via
+   `python3 spikes/verify_features.py` (PPU section): `spikes/verify_ppu.lua` seeds
+   `m_vram[0..15]=A0..AF`, runs the real bridge, and the spike reads it back:
    ```
-   V    -> ok drmon-bridge 1 5a22
-   RP 0 10 -> a0a1a2a3a4a5a6a7a8a9aaabacadaeaf      (len==32, seed match: True)
-   RP fffe 8 -> 0000000000000000                    (offsets past 0xFFFF zero-fill)
-   PASS
+   RP 0 10 -> a0a1a2a3a4a5a6a7a8a9aaabacadaeaf      (seed match)
+   RP fffe 8 -> ...0000                             (offsets past 0xFFFF zero-fill)
    ```
    Confirms RP parsing, length, the resolved `ppu_vram` handle, and out-of-range guarding.
    Full TUI-window cross-check deferred to the connected-`snesmon` integration pass.
 3. **Watchpoints** — enable "Break on Write", let the ROM write to a watched address, confirm
    `snesmon` halts and reports the stop (reason surfaced via the existing `?` poll path).
 
-   **Protocol-level evidence (PASS, 2026-06-11)** — writer ROM (`STA $8250` loop, into the
-   watched ROM window) + the real bridge; `/tmp/wp_client.py`:
+   **Protocol-level evidence (PASS, 2026-06-11)** — reproducible via
+   `spikes/verify_features.py` (watchpoint section): the writer ROM
+   (`drmon-test-writer.sfc`, `STA $8250` loop into the watched ROM window) + the real bridge:
    ```
-   V       -> ok drmon-bridge 1 5a22
    ?(pre)  -> running
    BW+     -> ok
    ?(post) -> stopped 8005 bp      (watchpoint fired on the write; CPU halted)
    BW-/C   -> ok / running         (cleared and resumed cleanly)
-   PASS
    ```
    Confirms `wpset addr,len,w,1,printf` registers, fires on a ROM-window write (MAME
    monitors writes even though ROM drops them), and the marker-scan halt path detects it.
 4. **ROM-write warning** — attempt a `W` to a ROM address; confirm the warning fires and the
    byte is unchanged; confirm a `$7E0000+` work-RAM write still succeeds (no warning).
 
-   **Protocol-level evidence (PASS, 2026-06-11)** — `/tmp/romwrite_client.py` vs the bridge:
+   **Protocol-level evidence (PASS, 2026-06-11)** — reproducible via
+   `spikes/verify_features.py` (romwrite section):
    ```
    WRAM  W c3 -> R 7e0000 1 = c3   (stuck → no warning)
    ROM   R 8000 1 before=ea  W c3  after=ea  -> dropped (readback ≠ written → warns)
-   PASS
    ```
    Confirms the read-back-compare condition that drives `PrintWarning`.
+   (All three deep checks run together: `python3 spikes/verify_features.py` → 8/8 pass.)
 5. **Mem-search** — search a known byte pattern in work-RAM; confirm hit addresses match a
    manual `R`-dump scan.
 6. **Regression** — `task test-bridge SYS=snes` still passes (existing R/W/G/P/B/S/C/H/?
