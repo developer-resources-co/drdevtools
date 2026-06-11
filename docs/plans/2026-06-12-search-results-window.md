@@ -94,12 +94,12 @@ listPtr, selItem+1)`; list build = `InsertListNode((_list*)&base, (_list*)node)`
 
 ## Notes / discovered issues
 - Wired `OPEN SEARCHLIST` (command layer, `command.cpp`) to `OpenSearchWindow` for parity with
-  the other hard-windows. **But the `OPEN <window>` command is pre-existingly broken** — `OPEN
-  MEMORY` / `OPEN SYMBOL` also return "No such window". Investigated: it is **not** a table
-  misalignment (my first guess) — `RESVDWORD` / `WORDTYPE` / the `RW_*` enum verifiably align
-  (`SEARCHLIST`→idx 50, `WT_HARDWINDOW`), and `git diff` against the original DOS import shows the
-  tables are byte-identical (the port never touched them). The fault is in the `ParseWord`/`RW_OPEN`
-  *logic* and predates the port. Logged as its own TODO; the search window opens fine via the
-  MemOps menu regardless.
+  the other hard-windows. **But the `OPEN <window>` command is a no-op** — root-caused by
+  instrumentation: `EvalCommand` (which handles every command verb) has its *whole body* `#if 0`'d
+  (`command.cpp:598–942`), so `OPEN` does nothing and the trailing `SEARCHLIST` token resolves via
+  `ParseHardWindow` (existing-window lookup) → "No such window". `git blame` dates that `#if 0` to
+  the **original 2003 DOS import** (`c835c3b`) — it shipped disabled; the Linux port did not break
+  it. (Tables/`RW_*` enum verified aligned — not the cause.) So my `RW_SEARCHLIST` case is inert
+  until `EvalCommand` is revived (own TODO). The search window opens fine via the MemOps menu.
 
 Cost: $0 — local build; no MAME needed to compile-test (search logic already proven).
