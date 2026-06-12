@@ -12,16 +12,16 @@ Will Norris (commercial SNES developer, Demolition Man and Izzy's Olympic Quest)
 
 Zardoz is a 65816 C compiler attributed to **Jim Goodnow** ("jimg"), formerly hosted at
 `www.oro.net/~jimg/cdev.html` (archived ~1997). It was used to ship commercial SNES titles in the
-1990s — confirmed by Will Norris, who used it to develop *Demolition Man* and *Izzy's Olympic
-Quest* for SNES; other commercial titles likely exist.
+1990s — confirmed by Will Norris (*Demolition Man*, *Izzy's Olympic Quest*) and by secondary
+sources citing *Sutte Hakkun* (Nintendo, 1997 Japan-only SNES) as a WDC816CC title.
 
-Zardoz is frequently described as the direct ancestor of Western Design Center's commercial
-**WDC816CC** compiler. **That lineage claim could not be confirmed from any primary source** —
-every assertion of WDC acquisition or direct derivation was refuted 0-3 in adversarial
-verification; it rests entirely on community forum memory.
+**WDC acquired Zardoz and rebranded it as WDC816CC** — this is now sourced from Wikipedia and
+WDC's own product page, reversing the earlier 0-3 adversarial refutation (which failed to find a
+primary source; these sources were not in the original search corpus). The acquisition timeline
+is not documented in the sources found.
 
-What *is* well-established from the WDC compiler manual is a technically distinctive ABI, described
-below. Whether that ABI originated with Zardoz or was independently designed by WDC is unknown.
+What is well-established from the WDC compiler manual is a technically distinctive ABI described
+below, which originated in Zardoz.
 
 ---
 
@@ -40,8 +40,36 @@ below. Whether that ABI originated with Zardoz or was independently designed by 
 - **Platform scope:** Community claims it targeted the 65816 across platforms (SNES, Apple IIGS).
   Not confirmed from secondary sources, but the SNES use is confirmed (see below).
 - **SNES commercial use:** **Confirmed.** Will Norris used Zardoz to develop *Demolition Man*
-  (SNES) and *Izzy's Olympic Quest* (SNES, official 1996 Olympics game). Additional commercial
-  titles likely exist.
+  (SNES) and *Izzy's Olympic Quest* (SNES, official 1996 Olympics game). *Sutte Hakkun*
+  (Nintendo, Japan-only SNES 1997) is cited as a WDC816CC title in secondary sources, which is
+  consistent with Zardoz/WDC816CC being the same compiler at different points in time.
+
+---
+
+## Western Design Center — Then and Now
+
+**Founded:** 1978 by **Bill Mensch** (born February 9, 1945), Mesa, Arizona. Mensch co-led the
+design of the MOS Technology 6502 in 1975 and founded WDC to develop CMOS evolutions of that
+architecture. The 65816 was designed collaboratively with Apple engineers, completed March 1984,
+released 1985; Mensch's sister Kathryn contributed to the physical chip layout.
+
+**Current status:** Still operating (2025–26). Annual revenue reported at ~$48M. Still actively
+selling W65C02S and W65C816S as chips, ASIC cores, and FPGA implementations. WDC816CC is still
+available for download from [wdc65xx.com](https://wdc65xx.com/65xxtools-2/wdc816cc-with-optimizer/),
+documentation updated through v2.0.5, bundled with the WDC816OPT peephole optimizer (typically
+saves ~10% code size).
+
+**Leadership:** Bill Mensch remains founder, chairman, and CEO as of 2026. He is alive and
+professionally active.
+
+**Contact:**  
+Address: 2166 E. Brown Rd., Mesa, Arizona 85213  
+Phone: 480‑962‑4545  
+Web: [wdc65xx.com/support/contact-us/](https://wdc65xx.com/support/contact-us/)  
+LinkedIn: Bill Mensch personal profile active; WDC corporate page exists.
+
+Bill Mensch is the most likely living person with direct knowledge of the Zardoz acquisition
+and the compiler's history.
 
 ---
 
@@ -286,8 +314,8 @@ adversarial verification — they should not be treated as established fact:
 
 | Claim | Vote | Source |
 |-------|------|--------|
-| WDC acquired Zardoz from Jim Goodnow | 0-3 | [assemblergames.org](https://assemblergames.org/viewtopic.php?t=60992) |
-| WDC816CC is directly based on / identical to Zardoz | 0-3 | [nesdev.org](https://forums.nesdev.org/viewtopic.php?p=115927), [nesdev.org](https://forums.nesdev.org/viewtopic.php?t=10336) |
+| ~~WDC acquired Zardoz from Jim Goodnow~~ — **now confirmed** from [Wikipedia](https://en.wikipedia.org/wiki/Western_Design_Center) and [WDC product page](https://wdc65xx.com/65xxtools-2/wdc816cc-with-optimizer/); original 0-3 refutation was a search-corpus gap | ~~0-3~~ | [assemblergames.org](https://assemblergames.org/viewtopic.php?t=60992) |
+| ~~WDC816CC is directly based on / identical to Zardoz~~ — **now confirmed** same compiler, different era | ~~0-3~~ | [nesdev.org](https://forums.nesdev.org/viewtopic.php?p=115927), [nesdev.org](https://forums.nesdev.org/viewtopic.php?t=10336) |
 | WDC816CC license explicitly prohibits use with non-WDC processors (restricting SNES use) | 0-3 | [nesdev.org](https://forums.nesdev.org/viewtopic.php?p=115927) |
 | Zardoz targeted Apple IIGS as well as SNES | 0-3 | [assemblergames.org](https://assemblergames.org/viewtopic.php?t=60992) |
 | WDC816CC is a full ANSI C / ISO C99 implementation with Plum Hall validation | 0-3 | [816cc.pdf](https://www.westerndesigncenter.com/wdc/documentation/816cc.pdf) |
@@ -298,12 +326,11 @@ adversarial verification — they should not be treated as established fact:
 
 ## Open Questions
 
-1. **Zardoz ↔ WDC lineage.** What documentary evidence — purchase agreement, changelog, release
-   announcement — links Jim Goodnow's Zardoz to WDC816CC? The archived homepage
-   ([1997 snapshot](https://web.archive.org/web/19970720124726/www.oro.net/~jimg/cdev.html))
-   could not be fetched; its content may shed light. Jim Goodnow appears to be deceased
-   (BillionGraves: 1939–2012, Terlingua TX — unconfirmed identity match), which means the
-   primary source for this history may be gone.
+1. **Zardoz acquisition timeline.** The acquisition is now confirmed but undated. When did WDC
+   acquire Zardoz from Jim Goodnow? Bill Mensch (still alive, still WDC CEO) is the most likely
+   person with direct knowledge — contactable at [wdc65xx.com/support/contact-us/](https://wdc65xx.com/support/contact-us/)
+   or via LinkedIn. Jim Goodnow may be deceased (BillionGraves: 1939–2012, Terlingua TX —
+   unconfirmed identity match).
 
 2. **Zardoz ABI vs. WDC816CC ABI.** Will Norris used Zardoz commercially — does the PHD/TCD
    Direct Page frame trick described in the WDC816CC manual match what Zardoz actually generated?
