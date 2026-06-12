@@ -42,7 +42,7 @@ FLAG timeToChange = 0;
 //=============================================================================
 
 unsigned int slaveBase = PORTBASE;
-char far *slaveBuffer;
+char *slaveBuffer;
 
 //------------------------------------------------------------------------------
 
@@ -62,7 +62,7 @@ LoadEnvVariables(void)
 	if ( strPtr )
 	 {
 		if(sscanf(strPtr,"%x",&temp))
-			slaveBuffer = (char far *)((long)temp << 16);
+			slaveBuffer = (char *)((long)temp << 16);
 	 }
 }
 

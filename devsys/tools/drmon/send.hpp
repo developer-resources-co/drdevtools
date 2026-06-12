@@ -4,14 +4,14 @@
 
 extern "C"
 	{
-	unsigned long _cdecl SwapLong (unsigned long a);	// kts moveed 10-14-93 00:52am
+	unsigned long SwapLong (unsigned long a);	// kts moveed 10-14-93 00:52am
 
-	void RecFast (char far *buffer,long size);
+	void RecFast (char *buffer,long size);
 	void SendByte (char a);
 	unsigned char RecByte (void);
 	void SendWord (unsigned int a);
 	void SendLong (long a);
-	void SendFast (char far *buffer,long size);
+	void SendFast (char *buffer,long size);
 	void ResumeSlave (void);
 	int GetAttention (void);
 	unsigned long SwapLongWords (unsigned long a);

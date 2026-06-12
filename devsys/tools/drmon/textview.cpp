@@ -586,7 +586,7 @@ TextViewInput(_input *in,_object *oPtr)
 
     FLAG inputUsed;
 	FLAG changed = boolean::TRUE;
-    char far *chr;
+    char *chr;
 
     pWindow = (_window *)oPtr->layer;
     inputUsed = boolean::TRUE;

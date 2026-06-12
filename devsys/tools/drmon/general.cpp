@@ -37,7 +37,7 @@ Print4Bits(char *buffer,UBYTE num)
 
 //=============================================================================
 // print byte into buffer in hex
-char * far
+char *
 Print8Bits(char *buffer,UBYTE num)
 {
 	*buffer++ = hexTable[(num>>4) & 0xf];
@@ -47,7 +47,7 @@ Print8Bits(char *buffer,UBYTE num)
 
 //=============================================================================
 // print word into buffer in hex
-char * far
+char *
 Print16Bits(char *buffer,UWORD num)
 {
 	*buffer++ = hexTable[(num>>12) & 0xf];
@@ -90,7 +90,7 @@ Print24Bits(char *buffer,ULONG num)
 //=============================================================================
 // print long into buffer in hex
 
-char * far
+char *
 PrintRaw32Bits(char *buffer,ULONG num)
 {
 	*buffer++ = hexTable[(num>>28) & 0xf];
@@ -106,7 +106,7 @@ PrintRaw32Bits(char *buffer,ULONG num)
 
 //=============================================================================
 
-char * far
+char *
 PrintBinary32Bits(char *buffer,ULONG num)
 {
 	int i;
@@ -117,7 +117,7 @@ PrintBinary32Bits(char *buffer,ULONG num)
 
 //=============================================================================
 
-char * far
+char *
 Print32Bits(char *buffer,ULONG num)
 {
 #ifdef GENESIS
@@ -278,7 +278,7 @@ PrintString(char *buffer, const char* string)
 //=============================================================================
 
 void
-CopyScreen(char far *dBuff,char far *sBuff,unsigned int len)
+CopyScreen(char *dBuff,char *sBuff,unsigned int len)
 {
 	// Copy len bytes. The old body did `len /= 4` then copied `long`s — correct only
 	// where sizeof(long)==4 (16-bit DOS); on 64-bit Linux long is 8 bytes, so it copied
@@ -290,7 +290,7 @@ CopyScreen(char far *dBuff,char far *sBuff,unsigned int len)
 //=============================================================================
 
 void
-CopyMem(char far *dBuff,char far *sBuff,unsigned int len)
+CopyMem(char *dBuff,char *sBuff,unsigned int len)
 {
 	// Same 64-bit long fix as CopyScreen: copy exactly len bytes (was len/=4 + long
 	// copy, which copied 2x on a 64-bit host where long is 8 bytes, not 4).

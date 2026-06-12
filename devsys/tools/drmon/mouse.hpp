@@ -29,10 +29,10 @@ short  GetButtonRelease( short button, short *count, short *lastx, short *lasty 
 void SetMouseBounds( short minx, short maxx, short miny, short maxy );
 void SetTextAttributeCursor( short andmask, short xormask );
 void SetMouseRatio( short xratio, short yratio );
-void SetGraphicPointer( char far *image, short hotx, short hoty );
+void SetGraphicPointer( char *image, short hotx, short hoty );
 void SetExclusion( short left, short right, short top, short bottom );
-extern unsigned char far p1[];
-extern unsigned short far p2[];
+extern unsigned char p1[];
+extern unsigned short p2[];
 
 //==============================================================================
 

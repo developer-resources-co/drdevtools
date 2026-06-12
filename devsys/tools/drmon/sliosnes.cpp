@@ -24,7 +24,7 @@ boolean bConvertUserBreaks = boolean::TRUE;
 static DevelopmentSystemBoard* devSys;
 
 unsigned int slaveCtrlc, slaveBankc, slaveWormc;	// for snesio.asm
-char far * slaveBufferCmdc;
+char * slaveBufferCmdc;
 
 unsigned int slaveDead, snesStatus;
 unsigned char slaveCtrlBits;
@@ -71,7 +71,7 @@ unsigned char slaveRunningCtrlBits;
 
 //===========================================================================
 
-void RecBytes( byte far* buffer, ulong size )
+void RecBytes( byte * buffer, ulong size )
 	{
 	devSys->GetSlaveBus();
 
@@ -82,7 +82,7 @@ void RecBytes( byte far* buffer, ulong size )
 	}
 
 
-void SendBytes( char far * buffer, long size )
+void SendBytes( char * buffer, long size )
 	{
 	devSys->GetSlaveBus();
 
@@ -94,7 +94,7 @@ void SendBytes( char far * buffer, long size )
 	}
 
 
-void SendDataBytes( char far * buffer, Address &addr, long size )
+void SendDataBytes( char * buffer, Address &addr, long size )
 	{
 	// %%% Untested
 
@@ -227,7 +227,7 @@ void GetRegsFromSlave( ULONG regs[] )
 		{
 		devSys->command( SNES_REGS_SNES2PC );
 
-		RecBytes( (byte far*)tempreg, sizeof( ULONG ) * NUMREGS );
+		RecBytes( (byte *)tempreg, sizeof( ULONG ) * NUMREGS );
 
 		for ( int i = 0; i < NUMREGS; ++i )
 			regs[i] = tempreg[i] & 0xFFFF;			// 16 bits for the SNES
@@ -242,7 +242,7 @@ void PutRegsToSlave( ULONG regs[] )
 	{
 	if ( !devSys->GetAttention() )
 		{
-		SendBytes( (char far*)regs, sizeof( ULONG ) * NUMREGS );
+		SendBytes( (char *)regs, sizeof( ULONG ) * NUMREGS );
 		devSys->command( SNES_REGS_PC2SNES );
 		devSys->ResumeSlave();
 		}
@@ -393,9 +393,9 @@ boolean SingleStep( void )
 		char *textBuffer = (char*)calloc( 40, 1 );	// for opcode disassembly (remove later)
 		assert( textBuffer );
 
-		ReadSlaveData( PC, (char far*)xBuffer, 4 );			// Read instruction to trace over
+		ReadSlaveData( PC, (char *)xBuffer, 4 );			// Read instruction to trace over
 		//delay( 10 );
-		int len = Disassem( PC, (char far*)xBuffer, (char far*)textBuffer, 0 );
+		int len = Disassem( PC, (char *)xBuffer, (char *)textBuffer, 0 );
 
 		ulong NextInstruction = PC + len;	// general-purpose and
 														//  in case branches fail
@@ -467,7 +467,7 @@ boolean SingleStep( void )
 				addr |= (uword)(*xBuffer++)<<8;
 				addr |= PC & 0x00FF0000L;
 
-				ReadSlaveData( addr, (char far*)&offset, 2 );
+				ReadSlaveData( addr, (char *)&offset, 2 );
 				NextInstruction &= ~0xFFFFL;					// retain same bank
 				NextInstruction |= offset;
 				break;
@@ -482,7 +482,7 @@ boolean SingleStep( void )
 				addr |= (uword)(*xBuffer++)<<8;
 				addr |= PC & 0x00FF0000L;
 
-				ReadSlaveData( addr+GetReg(REG_X), (char far*)&NextInstruction, 2 );
+				ReadSlaveData( addr+GetReg(REG_X), (char *)&NextInstruction, 2 );
 				break;
 				}
 
@@ -491,7 +491,7 @@ boolean SingleStep( void )
 				uword rts;
 				ulong SP = GetReg( REG_STACKPOINTER );
 
-				ReadSlaveData( SP+1, (char far*)&rts, 2 );
+				ReadSlaveData( SP+1, (char *)&rts, 2 );
 				NextInstruction &= ~0xFFFFL;					// retain same bank
 				NextInstruction |= rts+1;
 				break;
@@ -510,7 +510,7 @@ boolean SingleStep( void )
 				ulong rtl = 0;
 				ulong SP = GetReg( REG_STACKPOINTER );
 
-				ReadSlaveData( SP+1, (char far*)&rtl, 3 );
+				ReadSlaveData( SP+1, (char *)&rtl, 3 );
 				NextInstruction = rtl+1;
 				break;
 				}
@@ -520,7 +520,7 @@ boolean SingleStep( void )
 				ulong addr = 0;
 				addr  = (ubyte)*xBuffer++;
 				addr |= (uword)(*xBuffer++)<<8;
-				ReadSlaveData( addr, (char far*)&NextInstruction, 3 );
+				ReadSlaveData( addr, (char *)&NextInstruction, 3 );
 				break;
 				}
 
@@ -531,7 +531,7 @@ boolean SingleStep( void )
 				ulong rts;
 				ulong SP = GetReg( REG_STACKPOINTER );
 
-				ReadSlaveData( SP+1+1, (char far*)&rts, 2 );	// Skip Flags
+				ReadSlaveData( SP+1+1, (char *)&rts, 2 );	// Skip Flags
 				NextInstruction = rts;
 				break;
 				}
@@ -615,7 +615,7 @@ boolean SlaveBkClr( long addr, unsigned int inst )
 	if ( devSys->command( SNES_CLEAR_BREAK ) == - 1 )
 #endif
 		{
-		WriteSlaveData( addr, (char far*)&inst, 1 );
+		WriteSlaveData( addr, (char *)&inst, 1 );
 		}
 	devSys->ResumeSlave();
 
@@ -645,11 +645,11 @@ uword SlaveSetBkPt( ulong addr )
 		{ // Simulate
 		uword opcode;
 
-		ReadSlaveData( addr, (char far*)&opcode, 1 );
+		ReadSlaveData( addr, (char *)&opcode, 1 );
 		result = opcode;
 
 		opcode = 0;			// BRK
-		WriteSlaveData( addr, (char far*)&opcode, 1 );
+		WriteSlaveData( addr, (char *)&opcode, 1 );
 		}
 	//else
 	//	result = devSys->comram( beginningOfBoard );
@@ -664,7 +664,7 @@ uword SlaveSetBkPt( ulong addr )
 //===========================================================================
 // memory i/o commands
 
-void ReadSlaveData( unsigned long addr, char far* data, unsigned int len )
+void ReadSlaveData( unsigned long addr, char * data, unsigned int len )
 	{
 	if ( len && !devSys->GetAttention() )
 		{
@@ -689,9 +689,9 @@ void ReadSlaveData( unsigned long addr, char far* data, unsigned int len )
 	}
 
 
-void WriteSlaveData( unsigned long addr, char far * data, unsigned int len )
+void WriteSlaveData( unsigned long addr, char * data, unsigned int len )
 	{
-	unsigned long far * buff;
+	unsigned long * buff;
 
 	if ( len && !devSys->GetAttention() )
 		{
@@ -719,7 +719,7 @@ unsigned long MemRead( unsigned long addr, UBYTE size )
 	{
 	unsigned long data;
 
-	ReadSlaveData( addr, (char far*)&data, 4 );
+	ReadSlaveData( addr, (char *)&data, 4 );
 	data &= 0xffffffff >> ( ( 4 - size ) * 8 );
 	return ( data );
 	}
@@ -757,10 +757,10 @@ errorcode LoadFileToSlave( FILE * f, unsigned long address, unsigned long len )
 	for ( a = 0; a < bigchunks; ++a )
 		{
 		fread( buffer, BUFSIZE, 1, f );
-		WriteSlaveData( address + ( a * BUFSIZE ), (char far*)buffer, BUFSIZE );
+		WriteSlaveData( address + ( a * BUFSIZE ), (char *)buffer, BUFSIZE );
 		}
 	fread( buffer, remainder, 1, f );
-	WriteSlaveData( address + ( a * BUFSIZE ), (char far*)buffer, remainder );
+	WriteSlaveData( address + ( a * BUFSIZE ), (char *)buffer, remainder );
 	free( buffer );
 #endif
 
@@ -786,11 +786,11 @@ errorcode SaveFileFromSlave( FILE * f, unsigned long address, unsigned long len
 		return ( ERROR_NOMEM );
 	for ( a = 0; a < bigchunks; a++ )
 		{
-		ReadSlaveData( address + ( a * BUFSIZE ), (char far*)buffer, BUFSIZE );
+		ReadSlaveData( address + ( a * BUFSIZE ), (char *)buffer, BUFSIZE );
 		fwrite( buffer, BUFSIZE, 1, f );
 		delay( 10 );
 		}
-	ReadSlaveData( address + ( a * BUFSIZE ), (char far*)buffer, remainder );
+	ReadSlaveData( address + ( a * BUFSIZE ), (char *)buffer, remainder );
 	fwrite( buffer, remainder, 1, f );
 	free( buffer );
 #endif
@@ -805,14 +805,14 @@ errorcode SaveFileFromSlave( FILE * f, unsigned long address, unsigned long len
 boolean SlaveCopyMem( long startaddr, long destaddr, long len )
 	{
 #if 0
-	unsigned long far * buff;
+	unsigned long * buff;
 
 	if ( len )
 		{
 		if ( GetAttention() )
 			return ( boolean::FALSE );
 		GetSlaveBus();
-		buff = (unsigned long far*)slaveBufferData;
+		buff = (unsigned long *)slaveBufferData;
 		outportb( slaveBank, SLAVEBANK_COM );
 		*buff++ = startaddr;
 		*buff++ = destaddr;
@@ -831,7 +831,7 @@ boolean SlaveCopyMem( long startaddr, long destaddr, long len )
 
 // @@@ patlen & pattern don't seem to work (i.e., requester above this
 // @@@ function call doesn't parse things like "1,2")
-boolean SlaveFillMem( long startaddr, long len, long patlen, char far * pattern )
+boolean SlaveFillMem( long startaddr, long len, long patlen, char * pattern )
 	{
 	word command;
 
@@ -874,7 +874,7 @@ boolean SlaveFillMem( long startaddr, long len, long patlen, char far * pattern 
 //===========================================================================
 // ppu memory i/o
 
-void ReadSlavePPU( unsigned long addr, char far * data, unsigned int len )
+void ReadSlavePPU( unsigned long addr, char * data, unsigned int len )
 	{
 	uword command;
 
@@ -902,7 +902,7 @@ void ReadSlavePPU( unsigned long addr, char far * data, unsigned int len )
 	}
 
 
-void ReadSlaveCRAM( char far * data )
+void ReadSlaveCRAM( char * data )
 	{
 #if 0
 	unsigned char h, l;
@@ -920,7 +920,7 @@ void ReadSlaveCRAM( char far * data )
 	}
 
 
-void ReadSlaveObjRAM( char far * data )
+void ReadSlaveObjRAM( char * data )
 	{
 #if 0
 	if ( GetAttention() )

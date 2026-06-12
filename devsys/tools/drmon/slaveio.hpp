@@ -55,7 +55,7 @@ void HandleSlaveInput(void);					// read registers, and receive any async messag
 void GetRegsFromSlave( ULONG regs[] );		// read slave registers(called from HandleInput)
 void PutRegsToSlave( ULONG regs[] );		// write regs to slave(only happens when user changes a register)
 void SlaveStop (void);							// stop execution
-boolean SlaveFillMem (long startaddr,long len,long patlen,char far *pattern);
+boolean SlaveFillMem (long startaddr,long len,long patlen,char *pattern);
 boolean SlaveCopyMem (long startaddr,long destaddr, long len);
 // load from disk to slave
 errorcode LoadFileToSlave (FILE *f, unsigned long address, unsigned long len);
@@ -97,11 +97,11 @@ extern "C" {
 
 	// regular memory read command
 	void
-	ReadSlaveData(unsigned long addr,char far *data,unsigned int len);
+	ReadSlaveData(unsigned long addr,char *data,unsigned int len);
 
 	// regular memory write command
 	void
-	WriteSlaveData(unsigned long addr,char far *data,unsigned int len);
+	WriteSlaveData(unsigned long addr,char *data,unsigned int len);
 
 	// save from slave to disk
 	errorcode SaveFileFromSlave (FILE *f, unsigned long address, unsigned long len);
@@ -117,25 +117,25 @@ extern "C" {
 
 	// special memoruy i/o commands
 #ifdef GENESIS
-	void ReadSlaveVDP(unsigned long addr,char far *data,unsigned int len);
+	void ReadSlaveVDP(unsigned long addr,char *data,unsigned int len);
 
-	void WriteSlaveVDP(unsigned long addr,char far *data,unsigned int len);
+	void WriteSlaveVDP(unsigned long addr,char *data,unsigned int len);
 
-	void ReadSlaveCRAM (char far *data);
+	void ReadSlaveCRAM (char *data);
 
-	void WriteSlaveCRAM (char far *data);
+	void WriteSlaveCRAM (char *data);
 
-	void ReadSlaveVSRAM (char far *data);
+	void ReadSlaveVSRAM (char *data);
 
-	void WriteSlaveVSRAM (char far *data);
+	void WriteSlaveVSRAM (char *data);
 #endif
 
 #ifdef SNES
-	void ReadSlavePPU(unsigned long addr,char far *data,unsigned int len);
+	void ReadSlavePPU(unsigned long addr,char *data,unsigned int len);
 #endif
 
 #ifdef SPC700
-	void ReadSlaveApuRam(unsigned long addr,char far *data,unsigned int len);
+	void ReadSlaveApuRam(unsigned long addr,char *data,unsigned int len);
 	void GetSpc700Regs(ULONG regs[]);
 	void PutSpc700Regs(ULONG regs[]);
 #endif

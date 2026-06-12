@@ -460,7 +460,7 @@ void PutRegsToSlave(ULONG regs_in[]) {
 
 // --- Memory I/O --------------------------------------------------------------
 
-void ReadSlaveData(unsigned long addr, char far *data, unsigned int len) {
+void ReadSlaveData(unsigned long addr, char *data, unsigned int len) {
     if (g_fd < 0) { memset(data, 0, len); return; }
     for (unsigned int i = 0; i < len; i++) {
         const unsigned char *p = gcache_fetch(addr + i);
@@ -468,7 +468,7 @@ void ReadSlaveData(unsigned long addr, char far *data, unsigned int len) {
     }
 }
 
-void WriteSlaveData(unsigned long addr, char far *data, unsigned int len) {
+void WriteSlaveData(unsigned long addr, char *data, unsigned int len) {
     if (g_fd < 0) return;
     char cmd[8 + 1 + 4096*2 + 8];
     int pos = snprintf(cmd, sizeof(cmd), "M%lx,%x:", (unsigned long)addr, len);
@@ -531,7 +531,7 @@ boolean SlaveCopyMem(long startaddr, long destaddr, long len) {
     return boolean::TRUE;
 }
 
-boolean SlaveFillMem(long startaddr, long len, long patlen, char far *pattern) {
+boolean SlaveFillMem(long startaddr, long len, long patlen, char *pattern) {
     if (g_fd < 0) return boolean::FALSE;
     char buf[256];
     long remaining = len, dst = startaddr;
@@ -628,14 +628,14 @@ void SlaveClearBRKOnWrite(void)   {}
 
 // --- Platform-specific stubs -------------------------------------------------
 
-void ReadSlaveVDP(unsigned long /*addr*/, char far *data, unsigned int len) {
+void ReadSlaveVDP(unsigned long /*addr*/, char *data, unsigned int len) {
     memset(data, 0, len);
 }
-void WriteSlaveVDP(unsigned long /*addr*/, char far */*data*/, unsigned int /*len*/) {}
-void ReadSlaveCRAM(char far *data)  { memset(data, 0, 128); }
-void WriteSlaveCRAM(char far */*data*/) {}
-void ReadSlaveVSRAM(char far *data) { memset(data, 0, 80); }
-void WriteSlaveVSRAM(char far */*data*/) {}
+void WriteSlaveVDP(unsigned long /*addr*/, char */*data*/, unsigned int /*len*/) {}
+void ReadSlaveCRAM(char *data)  { memset(data, 0, 128); }
+void WriteSlaveCRAM(char */*data*/) {}
+void ReadSlaveVSRAM(char *data) { memset(data, 0, 80); }
+void WriteSlaveVSRAM(char */*data*/) {}
 
 // --- Residual asm-export symbols --------------------------------------------
 

@@ -40,7 +40,7 @@
 //=============================================================================
 
 _input inBase;
-char far *pointerScreen;
+char *pointerScreen;
 int pointerScreenWidth;
 FLAG mouseBEnable;
 char copyBuffer[ CLIPBOARDSIZE ];                                 // buffer for cut/copy/paste
@@ -92,7 +92,7 @@ InvalidatePointer()
 //=============================================================================
 
 void
-DrawPointer( char far *screen,int mouseX, int mouseY,int screenWidth, int screenHeight)
+DrawPointer( char *screen,int mouseX, int mouseY,int screenWidth, int screenHeight)
         {
         if ( pointerDrawn = haveMouse )
                 {
@@ -128,7 +128,7 @@ UpdateCursor()
 //=============================================================================
 // 0 = no shift keys pressed, 1 = at least one shift key pressed
 
-static unsigned char far* keyboardStatus;
+static unsigned char * keyboardStatus;
 
 unsigned char
 GetShiftStatus(void)

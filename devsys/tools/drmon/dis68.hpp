@@ -5,7 +5,7 @@
 void PadLine (void);
 void FinishLogicFunctions (unsigned short int number);
 unsigned short int GetExtendedWord (void);
-unsigned short int GetWord (unsigned short int far *buffer);
+unsigned short int GetWord (unsigned short int *buffer);
 
 //----------------------------------------------------------------------------
 //Opcode parsers
@@ -89,28 +89,28 @@ void ParseArIndirect_predec (unsigned short int number);
 // top level parsers
 //--------------------------------------------------------------------------
 
-unsigned short int far *Parse0(unsigned short int far *buffer);
-unsigned short int far *Parse1(unsigned short int far *buffer);
-unsigned short int far *Parse2(unsigned short int far *buffer);
-unsigned short int far *Parse3(unsigned short int far *buffer);
-unsigned short int far *Parse4(unsigned short int far *buffer);
-unsigned short int far *Parse5(unsigned short int far *buffer);
-unsigned short int far *Parse6(unsigned short int far *buffer);
-unsigned short int far *Parse7(unsigned short int far *buffer);
-unsigned short int far *Parse8(unsigned short int far *buffer);
-unsigned short int far *Parse9(unsigned short int far *buffer);
-unsigned short int far *Parse10(unsigned short int far *buffer);
-unsigned short int far *Parse11(unsigned short int far *buffer);
-unsigned short int far *Parse12(unsigned short int far *buffer);
-unsigned short int far *Parse13(unsigned short int far *buffer);
-unsigned short int far *Parse14(unsigned short int far *buffer);
-unsigned short int far *Parse15(unsigned short int far *buffer);
+unsigned short int *Parse0(unsigned short int *buffer);
+unsigned short int *Parse1(unsigned short int *buffer);
+unsigned short int *Parse2(unsigned short int *buffer);
+unsigned short int *Parse3(unsigned short int *buffer);
+unsigned short int *Parse4(unsigned short int *buffer);
+unsigned short int *Parse5(unsigned short int *buffer);
+unsigned short int *Parse6(unsigned short int *buffer);
+unsigned short int *Parse7(unsigned short int *buffer);
+unsigned short int *Parse8(unsigned short int *buffer);
+unsigned short int *Parse9(unsigned short int *buffer);
+unsigned short int *Parse10(unsigned short int *buffer);
+unsigned short int *Parse11(unsigned short int *buffer);
+unsigned short int *Parse12(unsigned short int *buffer);
+unsigned short int *Parse13(unsigned short int *buffer);
+unsigned short int *Parse14(unsigned short int *buffer);
+unsigned short int *Parse15(unsigned short int *buffer);
 
 
 //--------------------------------------------------------------------------
-unsigned short int far *diss (unsigned short int far *buffer,char *output);
-//unsigned int far Disassem(unsigned long addr,unsigned char far *inBuff,unsigned char *outBuff,int disMode);
-unsigned int Disassem(unsigned long addr,unsigned char far *inBuff,unsigned char *outBuff,int disMode);
+unsigned short int *diss (unsigned short int *buffer,char *output);
+//unsigned int far Disassem(unsigned long addr,unsigned char *inBuff,unsigned char *outBuff,int disMode);
+unsigned int Disassem(unsigned long addr,unsigned char *inBuff,unsigned char *outBuff,int disMode);
 
 //==============================================================================
 

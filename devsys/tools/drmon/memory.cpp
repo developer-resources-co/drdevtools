@@ -495,7 +495,7 @@ MemoryWriteASCII(char *string,void *dataPtr)
 	oPtr = (_object *)dataPtr;
 
 	UnPadString(string);
-	WriteSlaveData((ULONG)oPtr->longData2,(char far *)string,strlen(string));
+	WriteSlaveData((ULONG)oPtr->longData2,(char *)string,strlen(string));
 }
 
 //=============================================================================
@@ -512,21 +512,21 @@ MemoryWriteHex(ULONG value,void *dataPtr)
 	switch(memorySize[oPtr->mType])
 	        {
 	        case 1:
-	                WriteSlaveData((ULONG)(oPtr->longData2),(char far *)&tempVal,1);
+	                WriteSlaveData((ULONG)(oPtr->longData2),(char *)&tempVal,1);
 	                oPtr->longData2++;
 	                break;
 	        case 2:
 #if WORDSWAP
 	                tempVal = SwapWord(tempVal);
 #endif
-	                WriteSlaveData((ULONG)(oPtr->longData2),(char far *)&tempVal,2);
+	                WriteSlaveData((ULONG)(oPtr->longData2),(char *)&tempVal,2);
 	                oPtr->longData2+= 2;
 	                break;
 	        case 4:
 #if WORDSWAP
 	                tempVal = SwapLong(tempVal);
 #endif
-	                WriteSlaveData((ULONG)(oPtr->longData2),(char far *)&tempVal,4);
+	                WriteSlaveData((ULONG)(oPtr->longData2),(char *)&tempVal,4);
 	                oPtr->longData2+= 4;
 	                break;
 	        }
@@ -679,7 +679,7 @@ MemoryInput(_input *in,_object *oPtr)
 
     FLAG inputUsed;
 	FLAG changed = boolean::FALSE;
-    unsigned char far *chr;
+    unsigned char *chr;
 
     pWindow = (_window *)oPtr->layer;
     inputUsed = boolean::TRUE;
@@ -936,7 +936,7 @@ MemoryGetLineAddr(_object *oPtr,int line)
     int pWidth,pHeight;
     _layer *lPtr;
 	unsigned int offset;
-	char far *buff;
+	char *buff;
 
     lPtr = oPtr->layer;
 	addr = oPtr->addr;
@@ -1089,7 +1089,7 @@ MemoryRoutine(_object *oPtr)
 	ULONG addr;
 	unsigned int offset;
     _layer *lPtr;
-	char far *buff;
+	char *buff;
 	char *buffer;
 	FLAG abort = boolean::FALSE;
 

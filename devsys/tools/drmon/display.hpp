@@ -9,7 +9,7 @@
 
 //=============================================================================
 
-extern char far *scrBuffer;
+extern char *scrBuffer;
 
 extern unsigned int displayWidth,displayHeight;
 extern unsigned int virtualXOffset,virtualYOffset,virtualXSize,virtualYSize;

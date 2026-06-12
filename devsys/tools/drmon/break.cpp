@@ -412,7 +412,7 @@ BreakInput(_input *in,_object *oPtr)
 
     FLAG inputUsed;
 	FLAG listIn;
-    char far *chr;
+    char *chr;
 	_gadget *gPtr;
 
     pWindow = (_window *)oPtr->layer;

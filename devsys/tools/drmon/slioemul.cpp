@@ -44,40 +44,40 @@ SwapWord(unsigned int w)
 //============================================================================
 
 void
-ReadSlaveData(unsigned long addr,char far *data,unsigned int len)
+ReadSlaveData(unsigned long addr,char *data,unsigned int len)
 {
-	char far* bPtr = (char far *)addr;
+	char * bPtr = (char *)addr;
 	while ( len-- )
 		*data++ = *bPtr++;
 }
 
 #ifdef GENESIS
- void ReadSlaveVDP(unsigned long addr,char far *data,unsigned int len)
+ void ReadSlaveVDP(unsigned long addr,char *data,unsigned int len)
 #endif
 
 #ifdef SNES
- void ReadSlavePPU(unsigned long addr,char far *data, unsigned int len)
+ void ReadSlavePPU(unsigned long addr,char *data, unsigned int len)
 #endif
 {
-	char far *bPtr;
-	bPtr = (char far *)addr;
+	char *bPtr;
+	bPtr = (char *)addr;
 
 	while(len--)
 		*data++ = *bPtr++;
 }
 
- void ReadSlaveCRAM (char far *data)
+ void ReadSlaveCRAM (char *data)
 {
 }
 
 #ifdef GENESIS
- void ReadSlaveVSRAM (char far *data)
+ void ReadSlaveVSRAM (char *data)
 {
 }
 #endif
 
 #ifdef SNES
- void ReadSlaveObjRAM( char far *data )
+ void ReadSlaveObjRAM( char *data )
 	{
 	}
 #endif
@@ -126,7 +126,7 @@ GoodByeSlave(void)
 //============================================================================
 
 void
-WriteSlaveData(unsigned long addr,char far *data,unsigned int len)
+WriteSlaveData(unsigned long addr,char *data,unsigned int len)
 {
 }
 
@@ -163,7 +163,7 @@ SlaveCopyMem (long startaddr,long destaddr, long len)
 //============================================================================
 
 boolean
-SlaveFillMem (long startaddr,long len,long patlen,char far *pattern)
+SlaveFillMem (long startaddr,long len,long patlen,char *pattern)
 {
 	return(boolean::FALSE);
 }
@@ -232,8 +232,8 @@ boolean StepOverBreak (long addr, uword inst)
 unsigned long MemRead(unsigned long addr,UBYTE size)
 {
 	unsigned long data;
-	unsigned long far *bPtr;
-	bPtr = (unsigned long far *)addr;
+	unsigned long *bPtr;
+	bPtr = (unsigned long *)addr;
 
 	data = *bPtr;
 	data &= 0xffffffff >> ((4-size)*8);
@@ -248,7 +248,7 @@ void SendCmd ( char a)
 }
 
 unsigned int slaveCtrlc, slaveBankc, slaveWormc;	// for snesio.asm
-unsigned char far * slaveBufferCmdc;
+unsigned char * slaveBufferCmdc;
 
 //----------------------------------------------------------------------------
 

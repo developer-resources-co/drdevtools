@@ -179,7 +179,7 @@ LogWindow(_layer *lPtr)
 	int x,y;
 	unsigned char ch;
 	FILE *outFile = NULL;
-    unsigned char far *sBuff;
+    unsigned char *sBuff;
     sBuff = lPtr->buffer;
 
 	if(logFileName[0] != 0)
@@ -262,7 +262,7 @@ GlobInput(_input *in,_object *oPtr)
 		case INP_MOUSE_LEFTBUTTON_SHIFTDOWN:
 		 {
 			int startX,startY;
-			unsigned char far *sPtr;
+			unsigned char *sPtr;
 			startX = in->mouseX;
 			startY = in->mouseY;
 			refreshEnable = boolean::FALSE;

@@ -51,7 +51,7 @@ _layerBase::Tail()
 
 
 void
-_layerBase::Display( char far *buffer,int xOffset,int yOffset,char backgroundChar, char backgroundAttr,int screenWidth,int ScreenHeight )
+_layerBase::Display( char *buffer,int xOffset,int yOffset,char backgroundChar, char backgroundAttr,int screenWidth,int ScreenHeight )
 	{
 	if ( refreshEnable )
 		{
@@ -79,7 +79,7 @@ _shadowedLayer::Render(char* buffer, int xOffset, int yOffset, int screenWidth, 
 
 
 void
-DisplayLayers(char far *buffer,int xOffset,int yOffset,char backgroundChar, char backgroundAttr,int screenWidth,int ScreenHeight)
+DisplayLayers(char *buffer,int xOffset,int yOffset,char backgroundChar, char backgroundAttr,int screenWidth,int ScreenHeight)
 	{
 	layBase.Display( buffer, xOffset, yOffset, backgroundChar, backgroundAttr, screenWidth, screenHeight );
 	}
@@ -140,7 +140,7 @@ void
 _layer::Fill( unsigned char fillChar )
 	{
 #if 0
-	unsigned char far* localBuffer = buffer;
+	unsigned char * localBuffer = buffer;
 
 	asm les di,localBuffer;
 	_AH = charAttr;
@@ -149,7 +149,7 @@ _layer::Fill( unsigned char fillChar )
 		// -> es:di
 	asm rep stosw;
 #else
-	unsigned char far* buff = buffer;
+	unsigned char * buff = buffer;
 	for ( int i=xSize*ySize; i!=0; --i )
 		{
 		*buff++ = fillChar;
@@ -266,7 +266,7 @@ _layer::Render(char* destBuffer, int xOffset, int yOffset, int screenWidth, int 
 	if((clippedYSize+clippedYPos) > screenHeight)
 		clippedYSize -= (clippedYSize+clippedYPos)-screenHeight;
 									// get buffer pointers
-	char far *dBuff;
+	char *dBuff;
     dBuff = destBuffer+(clippedYPos*screenWidth*charSize)+(clippedXPos*charSize);
     int yAdd = (screenWidth - clippedXSize)*2;
 
@@ -326,7 +326,7 @@ _shadowedLayer::RenderShadow(char* destBuffer, int xOffset, int yOffset, int scr
 	if((clippedYSize+clippedYPos) > screenHeight)
 		clippedYSize -= (clippedYSize+clippedYPos)-screenHeight;
 									// get buffer pointers
-	char far *dBuff;
+	char *dBuff;
     dBuff = destBuffer+(clippedYPos*screenWidth*charSize)+(clippedXPos*charSize);
     int yAdd = (screenWidth - clippedXSize)*2;
 
@@ -352,12 +352,12 @@ PrintLayAttrClip( class _layer *lPtr,char*text,int xPos,int yPos,unsigned char c
 
 	int currXPos = xPos;
 
-	unsigned char far* buff = lPtr->buffer +((xPos+(yPos*lPtr->xSize))*charSize);
+	unsigned char * buff = lPtr->buffer +((xPos+(yPos*lPtr->xSize))*charSize);
 	assert( buff );
 
-	unsigned char far* endBuff = lPtr->buffer + ( ((lPtr->ySize * lPtr->xSize)-1) * charSize );
+	unsigned char * endBuff = lPtr->buffer + ( ((lPtr->ySize * lPtr->xSize)-1) * charSize );
 
-	unsigned char far* oldBuff = buff;
+	unsigned char * oldBuff = buff;
 
     lPtr->flags |= layf_Changed;
     while(*text && ( buff <= endBuff ) )
@@ -402,7 +402,7 @@ PrintLay( class _layer* lPtr, char* text, int xPos, int yPos)
 //=============================================================================
 // note: does no clipping, assumes is passed reasonable numbers
 
-void cdecl
+void
 FillRectLayer( class _layer* lPtr,
 	int xStart, int yStart, int xSize, int ySize,
 	unsigned char fillChar, unsigned char charAttr )
@@ -410,7 +410,7 @@ FillRectLayer( class _layer* lPtr,
 	assert( lPtr );
 
 	int xCount;
-	unsigned char far *buffer,far *b2;
+	unsigned char *buffer,*b2;
 
 	buffer = lPtr->buffer + (xStart*charSize) + (yStart*charSize*lPtr->xSize);
 	while(ySize--)

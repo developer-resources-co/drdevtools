@@ -9,15 +9,15 @@
 
 #if defined(__GNUC__)
 #include <ncurses_io.h>
-extern char far *screen;
+extern char *screen;
 #endif
 
 
 //=============================================================================
 
-char far* scrBuffer;
+char * scrBuffer;
 
-char far *scrBuffer2 = NULL;
+char *scrBuffer2 = NULL;
 unsigned int displayWidth,displayHeight;
 uint virtualXOffset,virtualYOffset;
 uint virtualXSize = 0,virtualYSize = 0;
@@ -121,12 +121,12 @@ UpdateScreen(void)
 
 //=============================================================================
 
-unsigned char far *
+unsigned char *
 GetScrAddr(int x,int y)
 {
 	if(x >= screenWidth)
-		return( (unsigned char far*)(scrBuffer2 + (screenWidth*y*2) + ((x-screenWidth)*2)));
-	return( (unsigned char far*)(scrBuffer + (screenWidth*y*2) + (x*2)));
+		return( (unsigned char *)(scrBuffer2 + (screenWidth*y*2) + ((x-screenWidth)*2)));
+	return( (unsigned char *)(scrBuffer + (screenWidth*y*2) + (x*2)));
 }
 
 //=============================================================================
@@ -135,7 +135,7 @@ void
 XorDisplayRect(int startX, int startY, int endX, int endY)
 {
 	int i,j;
-	unsigned char far *sPtr;
+	unsigned char *sPtr;
 
 	ErasePointer();
 	if(endX < startX)
@@ -161,7 +161,7 @@ void
 ReadDisplayRect(char *buffer,int startX, int startY, int endX, int endY)
 {
 	int i,j;
-	char far *sPtr;
+	char *sPtr;
 
 	if(endX < startX)
 		endX = startX;
@@ -173,7 +173,7 @@ ReadDisplayRect(char *buffer,int startX, int startY, int endX, int endY)
 	 {
 		for(j = 0; j <= endX-startX; j++)
 		 {
-			sPtr = (char far*)GetScrAddr(startX+j,i);
+			sPtr = (char *)GetScrAddr(startX+j,i);
 			*buffer++ = *sPtr;
 		 }
 	 }
@@ -193,7 +193,7 @@ SetupDisplay(void)
 	// dangling pointer after a resize realloc (use-after-free caught by ASan).
 	InvalidatePointer();
 	if ( scrBuffer ) free( scrBuffer );
-	scrBuffer = (char far *)farmalloc(screenSize);
+	scrBuffer = (char *)farmalloc(screenSize);
 #endif
 
 	ClearScrBuff(scrBuffer,backgroundChar,backgroundAttr,screenSize);
@@ -202,7 +202,7 @@ SetupDisplay(void)
 		{
 		if(scrBuffer2)
 			free(scrBuffer2);
-		scrBuffer2 = (char far *)farmalloc(screenSize2);
+		scrBuffer2 = (char *)farmalloc(screenSize2);
 		ClearScrBuff(scrBuffer2,backgroundChar2,backgroundAttr2,screenSize2);
 		}
 

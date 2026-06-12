@@ -30,7 +30,7 @@ struct Desktop
     FLAG         refreshAll, refreshEnable;
     _object     *pObjBase;
     _object     *frontObj;
-    char far    *screen, *screen2, *scrBuffer, *scrBuffer2;
+    char *screen, *screen2, *scrBuffer, *scrBuffer2;
     unsigned short screenW, screenH, screenSz;   // this terminal's dimensions
     int          cursorX, cursorY;
     FLAG         curOn;

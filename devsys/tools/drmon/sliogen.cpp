@@ -16,8 +16,8 @@
 // hardware addresses and ports
 							// port addresses
 unsigned int slaveCtrl,slaveBank,slaveWorm;
-unsigned char far *slaveBufferCmd;
-unsigned char far *slaveBufferData;
+unsigned char *slaveBufferCmd;
+unsigned char *slaveBufferData;
 unsigned int slaveDead,genStatus;
 
 unsigned char slaveCtrlBits;
@@ -122,7 +122,7 @@ _exception Exception;
 
 //============================================================================
 
-void RecBytes (char far *buffer,long size)
+void RecBytes (char *buffer,long size)
 {
 	GetSlaveBus();
 	outportb(slaveBank,SLAVEBANK_COM);
@@ -130,7 +130,7 @@ void RecBytes (char far *buffer,long size)
 	ReturnSlaveBus();
 }
 
-void SendBytes (char far *buffer,long size)
+void SendBytes (char *buffer,long size)
 {
 	GetSlaveBus();
 	outportb(slaveBank,SLAVEBANK_COM);
@@ -138,7 +138,7 @@ void SendBytes (char far *buffer,long size)
 	ReturnSlaveBus();
 }
 
-void SendDataBytes (char far *buffer,char far *dest, long size)
+void SendDataBytes (char *buffer,char *dest, long size)
 {
 	GetSlaveBus();
 	outportb(slaveBank,SLAVEBANK_COM);
@@ -166,7 +166,7 @@ void
 DebugMessage (void)
 {
 #if 0
-	unsigned int far *buff;
+	unsigned int *buff;
 	unsigned char a;
 	int b=0;
 
@@ -180,7 +180,7 @@ DebugMessage (void)
 	PrintToStatWindow (textBuffer);
 #endif
 
-	unsigned int far *buff;
+	unsigned int *buff;
     unsigned char a=1;
     int b=0;
     SendCmd (GEN_MESSAGE);
@@ -206,7 +206,7 @@ GetMessage(void)
    GetAttention ();
    SendCmd(GEN_ASYNC);
    GetSlaveBus();
-   RecBytes ((char far *) &Exception,sizeof(_exception));
+   RecBytes ((char *) &Exception,sizeof(_exception));
    ReturnSlaveBus();
 
    Exception.flavor =SwapWord (Exception.flavor);
@@ -301,7 +301,7 @@ GetRegsFromSlave( ULONG regs[] )
      int a;
      if (GetAttention ()) return;
      SendCmd (GEN_REGS_GEN2PC);
-     RecBytes ((char far *) tempreg,sizeof(long) * NUMREGS);
+     RecBytes ((char *) tempreg,sizeof(long) * NUMREGS);
      for (a=0;a<NUMREGS;a++)
         regs[a] = SwapLong (tempreg[a]) & regMaskArray[a];
     ResumeSlave ();
@@ -315,7 +315,7 @@ PutRegsToSlave( ULONG regs[] )
      for (a=0;a<NUMREGS;a++)
         tempreg[a] = SwapLong (GetReg(a));
      if (GetAttention ()) return;
-     SendBytes ((char far *) tempreg,sizeof(long) * NUMREGS);
+     SendBytes ((char *) tempreg,sizeof(long) * NUMREGS);
      SendCmd (GEN_REGS_PC2GEN);
      ResumeSlave ();
 }
@@ -453,9 +453,9 @@ boolean SingleStep (void)
 
 boolean StepOverBreak (long addr,uword inst)
 {
-	unsigned int far *buff;
+	unsigned int *buff;
 
-	buff = (unsigned int far *)slaveBufferData;
+	buff = (unsigned int *)slaveBufferData;
     if (GetAttention()) return (boolean::FALSE);
 	GetSlaveBus();
 	outportb(slaveBank,SLAVEBANK_COM);
@@ -474,10 +474,10 @@ boolean StepOverBreak (long addr,uword inst)
 boolean
 SlaveBkClr(long addr, unsigned int inst)
 {
-	unsigned int far *buff;
+	unsigned int *buff;
     unsigned char l,h;
 
-	buff = (unsigned int far *)slaveBufferData;
+	buff = (unsigned int *)slaveBufferData;
     if (GetAttention()) return (boolean::FALSE);
 	GetSlaveBus();
 	outportb(slaveBank,SLAVEBANK_COM);
@@ -514,9 +514,9 @@ SlaveSetBkPt(ulong addr)
 // memory i/o commands
 
 void
-ReadSlaveData(unsigned long addr,char far *data,unsigned int len)
+ReadSlaveData(unsigned long addr,char *data,unsigned int len)
 {
-	unsigned long far *buffer = (unsigned long far *)slaveBufferData;
+	unsigned long *buffer = (unsigned long *)slaveBufferData;
     /* SLS - fix to handle danger zones in Genesis memory */
 
     /* first handle the case where he starts outside the dangerzone */
@@ -569,15 +569,15 @@ ReadSlaveData(unsigned long addr,char far *data,unsigned int len)
 }
 
 void
-WriteSlaveData(unsigned long addr,char far *data,unsigned int len)
+WriteSlaveData(unsigned long addr,char *data,unsigned int len)
 {
-	unsigned long far *buff;
+	unsigned long *buff;
     if (len)
     {
         if (GetAttention ()) return;
 		GetSlaveBus();
 		outportb(slaveBank,SLAVEBANK_COM);
-		buff = (unsigned long far *)slaveBufferData;
+		buff = (unsigned long *)slaveBufferData;
 		*buff++ = SwapLong(addr);
 		*buff++ = SwapLong((unsigned long)len);
 		memcpy(buff,data,(unsigned long)len);
@@ -592,7 +592,7 @@ WriteSlaveData(unsigned long addr,char far *data,unsigned int len)
 unsigned long MemRead(unsigned long addr,UBYTE size)
 {
     unsigned long foo = 0;
-    ReadSlaveData (addr,(char far *) &foo,(unsigned int) size);
+    ReadSlaveData (addr,(char *) &foo,(unsigned int) size);
 	switch (size)
 	{
 		case	1:
@@ -630,10 +630,10 @@ LoadFileToSlave (FILE *f, unsigned long address, unsigned long len)
     for (a=0;a<bigchunks;a++)
      {
         fread (buffer,32768,1,f);
-        WriteSlaveData (address+(a<<15),(char far *) buffer,32768);
+        WriteSlaveData (address+(a<<15),(char *) buffer,32768);
      }
     fread (buffer,remainder,1,f);
-    WriteSlaveData (address+(a<<15),(char far *) buffer,remainder);
+    WriteSlaveData (address+(a<<15),(char *) buffer,remainder);
     free (buffer);
 	return(error);
 }
@@ -653,11 +653,11 @@ errorcode SaveFileFromSlave (FILE *f, unsigned long address, unsigned long len)
 		return(ERROR_NOMEM);
     for (a=0;a<bigchunks;a++)
      {
-        ReadSlaveData (address+(a<<15),(char far *) buffer,32768);
+        ReadSlaveData (address+(a<<15),(char *) buffer,32768);
         fwrite (buffer,32768,1,f);
 		delay(10);
      }
-    ReadSlaveData (address+(a<<15),(char far *) buffer,remainder);
+    ReadSlaveData (address+(a<<15),(char *) buffer,remainder);
     fwrite (buffer,remainder,1,f);
     free (buffer);
 	return(NOERR);
@@ -669,12 +669,12 @@ errorcode SaveFileFromSlave (FILE *f, unsigned long address, unsigned long len)
 boolean
 SlaveCopyMem (long startaddr,long destaddr, long len)
 {
-	unsigned long far *buff;
+	unsigned long *buff;
     if (len)
     {
         if (GetAttention ()) return(boolean::FALSE);
 		GetSlaveBus();
-		buff = (unsigned long far *)slaveBufferData;
+		buff = (unsigned long *)slaveBufferData;
 		outportb(slaveBank,SLAVEBANK_COM);
 
 		*buff++ = SwapLong(startaddr);
@@ -689,14 +689,14 @@ SlaveCopyMem (long startaddr,long destaddr, long len)
 }
 
 boolean
-SlaveFillMem (long startaddr,long len,long patlen,char far *pattern)
+SlaveFillMem (long startaddr,long len,long patlen,char *pattern)
 {
-	char far *buff;
+	char *buff;
     if (len)
     {
         if (GetAttention ()) return(boolean::FALSE);
 		GetSlaveBus();
-		buff = (char far*)slaveBufferData;
+		buff = (char *)slaveBufferData;
 		outportb(slaveBank,SLAVEBANK_COM);
 		*buff++ = SwapLong(startaddr);
 		*buff++ = SwapLong(len);
@@ -713,15 +713,15 @@ SlaveFillMem (long startaddr,long len,long patlen,char far *pattern)
 //============================================================================
 // vdp memory i/o
 
-void ReadSlaveVDP(unsigned long addr,char far *data,unsigned int len)
+void ReadSlaveVDP(unsigned long addr,char *data,unsigned int len)
 {
-	unsigned int far * buff;
+	unsigned int * buff;
     unsigned char h,l;
     if (len)
     {
         if (GetAttention ()) return;
 		GetSlaveBus();
-		buff = (unsigned int far *)slaveBufferData;
+		buff = (unsigned int *)slaveBufferData;
 		outportb(slaveBank,SLAVEBANK_COM);
 
 		*buff++ = SwapWord(addr);
@@ -737,7 +737,7 @@ void ReadSlaveVDP(unsigned long addr,char far *data,unsigned int len)
     }
 }
 
-void ReadSlaveCRAM (char far *data)
+void ReadSlaveCRAM (char *data)
 {
     unsigned char h,l;
         if (GetAttention ()) return;
@@ -750,7 +750,7 @@ void ReadSlaveCRAM (char far *data)
         ResumeSlave ();
 }
 
-void ReadSlaveVSRAM (char far *data)
+void ReadSlaveVSRAM (char *data)
 {
         if (GetAttention ()) return;
         SendCmd (GEN_READ_VSRAM);

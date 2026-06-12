@@ -97,7 +97,7 @@ void
 InvalidatePointer(void);
 
 void
-DrawPointer(char far *screen,int mouseX, int mouseY,int screenWidth,int screenHeight);
+DrawPointer(char *screen,int mouseX, int mouseY,int screenWidth,int screenHeight);
 
 void
 UpdateCursor(void);

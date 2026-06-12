@@ -8,25 +8,10 @@
 
 #if defined(__GNUC__) || defined(__clang__)
 
-// --- segmented-memory keywords are meaningless on flat 64-bit; neutralize them ---
-#define far
-#define near
-#define huge
-#define _far
-#define _near
-#define _huge
-#define __far
-#define __near
-#define __huge
-#define _seg
-
-// --- calling-convention keywords (no-ops on modern gcc/clang) ---
-#define cdecl
-#define _cdecl
-#define __cdecl
-#define pascal
-#define _pascal
-#define __pascal
+// (The bare far/near/huge/_seg memory-model and cdecl/pascal calling-convention
+//  keyword shims were stripped from the source 2026-06-13 — declarations no longer
+//  carry these tokens, so nothing needs neutralizing. The far-heap *function* macros
+//  below stay: they map DOS far-heap calls onto plain libc.)
 
 // --- far heap == normal heap; far mem ops == normal mem ops ---
 #include <stdlib.h>

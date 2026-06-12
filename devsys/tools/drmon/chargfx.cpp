@@ -4,13 +4,13 @@
 #if 0
 main( int argc, char *argv[] )
 	{
-	WrFont( (void _far *)main, 0, 64 );
+	WrFont( (void *)main, 0, 64 );
 	}
 #endif
 
 
 void
-	WrFont( void _far *data, int nBlock, int nLine )
+	WrFont( void *data, int nBlock, int nLine )
 	{
 	_ES = FP_SEG( data );
 	_BP = FP_OFF( data );

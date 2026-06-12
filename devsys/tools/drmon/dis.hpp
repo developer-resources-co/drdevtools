@@ -2,6 +2,6 @@
 //	dis816.h:
 //==============================================================================
 
-unsigned int Disassem( unsigned long addr,char far *inBuff, char *outBuff,int disMode);
+unsigned int Disassem( unsigned long addr,char *inBuff, char *outBuff,int disMode);
 
 //==============================================================================

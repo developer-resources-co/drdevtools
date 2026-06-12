@@ -323,7 +323,7 @@ errorcode AddVar(token * * t, char * * s ) 	/* add a varaible to the stream */
 	errorcode error;
 	char varName[VARSIZE];	/* maximum variable length */
 	char * vnPtr = varName;
-//	unsigned long far * varPtr = NULL;
+//	unsigned long * varPtr = NULL;
 	unsigned long var = 0;
 	int vlen = 0;				/* variable length */
 
@@ -340,7 +340,7 @@ errorcode AddVar(token * * t, char * * s ) 	/* add a varaible to the stream */
 #endif
 
 /*	if (varPtr = LookupVar(varName))
-		AddPtr (t, (long far *)varPtr);
+		AddPtr (t, (long *)varPtr);
 	   else
 		return ERROR_NOSUCHVAR; */
 
@@ -355,7 +355,7 @@ errorcode AddVar(token * * t, char * * s ) 	/* add a varaible to the stream */
 
 //=============================================================================
 
-void AddPtr(token * * t, long far * ptr )
+void AddPtr(token * * t, long * ptr )
 {
 	long temp;
 

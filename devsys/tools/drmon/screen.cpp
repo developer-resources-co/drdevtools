@@ -17,7 +17,7 @@
 
 /*===========================================================================*/
 
-char far *screen,far *screen2;
+char *screen,*screen2;
 
 unsigned short screenWidth,screenHeight,screenSize;
 unsigned short screenWidth2,screenHeight2,screenSize2;
@@ -151,11 +151,11 @@ SetupScreen(void)
 //=============================================================================
 
 void
-ClearScrBuff(char far *scrBuff,unsigned char fillChar,unsigned char charAttr,int screenSize)
+ClearScrBuff(char *scrBuff,unsigned char fillChar,unsigned char charAttr,int screenSize)
 {
     int i,max;
-	unsigned char far *sPtr;
-    sPtr = (unsigned char far*)scrBuff;
+	unsigned char *sPtr;
+    sPtr = (unsigned char *)scrBuff;
     max = screenSize/2;
     for(i=0;i<max;++i)
 	{

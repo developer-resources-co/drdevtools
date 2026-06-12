@@ -391,7 +391,7 @@ void PutRegsToSlave(ULONG regs_in[]) {
 
 // --- Memory I/O --------------------------------------------------------------
 
-void ReadSlaveData(unsigned long addr, char far *data, unsigned int len) {
+void ReadSlaveData(unsigned long addr, char *data, unsigned int len) {
     if (g_fd < 0) { memset(data, 0, len); return; }
     for (unsigned int i = 0; i < len; i++) {
         const unsigned char *p = cache_fetch(addr + i);
@@ -399,7 +399,7 @@ void ReadSlaveData(unsigned long addr, char far *data, unsigned int len) {
     }
 }
 
-void WriteSlaveData(unsigned long addr, char far *data, unsigned int len) {
+void WriteSlaveData(unsigned long addr, char *data, unsigned int len) {
     if (g_fd < 0) return;
     // Build W command with hex payload
     char cmd[8 + 1 + 4096*2 + 1];   // "W <addr> <hexbytes>"
@@ -495,7 +495,7 @@ boolean SlaveCopyMem(long startaddr, long destaddr, long len) {
     return boolean::TRUE;
 }
 
-boolean SlaveFillMem(long startaddr, long len, long patlen, char far *pattern) {
+boolean SlaveFillMem(long startaddr, long len, long patlen, char *pattern) {
     if (g_fd < 0) return boolean::FALSE;
     char buf[256];
     long remaining = len, dst = startaddr;
@@ -540,9 +540,9 @@ boolean SingleStep(void) {
     ulong PC = GetReg(REG_INSTRUCTIONPOINTER);
 
     unsigned char xb[4] = {0, 0, 0, 0};
-    ReadSlaveData(PC, (char far*)xb, 4);
+    ReadSlaveData(PC, (char *)xb, 4);
     char txt[40] = {0};
-    int ilen = Disassem(PC, (char far*)xb, (char far*)txt, 0);
+    int ilen = Disassem(PC, (char *)xb, (char *)txt, 0);
 
     ulong next = PC + (ulong)ilen;
     ulong alt  = 0;
@@ -569,21 +569,21 @@ boolean SingleStep(void) {
     case 0x6C: {
         ulong a = xb[1] | ((ulong)xb[2] << 8) | (PC & 0x00FF0000UL);
         unsigned char t[2] = {0};
-        ReadSlaveData(a, (char far*)t, 2);
+        ReadSlaveData(a, (char *)t, 2);
         next = (PC & ~0xFFFFUL) | t[0] | ((ulong)t[1] << 8);
         break; }
     // JMP/JSR (a,x) — read target from memory + X
     case 0x7C: case 0xFC: {
         ulong a = xb[1] | ((ulong)xb[2] << 8) | (PC & 0x00FF0000UL);
         unsigned char t[2] = {0};
-        ReadSlaveData(a + GetReg(REG_X), (char far*)t, 2);
+        ReadSlaveData(a + GetReg(REG_X), (char *)t, 2);
         next = (PC & ~0xFFFFUL) | t[0] | ((ulong)t[1] << 8);
         break; }
     // RTS — read return address from stack
     case 0x60: {
         ulong SP = GetReg(REG_STACKPOINTER);
         unsigned char t[2] = {0};
-        ReadSlaveData(SP + 1, (char far*)t, 2);
+        ReadSlaveData(SP + 1, (char *)t, 2);
         next = (PC & ~0xFFFFUL) | (((ulong)(t[0] | ((ulong)t[1] << 8)) + 1) & 0xFFFFUL);
         break; }
     // JSL al / JML al — 24-bit absolute
@@ -594,21 +594,21 @@ boolean SingleStep(void) {
     case 0x6B: {
         ulong SP = GetReg(REG_STACKPOINTER);
         unsigned char t[3] = {0};
-        ReadSlaveData(SP + 1, (char far*)t, 3);
+        ReadSlaveData(SP + 1, (char *)t, 3);
         next = ((t[0] | ((ulong)t[1] << 8) | ((ulong)t[2] << 16)) + 1) & 0xFFFFFFUL;
         break; }
     // JML (a) — read 24-bit target from memory
     case 0xDC: {
         ulong a = xb[1] | ((ulong)xb[2] << 8);
         unsigned char t[3] = {0};
-        ReadSlaveData(a, (char far*)t, 3);
+        ReadSlaveData(a, (char *)t, 3);
         next = t[0] | ((ulong)t[1] << 8) | ((ulong)t[2] << 16);
         break; }
     // RTI — read return PC from stack (skip flags byte)
     case 0x40: {
         ulong SP = GetReg(REG_STACKPOINTER);
         unsigned char t[2] = {0};
-        ReadSlaveData(SP + 2, (char far*)t, 2);
+        ReadSlaveData(SP + 2, (char *)t, 2);
         next = (PC & ~0xFFFFUL) | (t[0] | ((ulong)t[1] << 8));
         break; }
     default: break;
@@ -687,7 +687,7 @@ void SlaveClearBRKOnWrite(void)   { wp_cmd("BW-"); }
 // no PPU port latch side effects).  addr is masked to 0xffff (VRAM) by memory.cpp.
 // Not cached: VRAM updates continuously while the CPU runs, so a per-call read is
 // both simpler and correct (the user inspects PPU windows while halted).
-void ReadSlavePPU(unsigned long addr, char far *data, unsigned int len) {
+void ReadSlavePPU(unsigned long addr, char *data, unsigned int len) {
     if (g_fd < 0) { memset(data, 0, len); return; }
     unsigned int done = 0;
     while (done < len) {
@@ -719,7 +719,7 @@ void ReadSlavePPU(unsigned long addr, char far *data, unsigned int len) {
 
 // APU RAM read for the MTYPE_SPC memory window — mirror of ReadSlavePPU (RA, not RP).
 // Reads the :soundcpu program space (64K); addr masked to 0xffff by memory.cpp.  Live, uncached.
-void ReadSlaveApuRam(unsigned long addr, char far *data, unsigned int len) {
+void ReadSlaveApuRam(unsigned long addr, char *data, unsigned int len) {
     if (g_fd < 0) { memset(data, 0, len); return; }
     unsigned int done = 0;
     while (done < len) {
@@ -772,14 +772,14 @@ void PutSpc700Regs(ULONG regs_in[]) {
 #endif
 
 #ifdef GENESIS
-void ReadSlaveVDP(unsigned long /*addr*/, char far *data, unsigned int len) {
+void ReadSlaveVDP(unsigned long /*addr*/, char *data, unsigned int len) {
     memset(data, 0, len);
 }
-void WriteSlaveVDP(unsigned long /*addr*/, char far */*data*/, unsigned int /*len*/) {}
-void ReadSlaveCRAM(char far *data)  { memset(data, 0, 128); }
-void WriteSlaveCRAM(char far */*data*/) {}
-void ReadSlaveVSRAM(char far *data) { memset(data, 0, 80); }
-void WriteSlaveVSRAM(char far */*data*/) {}
+void WriteSlaveVDP(unsigned long /*addr*/, char */*data*/, unsigned int /*len*/) {}
+void ReadSlaveCRAM(char *data)  { memset(data, 0, 128); }
+void WriteSlaveCRAM(char */*data*/) {}
+void ReadSlaveVSRAM(char *data) { memset(data, 0, 80); }
+void WriteSlaveVSRAM(char */*data*/) {}
 #endif
 
 // --- Residual asm-export symbols (still needed by board.cpp) -----------------

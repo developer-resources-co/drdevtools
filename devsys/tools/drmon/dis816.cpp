@@ -58,12 +58,12 @@ Print8BitsLabCheck(char *buffer, ULONG num)
 // 2 = addresses, hex & op-codes
 
 unsigned int
-Disassem(unsigned long addr, char far *_inBuff, char *outBuff,int disMode)
+Disassem(unsigned long addr, char *_inBuff, char *outBuff,int disMode)
 {
 	int pad;
 	unsigned char cd,byte,addrMode;
 	unsigned int offset,i,tempint;
-	unsigned char far *tBuff;
+	unsigned char *tBuff;
 	char *oBuff;
 	ULONG templong;
 	oBuff = outBuff;
@@ -127,23 +127,23 @@ Disassem(unsigned long addr, char far *_inBuff, char *outBuff,int disMode)
 			*outBuff = 0;
 			break;
 		case 1:
-			//outBuff += sprintf(outBuff,"$%04x",*(unsigned int far *)inBuff);
+			//outBuff += sprintf(outBuff,"$%04x",*(unsigned int *)inBuff);
 			*outBuff++ = '|';
 			//*outBuff++ = '$';
-			*Print16BitsLabCheck(outBuff,*(unsigned int far *)inBuff) = 0;
+			*Print16BitsLabCheck(outBuff,*(unsigned int *)inBuff) = 0;
 			break;
 		case 2:
-			//outBuff += sprintf(outBuff,"$%04x,X",*(unsigned int far *)inBuff);
+			//outBuff += sprintf(outBuff,"$%04x,X",*(unsigned int *)inBuff);
 			*outBuff++ = '|';
 			//*outBuff++ = '$';
-			outBuff = Print16BitsLabCheck(outBuff,*(unsigned int far *)inBuff);
+			outBuff = Print16BitsLabCheck(outBuff,*(unsigned int *)inBuff);
 			*PrintString(outBuff,",X") = 0;
 			break;
 		case 3:
-			//outBuff += sprintf(outBuff,"$%04x,Y",*(unsigned int far *)inBuff);
+			//outBuff += sprintf(outBuff,"$%04x,Y",*(unsigned int *)inBuff);
 			*outBuff++ = '|';
 			//*outBuff++ = '$';
-			outBuff = Print16BitsLabCheck(outBuff,*(unsigned int far *)inBuff);
+			outBuff = Print16BitsLabCheck(outBuff,*(unsigned int *)inBuff);
 			*PrintString(outBuff,",Y") = 0;
 			break;
 		case 4:
@@ -156,10 +156,10 @@ Disassem(unsigned long addr, char far *_inBuff, char *outBuff,int disMode)
 								// properly dissasemble
 			if(offset == 3)
 			 {
-				//outBuff += sprintf(outBuff,"#$%04x",*(unsigned int far *)inBuff);
+				//outBuff += sprintf(outBuff,"#$%04x",*(unsigned int *)inBuff);
 				*outBuff++ = '#';
 				//*outBuff++ = '$';
-				*Print16BitsLabCheck(outBuff,*(unsigned int far *)inBuff) = 0;
+				*Print16BitsLabCheck(outBuff,*(unsigned int *)inBuff) = 0;
 			 }
 			else
 			 {
@@ -190,11 +190,11 @@ Disassem(unsigned long addr, char far *_inBuff, char *outBuff,int disMode)
 			*outBuff = 0;
 			break;
 		case 8:
-			//outBuff += sprintf(outBuff,"($%04x)",*(unsigned int far *)inBuff);
+			//outBuff += sprintf(outBuff,"($%04x)",*(unsigned int *)inBuff);
 			*outBuff++ = '(';
 			*outBuff++ = '|';
 			//*outBuff++ = '$';
-			outBuff = Print16BitsLabCheck(outBuff,*(unsigned int far *)inBuff);
+			outBuff = Print16BitsLabCheck(outBuff,*(unsigned int *)inBuff);
 			*outBuff++ = ')';
 			*outBuff = 0;
 			break;
@@ -234,11 +234,11 @@ Disassem(unsigned long addr, char far *_inBuff, char *outBuff,int disMode)
 			*outBuff = 0;
 			break;
 		case 14:
-			//outBuff += sprintf(outBuff,"($%04x,X)",*(unsigned int far *)inBuff);
+			//outBuff += sprintf(outBuff,"($%04x,X)",*(unsigned int *)inBuff);
 			*outBuff++ = '(';
 			*outBuff++ = '|';
 			//*outBuff++ = '$';
-			outBuff = Print16BitsLabCheck(outBuff,*(unsigned int far *)inBuff);
+			outBuff = Print16BitsLabCheck(outBuff,*(unsigned int *)inBuff);
 			*outBuff++ = ',';
 			*outBuff++ = 'X';
 			*outBuff++ = ')';
@@ -304,10 +304,10 @@ Disassem(unsigned long addr, char far *_inBuff, char *outBuff,int disMode)
 			*outBuff = 0;
 			break;
 		case 21:                           // kts changed for Erik, its his fault(used to be [])
-			//outBuff += sprintf(outBuff,"($%04x)",*(unsigned int far *)inBuff);
+			//outBuff += sprintf(outBuff,"($%04x)",*(unsigned int *)inBuff);
 			*outBuff++ = '(';
 			//*outBuff++ = '$';
-			outBuff = Print16BitsLabCheck(outBuff,*(unsigned int far *)inBuff);
+			outBuff = Print16BitsLabCheck(outBuff,*(unsigned int *)inBuff);
 			*outBuff++ = ')';
 			*outBuff = 0;
 			break;

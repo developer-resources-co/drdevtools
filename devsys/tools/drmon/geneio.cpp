@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-unsigned long _Cdecl SwapLong(unsigned long a)
+unsigned long SwapLong(unsigned long a)
 {
 	return(a);
 }

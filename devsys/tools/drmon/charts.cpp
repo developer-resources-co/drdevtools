@@ -72,7 +72,7 @@ ASCIIInput(_input *in,_object *oPtr)
 {
     _window *pWindow;
     FLAG inputUsed;
-    unsigned char far *chr;
+    unsigned char *chr;
 	_gadget *gPtr;
 
     pWindow = (_window *)oPtr->layer;

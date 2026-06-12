@@ -117,12 +117,12 @@ void
 SendSlaveCommand(unsigned char command);
 
 void
-ReadSlaveData(unsigned long addr,char far *data,unsigned int len);
+ReadSlaveData(unsigned long addr,char *data,unsigned int len);
 
 unsigned long MemRead(unsigned long addr,UBYTE size);
 
 void
-WriteSlaveData(unsigned long addr,char far *data,unsigned int len);
+WriteSlaveData(unsigned long addr,char *data,unsigned int len);
 
 void
 LoadFileToSlave (FILE *f, unsigned long address, unsigned long len);

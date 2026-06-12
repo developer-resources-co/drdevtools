@@ -82,8 +82,8 @@ long HexLong ( char * * s );
 long BinLong ( char * * s );
 long ASCIILong ( char * * s ,errorcode *error);
 errorcode AddVar(token * * t, char * * s ); 	/* add a varaible to the stream */
-void AddPtr(token * * t, long far * p);
-unsigned long far LookupVar(char * s);
+void AddPtr(token * * t, long * p);
+unsigned long LookupVar(char * s);
 
 /* routines in "eval.c" */
 errorcode EvalExpression ( ULONG * lvalue , token ** p );

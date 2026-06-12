@@ -120,9 +120,9 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////
 	// Emulation RAM
-	void write( uchar far* buff, unsigned long len, unsigned long addr );
+	void write( uchar * buff, unsigned long len, unsigned long addr );
 	void write( FILE* fp, unsigned long len, unsigned long addr );
-	void read( uchar far* buff, unsigned long len, unsigned long addr );
+	void read( uchar * buff, unsigned long len, unsigned long addr );
 	void read( FILE* fp, unsigned long len, unsigned long addr );
 
 
@@ -136,9 +136,9 @@ private:
 	int bank_;
 	Port slaveWormhole;
 
-	ubyte far* slaveBuffer_;
-	ubyte far* slaveBufferCmd;
-	ubyte far* slaveBufferData;
+	ubyte * slaveBuffer_;
+	ubyte * slaveBufferCmd;
+	ubyte * slaveBufferData;
 
 	ubyte* buffer;
 	};

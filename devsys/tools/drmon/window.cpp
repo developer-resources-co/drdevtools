@@ -199,7 +199,7 @@ CopyBorder(char destB[8],char srcB[8])
 void
 DrawBorder(_layer *lPtr,char border[8],int xSize,int ySize)
 {
-    unsigned char far *buff;
+    unsigned char *buff;
     int i;
     buff = lPtr->buffer;
 
@@ -245,7 +245,7 @@ DrawBorder(_layer *lPtr,char border[8],int xSize,int ySize)
 void
 DrawBottomBorder(_layer *lPtr, char border[8],int xSize,int ySize)
 {
-    unsigned char far *buff;
+    unsigned char *buff;
     int i;
 	buff = lPtr->buffer + ((xSize*charSize)*(ySize-1)) + charSize;
     for(i=0;i<(xSize-2);i++)
@@ -291,7 +291,7 @@ FillWindow(_layer *lPtr)
 
     int i,j;
 	unsigned char fillChar,fillAttr;
-    unsigned char far *buff;
+    unsigned char *buff;
 	fillChar = lPtr->fillChar;
 	fillAttr = lPtr->charAttr;
     buff = lPtr->buffer+(lPtr->xSize*charSize)+charSize;		// skip first row & first char of second row
@@ -315,7 +315,7 @@ FillWindowSize(_layer *lPtr,int ySize2)
 
     int i,j;
 	unsigned char fillChar,fillAttr;
-    unsigned char far *buff;
+    unsigned char *buff;
 	fillChar = lPtr->fillChar;
 	fillAttr = lPtr->charAttr;
     buff = lPtr->buffer+(lPtr->xSize*charSize)+charSize;		// skip first row & first char of second row

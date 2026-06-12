@@ -104,7 +104,7 @@ public:
     char border[8];					// window border
     char*title;						// window title
 	int windowNum;								// window hot-key number
-    unsigned char far *buffer;					// ptr to rectangular buffer containing window image
+    unsigned char *buffer;					// ptr to rectangular buffer containing window image
 	unsigned char fillChar;			   			// character to fill windows with
     unsigned char charAttr;						// character attributes
     unsigned int flags;							// see layer.h for flag details
@@ -138,7 +138,7 @@ class _layerBase : public _layer
 public:
 	_layerBase();
 	~_layerBase();
-	void Display( char far *buffer,int xOffset,int yOffset,char backgroundChar, char backgroundAttr,int screenWidth,int ScreenHeight );
+	void Display( char *buffer,int xOffset,int yOffset,char backgroundChar, char backgroundAttr,int screenWidth,int ScreenHeight );
 	class _layer* Head() { return(next); }
 	class _layer* Tail();
 	};
@@ -151,7 +151,7 @@ extern FLAG refreshAll,refreshEnable;
 //=============================================================================
 
 void
-DisplayLayers(char far* buffer,int xOffset,int yOffset,char backgroundChar, char backgroundAttr,int screenWidth,int ScreenHeight);
+DisplayLayers(char * buffer,int xOffset,int yOffset,char backgroundChar, char backgroundAttr,int screenWidth,int ScreenHeight);
 
 //=============================================================================
 
@@ -166,7 +166,7 @@ PrintLayAttr( class _layer* lPtr, char* text,int xPos, int yPos,unsigned char ch
 void
 PrintLay( class _layer* lPtr, char* text, int xPos, int yPos);
 
-extern void cdecl
+extern void
 FillRectLayer( class _layer* lPtr, int xStart, int yStart,int xSize,int ySize,unsigned char fillChar,unsigned char charAttr);
 
 //=============================================================================

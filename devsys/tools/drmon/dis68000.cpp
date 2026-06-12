@@ -135,14 +135,14 @@ char *outputstring;
 short int current_size;
 short int outputposition;
 char tempstring[80];
-unsigned short int far *ext_words;
+unsigned short int *ext_words;
 unsigned long address;
 
 
 //--------------------------------------------------------------------------
 // First layer parsing functions
 //--------------------------------------------------------------------------
-unsigned short int far *((*top_nybble_parser[16]) (unsigned short int far *buffer)) =
+unsigned short int *((*top_nybble_parser[16]) (unsigned short int *buffer)) =
 {
     Parse0,
     Parse1,
@@ -262,10 +262,10 @@ void (*EA_misc_parser[8]) (unsigned short int number) =
 //}
 
 
-unsigned short int GetWord (unsigned short int far *buffer)
+unsigned short int GetWord (unsigned short int *buffer)
 {
     unsigned int a;
-    unsigned char far *foo=(unsigned char far *)buffer;
+    unsigned char *foo=(unsigned char *)buffer;
     a = (*foo++)<<8;
     a |= *foo;
     return (a);
@@ -1188,7 +1188,7 @@ void ParseArIndirect_predec (unsigned short int number)
 
 
 
-unsigned short int far *Parse0(unsigned short int far *buffer)
+unsigned short int *Parse0(unsigned short int *buffer)
 {
     short int subnumber;
     unsigned int number;
@@ -1199,7 +1199,7 @@ unsigned short int far *Parse0(unsigned short int far *buffer)
 }
 
 //--------------------------------------------------------------------------
-unsigned short int far *Parse1(unsigned short int far *buffer)
+unsigned short int *Parse1(unsigned short int *buffer)
 {
     unsigned int number;
     number = GetWord(buffer);
@@ -1213,7 +1213,7 @@ unsigned short int far *Parse1(unsigned short int far *buffer)
 }
 
 //--------------------------------------------------------------------------
-unsigned short int far *Parse2(unsigned short int far *buffer)
+unsigned short int *Parse2(unsigned short int *buffer)
 {
     unsigned int number;
     number = GetWord(buffer);
@@ -1227,7 +1227,7 @@ unsigned short int far *Parse2(unsigned short int far *buffer)
 }
 
 //--------------------------------------------------------------------------
-unsigned short int far *Parse3(unsigned short int far *buffer)
+unsigned short int *Parse3(unsigned short int *buffer)
 {
     unsigned int number;
     number = GetWord(buffer);
@@ -1241,7 +1241,7 @@ unsigned short int far *Parse3(unsigned short int far *buffer)
 }
 
 //---------------------------------------------------------------------------
-unsigned short int far *Parse4(unsigned short int far *buffer)
+unsigned short int *Parse4(unsigned short int *buffer)
 {
     short int subnumber;
     unsigned int number;
@@ -1252,7 +1252,7 @@ unsigned short int far *Parse4(unsigned short int far *buffer)
 }
 
 //---------------------------------------------------------------------------
-unsigned short int far *Parse5(unsigned short int far *buffer)
+unsigned short int *Parse5(unsigned short int *buffer)
 {
     unsigned short int temp_ext;
     unsigned int number;
@@ -1281,7 +1281,7 @@ unsigned short int far *Parse5(unsigned short int far *buffer)
 
 
 //---------------------------------------------------------------------------
-unsigned short int far *Parse6(unsigned short int far *buffer)
+unsigned short int *Parse6(unsigned short int *buffer)
 {
     unsigned int number;
     number = GetWord(buffer);
@@ -1300,7 +1300,7 @@ unsigned short int far *Parse6(unsigned short int far *buffer)
 
 
 //--------------------------------------------------------------------------
-unsigned short int far *Parse7(unsigned short int far *buffer)
+unsigned short int *Parse7(unsigned short int *buffer)
 {
     unsigned int number;
     short int regnumber;
@@ -1320,7 +1320,7 @@ unsigned short int far *Parse7(unsigned short int far *buffer)
 
 
 //---------------------------------------------------------------------------
-unsigned short int far *Parse8(unsigned short int far *buffer)
+unsigned short int *Parse8(unsigned short int *buffer)
 {
     unsigned int number;
     number = GetWord(buffer);
@@ -1334,7 +1334,7 @@ unsigned short int far *Parse8(unsigned short int far *buffer)
     return (ext_words);
 }
 //---------------------------------------------------------------------------
-unsigned short int far *Parse9(unsigned short int far *buffer)
+unsigned short int *Parse9(unsigned short int *buffer)
 {
     unsigned int number;
     number = GetWord(buffer);
@@ -1346,7 +1346,7 @@ unsigned short int far *Parse9(unsigned short int far *buffer)
 }
 
 //--------------------------------------------------------------------------
-unsigned short int far *Parse10(unsigned short int far *buffer)
+unsigned short int *Parse10(unsigned short int *buffer)
 {
     ADDSTRING("ALINE");
     PadLine ();
@@ -1356,7 +1356,7 @@ unsigned short int far *Parse10(unsigned short int far *buffer)
 }
 
 //---------------------------------------------------------------------------
-unsigned short int far *Parse11(unsigned short int far *buffer)
+unsigned short int *Parse11(unsigned short int *buffer)
 {
     unsigned int number;
     number = GetWord(buffer);
@@ -1380,7 +1380,7 @@ unsigned short int far *Parse11(unsigned short int far *buffer)
 
 
 //---------------------------------------------------------------------------
-unsigned short int far *Parse12(unsigned short int far *buffer)
+unsigned short int *Parse12(unsigned short int *buffer)
 {
     unsigned int number;
     number = GetWord(buffer);
@@ -1392,7 +1392,7 @@ unsigned short int far *Parse12(unsigned short int far *buffer)
     return (ext_words);
 }
 //---------------------------------------------------------------------------
-unsigned short int far *Parse13(unsigned short int far *buffer)
+unsigned short int *Parse13(unsigned short int *buffer)
 {
     unsigned int number;
     number = GetWord(buffer);
@@ -1404,7 +1404,7 @@ unsigned short int far *Parse13(unsigned short int far *buffer)
 }
 
 //---------------------------------------------------------------------------
-unsigned short int far *Parse14(unsigned short int far *buffer)
+unsigned short int *Parse14(unsigned short int *buffer)
 {
     unsigned int number;
     unsigned int number2;
@@ -1438,7 +1438,7 @@ unsigned short int far *Parse14(unsigned short int far *buffer)
 }
 
 //--------------------------------------------------------------------------
-unsigned short int far *Parse15(unsigned short int far *buffer)
+unsigned short int *Parse15(unsigned short int *buffer)
 {
     ADDSTRING("FLINE");
     PadLine ();
@@ -1452,7 +1452,7 @@ unsigned short int far *Parse15(unsigned short int far *buffer)
 //--------------------------------------------------------------------------
 // entry point
 //--------------------------------------------------------------------------
-unsigned short int far *diss (unsigned short int far *buffer,char *output)
+unsigned short int *diss (unsigned short int *buffer,char *output)
 {
     short int a;
     unsigned short int top_nybble;
@@ -1475,8 +1475,8 @@ unsigned int Disassem(unsigned long addr,char* inBuff,char* outBuff,int disMode)
 {
     char Hexdump[60];
     char OpCodes[60];
-    unsigned short int far *buffer;
-    unsigned short int far *endbuffer;
+    unsigned short int *buffer;
+    unsigned short int *endbuffer;
     unsigned int deltabytes = 0;
     char *foo;
     int a,b;
@@ -1488,7 +1488,7 @@ unsigned int Disassem(unsigned long addr,char* inBuff,char* outBuff,int disMode)
         Hexdump[a]=' ';
     Hexdump[a]=0;
     OpCodes[0]=0;
-    buffer = (unsigned short int far *) inBuff;
+    buffer = (unsigned short int *) inBuff;
     if (disMode>0)
         {
         PrintRaw32Bits(outBuff,addr);

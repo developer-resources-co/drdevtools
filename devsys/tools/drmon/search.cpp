@@ -28,7 +28,7 @@
 // Declared in slaveio.hpp, which search.cpp does not include (it uses explicit
 // headers, and slaveio.hpp is unguarded).  slaveio.hpp wraps the slave calls in
 // extern "C", so match that linkage or the reference goes unresolved at link time.
-extern "C" void ReadSlaveData(unsigned long addr, char far *data, unsigned int len);
+extern "C" void ReadSlaveData(unsigned long addr, char *data, unsigned int len);
 
 //=============================================================================
 
@@ -305,7 +305,7 @@ MemSearchGUI(ULONG value,void * /*dataPtr*/)
 	 {
 		unsigned long room = end - addr;
 		unsigned int  want = (unsigned int)(room < CHUNK ? room : CHUNK);
-		ReadSlaveData(addr, (char far *)buf, want);
+		ReadSlaveData(addr, (char *)buf, want);
 
 		unsigned int limit = want - (unsigned int)w + 1;   // valid start positions
 		for (unsigned int i = 0; i < limit; i++)

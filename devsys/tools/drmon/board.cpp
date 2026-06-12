@@ -204,7 +204,7 @@ void
 		)
 	{
 	unsigned bkOff;							// block offset
-	ubyte far* boardPtr;
+	ubyte * boardPtr;
 	unsigned numBytes;
 //	unsigned long originalLen = len;
 
@@ -249,13 +249,13 @@ void
 #if 0
 void
 	DevelopmentSystemBoard::write(
-		uchar far* buff, 				// data buffer to read from
+		uchar * buff, 				// data buffer to read from
 		unsigned long len, 			// number of bytes to read in from file
 		unsigned long destAddr 		// offset into emulation RAM
 		)
 	{
 	unsigned bkOff;							// block offset
-	ubyte far* boardPtr;
+	ubyte * boardPtr;
 	unsigned numBytes;
 	unsigned long originalLen = len;
 
@@ -279,7 +279,7 @@ void
 
 
 
-			ubyte far* bufferPtr = buff;
+			ubyte * bufferPtr = buff;
 
 			// convert destAddr to a board address
 			boardPtr = slaveBuffer_ + bkOff * 2;
@@ -302,7 +302,7 @@ void
 		)
 	{
 	unsigned bkOff;							// block offset
-	ubyte far* boardPtr;
+	ubyte * boardPtr;
 	unsigned numBytes;
 	unsigned long originalLen = len;
 
@@ -326,7 +326,7 @@ void
 
 		if ( fread( (void*)buffer, 1, numBytes, fp ) == numBytes )
 			{
-			ubyte far* bufferPtr = buffer;
+			ubyte * bufferPtr = buffer;
 
 			// convert destAddr to a board address
 			boardPtr = slaveBuffer_ + bkOff * 2;
@@ -358,7 +358,7 @@ void
 
 void
 	DevelopmentSystemBoard::read(
-		uchar far* buff, 				//
+		uchar * buff, 				//
 		unsigned long len, 			// number of bytes to read in from memory
 		unsigned long destAddr 		// offset into emulation RAM
 		)

@@ -139,7 +139,7 @@ SlaveStepOver(void)
 	 {
 #endif
 	 	printCheckForSymbol = boolean::FALSE;
-		len = Disassem(addr,(char far *)xferBuffer,(char far *)textBuffer,2);
+		len = Disassem(addr,(char *)xferBuffer,(char *)textBuffer,2);
 		delay(10);
 		AddBrkPt(addr+len,1,NULL);
 		delay(10);

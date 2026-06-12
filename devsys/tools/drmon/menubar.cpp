@@ -162,7 +162,7 @@ MenuBarKeys(_input *in,_object *oPtr)
 {
     _layer *lPtr;
     FLAG keyUsed,moved;
-    unsigned char far *chr;
+    unsigned char *chr;
 	_menu *mPtr,*mPtr1;
 	int i,oldActiveMenu;
 

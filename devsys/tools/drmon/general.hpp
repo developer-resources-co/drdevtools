@@ -13,10 +13,10 @@ extern char hexTable[16];
 char *
 Print4Bits(char *buffer,UBYTE num);
 
-char * far
+char *
 Print8Bits(char *buffer,UBYTE num);
 
-char * far
+char *
 Print16Bits(char *buffer,UWORD num);
 
 char *
@@ -25,10 +25,10 @@ PrintRaw24Bits(char *buffer,ULONG num);
 char *
 Print24Bits(char *buffer,ULONG num);
 
-char * far
+char *
 Print32Bits(char *buffer,ULONG num);
 
-char * far
+char *
 PrintRaw32Bits(char *buffer,ULONG num);
 
 void
@@ -40,7 +40,7 @@ PrintASCII(char *buffer, unsigned char num);
 char *
 PrintString(char *buffer, const char* string);
 
-char * far
+char *
 PrintBinary32Bits(char *buffer,ULONG num);
 
 char *
@@ -50,7 +50,7 @@ char *
 PrintDecimal16Bits(char *buffer, UWORD num);
 
 void
-CopyMem(char far *dBuff,char far *sBuff,unsigned int len);
+CopyMem(char *dBuff,char *sBuff,unsigned int len);
 
 int
 StrToNLLen(char*tPtr);
@@ -77,7 +77,7 @@ void
 UpCaseString(char*sPtr);
 
 extern void
-CopyScreen(char far *dBuff,char far *sBuff,unsigned int len);
+CopyScreen(char *dBuff,char *sBuff,unsigned int len);
 
 char *
 KillTrailNL(char *s);

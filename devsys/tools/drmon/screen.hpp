@@ -5,7 +5,7 @@
 #define charSize 2
 
 #include <conio.h>
-extern char far *screen,far *screen2;
+extern char *screen,*screen2;
 
 extern unsigned short screenWidth,screenHeight,screenSize;
 extern unsigned short screenWidth2,screenHeight2,screenSize2;
@@ -48,7 +48,7 @@ SetupScreen(void);
 //=============================================================================
 
 void
-ClearScrBuff(char far *scrBuff,unsigned char fillChar,unsigned char charAttr,int screenSize);
+ClearScrBuff(char *scrBuff,unsigned char fillChar,unsigned char charAttr,int screenSize);
 
 //=============================================================================
 
