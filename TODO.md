@@ -38,8 +38,24 @@ Plan-first: non-trivial work gets a `docs/plans/YYYY-MM-DD-<topic>.md` and a TOD
 
 - [ ] **Finish dropping Borland / Watcom / OS2 / DOS-extender support.** `compat.hpp` is
   Linux-only now, but legacy `#ifdef __BORLANDC__` / `__WATCOMC__` / `__OS2__` / `DOSX286` /
-  `__MSDOS__` arms remain scattered across the tree. Strip them as files are touched so the
-  source carries a single modern/Linux path.
+  `__MSDOS__` (+ `__SC__` / `__TURBOC__`) arms remain scattered across the tree. Strip the dead
+  arms so the source carries a single modern/Linux path; also drop the never-implemented
+  `MASTERSYSTEM` / `NES` stub hooks (no disassembler/reg-map exists). Keep `DEBUGZARDOZ` / `EMUL`
+  (revivable build variants) and the `far`/`cdecl` shims (see below); `DEBUGCOFF` is being removed
+  separately ([plan](docs/plans/2026-06-12-retire-debugcoff-tui-loader.md)).
+  [plan](docs/plans/2026-06-12-drop-dead-dos-compiler-ifdef-arms.md).
+- [ ] **Strip the `far` / `near` / `huge` / `cdecl` / `pascal` keyword shims.** These are
+  `#define`d to nothing in `linux/linux_compat.hpp` and sprinkled across ~50 files. Remove the
+  keywords from declarations so the source no longer leans on the compat macros. Larger,
+  lower-value sibling of the dead-`#ifdef`-arm cleanup above; do it once that lands.
+- [ ] **DOS 8.3-era filename/path buffers overflow on real Linux paths.** The file requester
+  (`filereq.cpp` `patternString[13]` / `fileReqFileName[13]`), the log file (`logFileName[14]` in
+  `monmenu.cpp`/`monmenu.hpp`), and `profile.cpp` `szTempName[13]` are sized for 8.3 DOS names — a
+  selected file/log path longer than ~12 chars truncates or **overflows** the unchecked `strcpy`s in
+  the load / file-requester / set-log-file paths. Size these `_MAX_PATH` (the convention already used
+  in `help.cpp` / `sld.hpp` / `filename.hpp` / `app.hpp`) and bounds-check the copies. Also delete the
+  now-dead `#define FILENAME_SIZE 9` (`monmenu.cpp`) — orphaned when the DEBUGCOFF `LoadCOFFFile` was
+  removed.
 
 
 ## DRMON — DOCS
@@ -60,6 +76,10 @@ _(none)_
 - [ ] **Add ca65 `.dbg` + WLA-DX `.sym` symbol importers to drmon-core** — table stakes for the current
   homebrew community (every active SNES toolchain outputs one of these; drmon today speaks only `.sld`/COFF/zardoz).
   Join `sld.cpp`/`coff.cpp` behind the existing symbol layer. See [competitive analysis](docs/investigations/2026-06-11-mesen2-bsnes-plus-vs-drmon.md).
+- [ ] **llvm-mos 65816 C compiler backend** — the optimizing open-source gap that Zardoz/WDC816CC filled
+  in the 1990s remains unfilled; llvm-mos has the assembler/linker but the C backend stalled in 2024
+  ([issue #32](https://github.com/llvm-mos/llvm-mos/issues/32), [issue #454](https://github.com/llvm-mos/llvm-mos/issues/454)).
+  Consider contributing or funding. See [Zardoz investigation](docs/investigations/2026-06-12-zardoz-65816-compiler.md).
 
 
 ## PACKAGING

@@ -178,7 +178,7 @@ accept a proprietary license.
 | Option | Compiler | License | Code quality | SNES-specific support | Verdict |
 |--------|----------|---------|-------------|----------------------|---------|
 | **[PVSnesLib](https://github.com/alekmaul/pvsneslib)** | 816-tcc (TCC port) | MIT | Unoptimized but correct | Full SDK: VRAM, DMA, controllers, sprites, sound | **Best open-source choice** |
-| **[Calypsi](https://www.calypsi.cc/)** | Calypsi C (proprietary) | Proprietary, hobby-free | Optimizing | 65816 target; SNES needs manual BSP | **Best code quality, non-redistributable** |
+| **[Calypsi](https://www.calypsi.cc/)** | Calypsi C (proprietary) | Proprietary, free (hobby-only) | Optimizing | 65816 target; SNES needs manual BSP | **Best code quality, non-redistributable** |
 | **[WDC816CC](https://www.westerndesigncenter.com/wdc/products/C-Compiler.cfm)** | WDC C (commercial) | Commercial | Optimizing | 65816; no SNES SDK | Expensive, no active community |
 | **[ORCA/C](https://github.com/byteworksinc/ORCA-C)** | ORCA/C | MIT | Mature | Targets Apple IIGS, not SNES | Needs significant porting work |
 | **[llvm-mos](https://github.com/llvm-mos/llvm-mos)** | LLVM (incomplete) | Apache-2.0 | — | Assembler/linker only | No C compiler yet |
@@ -202,9 +202,12 @@ regardless of compiler.
 ### If you need optimized output
 
 **Calypsi** produces substantially better code than 816-tcc — it has a real optimizer and
-understands the 65816's direct-page and bank-switching model. The catch: the free tier is
-hobby-only (no commercial use, no redistribution), so it cannot be packaged for a public apt
-repo. If you are writing a personal project, it is worth evaluating.
+understands the 65816's direct-page and bank-switching model. The download is **free of charge**,
+but the license prohibits using it to "make your living… either directly or indirectly" — hobby
+and small side-income use is explicitly permitted, commercial product development is not. It is
+also closed-source, so it cannot be packaged for a redistributable apt repo. If you are writing a
+personal project, it is worth evaluating; see [calypsi.cc](https://www.calypsi.cc/) for the
+current license terms.
 
 ### The gap nobody has filled
 

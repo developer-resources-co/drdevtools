@@ -14,7 +14,7 @@
 | **64tass** | 1.60.3243 (May 2025) | May 2025 | GPL-2.0 | Yes — 1.60 in Resolute/Forky | C64/6502/65816 hobbyist | Low value — already packaged |
 | **asar** | 1.91 (Mar 2024) | Sep 2025 | GPL-3.0/LGPL-3.0 | No (AUR + SlackBuilds only) | ROM hacking / patching | **Medium–high value** |
 | **PVSnesLib** | 4.5.0 (Dec 2025) | Mar 2026 | MIT | No | SNES homebrew C SDK | **High value** (complex to package) |
-| **Calypsi** | 5.17 (May 2026) | May 2026 | Proprietary (hobby-free) | No | Retro C dev (65816/68000) | Not packageable |
+| **Calypsi** | 5.17 (May 2026) | May 2026 | Proprietary, free DL (hobby-only) | No | Retro C dev (65816/68000) | Not packageable |
 
 ---
 
