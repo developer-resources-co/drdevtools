@@ -38,12 +38,11 @@ the version and run state (`Running` / `Stopped`).
   | `Alt+L` | Source | `Alt+I` | Project Info |
   | `Alt+O` | Console | `Alt+A` | About |
   | `Alt+S` | Symbol | `Alt+Y` | ASCII chart |
-  | `Alt+E` | Expression | | |
+  | `Alt+E` | Expression | `Alt+N` | SPC Register *(SNES)* |
 - **F6** cycles between open windows; **Alt+Q** closes the front one; **F9** enters window
   *movement mode* (arrows move, Shift+arrows resize, Esc leaves).
-- **Alt+X** quits. **Ctrl+C is intentionally ignored** (the monitor swallows it, matching the
-  DOS original — it's reserved for interrupting the target later); quit via Alt+X or the
-  File ▸ Exit menu.
+- **Alt+X** quits. **Ctrl+C does not quit the monitor** — it clears the breakpoint under
+  the cursor in window-specific contexts (Memory, etc.); quit via Alt+X or File ▸ Exit.
 - **F1** opens this manual's ancestor, the built-in `snesmon.hlp` key card. (That in-app card is
   the original ~1994 reference and has drifted from the current bindings — **this manual is
   authoritative** where they disagree.)
@@ -60,6 +59,7 @@ the version and run state (`Running` / `Stopped`).
 | **Watchpoints** | Expressions re-evaluated every frame and displayed as `value : expression`. Pure monitor-side — handy for tracking a variable or a computed value. |
 | **Step / Step Over / Run** | Single-step one instruction (**F7**), step over a call (**F8**), or run freely (**F2**) / stop (**F3**). Source- and assembly-level step variants exist (see key reference). *(needs a connected target)* |
 | **65816 disassembler** | Decodes SNES machine code to assembly; powers the Memory window's disassembly view. |
+| **SPC700 (SNES audio CPU)** | The SNES's second processor, which runs the sound engine. drmon exposes it through two SNES-only surfaces: the **SPC Register** window (`Alt+N`) for its registers, and the Memory window's **SPC RAM** view (`Ctrl+R`) for its 64 KB address space. Independent of the main 65816 — its own registers and memory. |
 | **Dev-link (SLIO)** | The command protocol that talks to the target (read/write memory+registers, set/clear breakpoints, step, run). The **Phase 2 MAME backend** implements it: `sliomame.cpp` drives `mame_bridge.lua` over TCP (SNES), `sliogdb.cpp` speaks GDB RSP to MAME's gdbstub (Genesis). `linux/slio_stub.cpp` is the no-op fallback when `DRMON_MAME_BACKEND=OFF`. |
 
 ---
@@ -71,8 +71,9 @@ drmon's UI is a set of windows you open from the **Windows** menu or by Alt-key.
 global keys are in the [Key reference](#key-reference).
 
 ### Memory — `Alt+M`
-Examine memory as bytes, words, long words, ASCII, or disassembled code. Navigate with the
-arrows / PgUp / PgDn. *(values read as zero when disconnected)*
+Examine memory as bytes, words, long words, ASCII, or disassembled code — and, on SNES, the
+SPC700 audio CPU's RAM (`Ctrl+R`). Navigate with the arrows / PgUp / PgDn. *(values read as zero
+when disconnected)*
 
 <img src="img/memory.png" width="336">
 
@@ -83,7 +84,11 @@ arrows / PgUp / PgDn. *(values read as zero when disconnected)*
 | `Ctrl+L` | view as long words | | `Ctrl+S` | set breakpoint at cursor |
 | `Ctrl+D` | view as disassembly | | `Ctrl+O` | set break-once at cursor |
 | `Ctrl+Y` | view as ASCII | | `Ctrl+N` | set break-with-count at cursor |
+| `Ctrl+R` | view as **SPC RAM** *(SNES)* | | `Ctrl+C` | clear breakpoint at cursor |
 | `Ctrl+H` | run to cursor | | `Ctrl+A` | clear all breakpoints |
+
+The view mode is also on the window's local menu (**Ctrl+F10 ▸ Memory Type**), which lists every
+mode including target-specific ones — **PPU** (VRAM) and **SPC RAM** on SNES.
 
 **View modes:**
 
@@ -95,12 +100,33 @@ arrows / PgUp / PgDn. *(values read as zero when disconnected)*
 |---|---|
 | <img src="img/memory_disasm.png" width="336"> | <img src="img/memory_ascii.png" width="336"> |
 
+**SPC RAM (`Ctrl+R`, SNES).** A byte dump of the SPC700 audio co-CPU's 64 KB address space —
+the audio program/data RAM, the SPC I/O ports at `$00F0–$00FF`, and the IPL boot ROM at
+`$FFC0–$FFFF`. Scroll/goto like any byte view. The status line reads `Type: SPC RAM`. The bytes
+come from a separate read channel than the main 65816 bus. *(reads as zero when disconnected)*
+
+```
+┌■─Memory──────────────────────────────1─↕
+│00FFC0:CD EF BD E8 00 C6 1D D0 FC 8F AA ▲
+│00FFCB:F4 8F BB F5 78 FA AA 78 …         █
+└─Type: SPC RAM ─Upd: Static->$FFC0──────╝
+```
+
 ### Register — `Alt+R` (single)
 View and set the current 65816 registers (A, X, Y, P/flags, D, DB, PB, SP, PC); flags are shown
 individually. Click a register to open an Expression window prompting for a new value.
 *(live values need a connected target)*
 
 <img src="img/register.png" width="208">
+
+### SPC Register — `Alt+N` (single, SNES)
+The SNES has a second CPU — the **SPC700** audio co-processor. This window shows and edits its
+registers: **PC, A, X, Y, SP**, and the **PSW** status flags (`N V P B H I Z C`, upper-case when
+set). Like the main Register window, click a register to open an Expression prompt and type a new
+value — it's written straight back to the running SPC700. Pairs with the Memory window's
+**SPC RAM** view (`Ctrl+R`) for the audio CPU's memory. *(live values need a connected target)*
+
+<img src="img/spc_register.png" width="208">
 
 ### Breakpoint — `Alt+B` (single)
 List and manage breakpoints.
@@ -353,8 +379,8 @@ layout) and scripting; steps 3–4 and live memory/register/console come online 
 drmon needs a live MAME target for execution and target I/O. Connect by launching MAME with the
 bridge (`task mame SYS=snes|gen CART=…`) before or while running `snesmon`/`genmon`; the client
 reconnects automatically. **When connected**, Run/Stop/Step, target memory & registers, breakpoints,
-the SNES PPU memory window, and SNES write-protect / break-on-ROM-write all work. **When
-disconnected** (no MAME running, or the bridge socket is down):
+the SNES PPU and SPC RAM memory windows, the SNES SPC700 register window, and SNES write-protect /
+break-on-ROM-write all work. **When disconnected** (no MAME running, or the bridge socket is down):
 
 - **Run / Stop / Step** (F2/F3/F7/F8 and the `STEP`/`OVER`/`RUN…` commands) have no effect.
 - **Target memory & registers** read as zero; memory/register *edits* and `@…` reads/writes go
@@ -364,8 +390,8 @@ disconnected** (no MAME running, or the bridge socket is down):
 Wired in Phase 2 but still incomplete, even when connected:
 
 - **Console** receives nothing — the target's print channel isn't carried over the bridge yet.
-- **SPC700 (SNES audio CPU)** and **all Genesis non-CPU state** (VDP/CRAM/VSRAM, Z80) are still
-  stubbed; the SNES PPU window does read live VRAM. (See the project TODO / stub-lift plan.)
+- **All Genesis non-CPU state** (VDP/CRAM/VSRAM, Z80) is still stubbed. (See the project TODO.)
+  The SNES PPU/VRAM, SPC700 registers, and SPC RAM windows *do* read live data when connected.
 - **`Alt+D` shell** is a DOS-era no-op on Linux.
 
 See [BUGS.md](../../../../docs/BUGS.md) for fixed issues and the
