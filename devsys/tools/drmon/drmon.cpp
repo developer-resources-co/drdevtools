@@ -110,6 +110,7 @@ Init( int argc, char* argv[] )
 
 	drMon = new App( argc, argv );
 
+	g_curDesktop = MakeDesktop(0);		// Option A: primary terminal = desktop 0
 	pObjBase = new _object;
 
 	InitScreen();
@@ -209,12 +210,16 @@ MainLoop()
 		 }
 
 		slaveUpdate = (modeUpdate && timeToChange);
-		pObjBase->Update();
+		for(int di = 0; di < g_numDesktops; di++)	// Option A: update+render every terminal
+		 {
+			switchDesktop(g_desktops[di]);
+			pObjBase->Update();
 #if defined(__GNUC__)
-		if(drmon_nc_resized())			// terminal resized -> re-fill before drawing
-			ReSizeViewport();
+			if(drmon_nc_resized())		// terminal resized -> re-fill before drawing
+				ReSizeViewport();
 #endif
-		UpdateScreen();
+			UpdateScreen();
+		 }
 	 }
 	pObjBase->Update();				// give objects a chance to shut down
 	BreakClearAll();			// put breakpoints back

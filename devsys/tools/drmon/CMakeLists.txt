@@ -24,7 +24,7 @@ set(DRMON_CXX_SRC
     zardoz.cpp monmenu.cpp about.cpp general.cpp config.cpp filereq.cpp
     profile.cpp filename.cpp search.cpp
     # Linux port shims:
-    linux/dos_stubs.cpp linux/ncurses_io.cpp linux/spawn_window.cpp
+    linux/dos_stubs.cpp linux/ncurses_io.cpp desktop.cpp
 )
 set(DRMON_C_SRC lexyy.c ytab.c)
 
@@ -55,7 +55,7 @@ endif()
 # Helper macro to create a drmon target.
 function(drmon_target TARGET SYSTEM_FLAG EXTRA_DEFS)
     add_executable(${TARGET} ${DRMON_CXX_SRC} ${DRMON_C_SRC})
-    target_link_libraries(${TARGET} PRIVATE ${CURSES_LIBRARIES})
+    target_link_libraries(${TARGET} PRIVATE ${CURSES_LIBRARIES} util)  # util: openpty (desktop.cpp)
     target_include_directories(${TARGET} PRIVATE
         ${CURSES_INCLUDE_DIRS}
         ${CMAKE_CURRENT_SOURCE_DIR}/linux/include

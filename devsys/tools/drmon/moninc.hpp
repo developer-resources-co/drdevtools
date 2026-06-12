@@ -55,5 +55,6 @@
 #include	"search.hpp"
 
 #include	"monwind.hpp"			// window open header
+#include	"desktop.hpp"			// Option A: per-terminal desktop
 
 //=============================================================================

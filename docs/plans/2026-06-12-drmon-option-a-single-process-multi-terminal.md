@@ -2,7 +2,7 @@
 
 **Date:** 2026-06-12
 **Branch:** `feature/drmon-option-a-multiterm`
-**Status:** in progress
+**Status:** phases 1–3 implemented + verified (single-process multi-terminal works end-to-end)
 **Spike proof:** `devsys/tools/drmon/linux/spikes/multiterm_spike.c` (architecture confirmed)
 **Supersedes (if it lands):** the multi-*process* spawn tagged `drmon-multiwindow-v1`
 
@@ -82,6 +82,25 @@ and Register in terminal 2, step the CPU from either — both update; one `ss` c
 - Mechanical (remove def/extern of a virtualized global): `layer.cpp/.hpp`, `object.cpp/.hpp`,
   `display.cpp/.hpp`, `screen.cpp/.hpp`, `menu.cpp`, `manager.cpp`, `command.cpp`, `console.cpp`,
   `reg.cpp`, `break.cpp`, `symbol.cpp`, `source.cpp`, `global.hpp`.
+
+## Verification (done)
+
+1. **Build** — `task build SYS=snes` and `SYS=gen` both link (snesmon, genmon, drmon-dap-*). PASS.
+2. **Smoke** — `task smoke` SYS=snes and SYS=gen: open every window via Alt-keys, type, no SIGSEGV.
+   Single-desktop behaviour unchanged. PASS.
+3. **Live New Window** — run snesmon (primary in a tmux pane) with X passthrough, drive
+   F10 → Windows → New Window. Result: a second `xterm -title "drmon #1"` appears on the host X,
+   rendering a complete independent desktop (own menu bar + status line), while the primary stays
+   alive and intact — all from **one** snesmon process (`pgrep -c snesmon` = 1). ASan clean. PASS.
+   - Two bugs found + fixed during this step: (a) heap-use-after-free in `InitMessageBar` — the
+     `messageLayer` global wasn't virtualized, so a new desktop's init freed desktop 0's message bar
+     (plus 5 more missed per-desktop globals: aboutObjPtr/exprObjPtr/searchObjPtr/spcRegObjPtr +
+     open flags, pGadgDown); (b) the new terminal rendered blank-blue because `refreshEnable`
+     (statically TRUE in layer.cpp) is value-initialized to FALSE in a fresh Desktop — set in
+     `InitDesktop`.
+4. **One game, one connection** — structural: there is a single `sliomame.cpp` connection and a
+   single shared run/breakpoint state for the whole process; desktops only virtualize UI. (Live
+   step-from-either-terminal against MAME not yet exercised headlessly.)
 
 ## Non-goals / risks
 

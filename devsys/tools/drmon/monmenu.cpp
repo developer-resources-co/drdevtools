@@ -7,7 +7,7 @@
 #include        <iostream.h>
 #include        <fstream.h>
 #include        "help.hpp"
-#include        "linux/spawn_window.hpp"
+#include        "desktop.hpp"
 
 //=============================================================================
 
@@ -134,8 +134,8 @@ menuItems fileMenu[] =
 FLAG
 MenuNewWindow(_menuItem *iPtr, _object *oPtr, int choice)
 {
-	if (SpawnNewWindow() < 0)
-		PrintMessageBar("New Window: no terminal found - set $DRMON_TERMINAL (e.g. \"xterm -e\")");
+	if (NewDesktop() < 0)
+		PrintMessageBar("New Window: need an X display + xterm for an in-process terminal");
 	return(boolean::TRUE);
 }
 
