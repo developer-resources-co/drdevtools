@@ -106,6 +106,14 @@ and Register in terminal 2, step the CPU from either — both update; one `ss` c
    2 desktops — one process, one client serving both views. PASS.
    - Harness gotcha (not a product bug): the bridge is single-client, so a `/dev/tcp` readiness probe
      steals the one slot and the real client is then refused. Don't pre-probe; connect once.
+   - **Dual-Register proof** — both desktops open a Register window on the same STOPPED CPU and show
+     the identical state (`PC:D7EC SP:01FF P:nv-BdIzc`), one process, `conns=1`:
+
+     <img src="screenshots/2026-06-12-option-a-dual-register.png" width="760">
+
+     (Capture note: per-window `import -window <id>` reads each drmon window through the compositor —
+     needed because the primary ran in tmux and a maximized window occluded the desktop; the left pane
+     is the primary's tmux buffer rendered via `render_ansi.py`, the right is the New Window xterm.)
 
 ## Code footprint — chunky & isolated, not strewn
 
