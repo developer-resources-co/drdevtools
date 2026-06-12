@@ -32,7 +32,7 @@ Plan-first: non-trivial work gets a `docs/plans/YYYY-MM-DD-<topic>.md` and a TOD
 
 ## DRMON — UI / UX
 
-- [ ] **Support multiple "monitors"** (as windows) — Phase 1 COMPLETE (Windows ▸ New Window → independent xterm session); Phase 2 (shared breakpoint/symbol state hub) parked — [Phase 1 plan](docs/plans/2026-06-12-multiple-top-level-windows.md) · [Phase 2 plan](docs/plans/2026-06-12-multiple-top-level-windows-phase2.md)
+- [ ] **Support multiple "monitors"** (as windows) — Phase 1 (Windows ▸ New Window → independent xterm process) shipped but **can't share one game**: the MAME bridge is single-client, so spawned processes can't view the same running session. Decision pending: build Option A (single drmon process driving N xterms via `newterm()`+`xterm -S`, one MAME connection, ~400–600 LOC) **or shelve+revert**. Architecture for A **proven viable** by `devsys/tools/drmon/linux/spikes/multiterm_spike.c` (independent SCREENs, `poll()` input mux, real xterms). Existing Phase-1 code tagged `drmon-multiwindow-v1` for clean revert — [spike+tag plan](docs/plans/2026-06-12-spike-tag-for-the-multi-window-multiple-monitors-f.md) · [Phase 1 plan](docs/plans/2026-06-12-multiple-top-level-windows.md) · [Phase 2 plan](docs/plans/2026-06-12-multiple-top-level-windows-phase2.md)
 
 ## DRMON — CLEANUP
 
