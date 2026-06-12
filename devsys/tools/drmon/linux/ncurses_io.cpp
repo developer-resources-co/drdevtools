@@ -1,11 +1,17 @@
 //=============================================================================
-//  ncurses_io.cpp — Phase 1.5 ncurses front end for drmon on Linux.
+//  ncurses_io.cpp — ncurses front end for drmon on Linux.
 //
 //  drmon renders into a CGA-style video buffer of 16-bit cells (char + attribute
 //  byte). This file blits that buffer to the terminal via ncurses and feeds the
 //  keyboard back in the DOS extended-key format drmon's input layer expects
 //  (a normal key returns its ASCII; a special key returns 0 then a BIOS scan
 //  code). It replaces the no-op keyboard stubs from dos_stubs.cpp.
+//
+//  Multi-terminal (Option A): one process can drive N terminals, each its own
+//  ncurses SCREEN via newterm(). All per-terminal state lives in an NcCtx; the
+//  drawing/input entry points act on the *current* ctx (drmon_nc_select). With a
+//  single terminal (the common case) there is exactly one ctx and behaviour is
+//  identical to the old single-stdscr front end.
 //=============================================================================
 #define _XOPEN_SOURCE_EXTENDED 1
 #include <locale.h>
@@ -20,11 +26,30 @@
 
 extern "C" {
 
-static int           g_inited = 0;
-static unsigned char g_shift  = 0;   // backing byte for input.cpp's keyboardStatus
-static int           g_mx = 0, g_my = 0;   // latest mouse cell position
-static int           g_mbtn = 0;           // sticky button mask (0x01 left, 0x02 right)
-static int           g_resized = 0;        // sticky: terminal was resized, relayout pending
+#define DRMON_NC_MAX 8
+
+// One terminal. drmon_nc_select() points g_cur at one of these and makes its
+// ncurses SCREEN current (set_term); every draw/input call then acts on it.
+typedef struct {
+    SCREEN       *sp;        // ncurses screen for this terminal (newterm)
+    FILE         *outf;      // output stream (stdout for the primary; a PTY otherwise)
+    int           in_fd;     // input fd, for an idle poll() across terminals
+    int           mx, my;    // latest mouse cell position
+    int           mbtn;      // sticky button mask (0x01 left, 0x02 right)
+    int           resized;   // sticky: terminal resized, relayout pending
+    int           pend[6];   // pending translated key bytes
+    int           pendHead, pendTail;
+    int           used;
+} NcCtx;
+
+static NcCtx          g_ctx[DRMON_NC_MAX];
+static int            g_nctx   = 0;     // number of ctx slots created
+static NcCtx         *g_cur    = NULL;  // the currently-selected terminal
+// Shift/modifier backing byte for input.cpp's keyboardStatus. Stays a single
+// global (input.cpp caches its address once): only the active terminal's
+// modifiers matter at any instant, and ncurses exposes no portable shift state.
+static unsigned char  g_shift  = 0;
+static int            g_inited = 0;
 
 // CGA colour index (0..15) -> ncurses base colour (0..7); bright = index >= 8.
 static const short kCga2Curses[16] = {
@@ -41,33 +66,70 @@ static int pairFor(unsigned char attr)   // attr: fg=low nibble, bg=bits 4-6
     return bg * 8 + fg + 1;               // pairs 1..64
 }
 
-void drmon_nc_shutdown(void)
+// ---- per-terminal setup / teardown ----------------------------------------
+
+// Configure one freshly-created SCREEN: input modes, mouse, colours. Everything
+// here is per-SCREEN in ncurses (set_term selects which one we touch).
+static void nc_setup_term(NcCtx *c)
 {
-    if (g_inited) {
-        // turn off any-motion + SGR reporting we forced on in init (see below)
-        fputs("\033[?1003l\033[?1006l", stdout);
-        fflush(stdout);
-        mousemask(0, NULL);
-        endwin();
-        g_inited = 0;
+    set_term(c->sp);
+    cbreak();
+    noecho();
+    nonl();
+    keypad(stdscr, TRUE);
+    nodelay(stdscr, TRUE);                // drmon polls; never block the main loop
+    set_escdelay(25);                     // quick ESC vs Alt-combo disambiguation
+    mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, NULL);  // clicks, drag, motion
+    mouseinterval(0);                     // raw press/release, no click synthesis
+    // Force any-motion tracking (1003) + SGR coords (1006) on THIS terminal so menu
+    // hover-highlight works (see the long note in nc_global_once's predecessor).
+    fputs("\033[?1003h\033[?1006h", c->outf);
+    fflush(c->outf);
+    curs_set(0);                          // drmon draws its own caret; hide the hw cursor
+    if (has_colors()) {
+        start_color();
+        for (int bg = 0; bg < 8; ++bg)
+            for (int fg = 0; fg < 8; ++fg)
+                init_pair((short)(bg * 8 + fg + 1), (short)fg, (short)bg);
     }
 }
 
-// Async-signal-safe terminal restore for the fatal-signal handler below. The
-// normal drmon_nc_shutdown() uses fputs/fflush/mousemask, none of which are
-// async-signal-safe; here we disable the forced mouse modes with a single
-// write(2) (the reported Ctrl+C leak) FIRST, then endwin(). endwin() isn't
-// strictly async-signal-safe either, but the process is dying anyway and the
-// mouse-disable bytes are already flushed before we risk it.
+// Restore and tear down one terminal's SCREEN.
+static void nc_close_term(NcCtx *c)
+{
+    if (!c->sp) return;
+    set_term(c->sp);
+    fputs("\033[?1003l\033[?1006l", c->outf);   // un-force the mouse modes we set
+    fflush(c->outf);
+    mousemask(0, NULL);
+    endwin();
+    delscreen(c->sp);
+    c->sp = NULL;
+    c->used = 0;
+}
+
+void drmon_nc_shutdown(void)
+{
+    if (!g_inited) return;
+    for (int i = 0; i < g_nctx; ++i)
+        if (g_ctx[i].used) nc_close_term(&g_ctx[i]);
+    g_nctx = 0;
+    g_cur = NULL;
+    g_inited = 0;
+}
+
+// Async-signal-safe terminal restore for the fatal-signal handler. We can't loop
+// fputs/mousemask over every SCREEN here; just write the mouse-disable + cursor-on
+// bytes to the primary terminal (the one the user launched in) and endwin(). The
+// process is dying anyway; spawned PTYs vanish with it.
 static void drmon_nc_emergency_restore(void)
 {
-    if (g_inited) {
-        static const char off[] = "\033[?1003l\033[?1006l\033[?25h";  // mouse off + cursor on
-        ssize_t n = write(STDOUT_FILENO, off, sizeof(off) - 1);
-        (void)n;
-        endwin();
-        g_inited = 0;
-    }
+    if (!g_inited) return;
+    static const char off[] = "\033[?1003l\033[?1006l\033[?25h";  // mouse off + cursor on
+    ssize_t n = write(STDOUT_FILENO, off, sizeof(off) - 1);
+    (void)n;
+    endwin();
+    g_inited = 0;
 }
 
 // Fatal/terminate signals: restore the terminal, then re-raise with the default
@@ -80,45 +142,21 @@ static void drmon_nc_fatal(int sig)
     raise(sig);                           // delivered once this handler returns
 }
 
-void drmon_nc_init(void)
+// Process-wide, once-only setup: locale (for the Unicode box glyphs), atexit
+// restore, and the signal dispositions. Independent of any single terminal.
+static void nc_global_once(void)
 {
-    if (g_inited) return;
     // ncurses can only emit the Unicode box-drawing glyphs in a UTF-8 locale.
     // Honour the user's locale, but force UTF-8 if it isn't (e.g. a bare C locale
     // in a container) so the borders never silently drop out.
     setlocale(LC_ALL, "");
     if (strcmp(nl_langinfo(CODESET), "UTF-8") != 0)
         setlocale(LC_ALL, "C.UTF-8");
-    initscr();
-    cbreak();
-    noecho();
-    nonl();
-    keypad(stdscr, TRUE);
-    nodelay(stdscr, TRUE);                // drmon polls; never block the main loop
-    set_escdelay(25);                     // quick ESC vs Alt-combo disambiguation
-    mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, NULL);  // accept clicks, drag, motion
-    mouseinterval(0);                     // raw press/release, no click synthesis
-    // xterm-256color's terminfo has no XM cap, so ncurses only tells the terminal
-    // to send basic (mode 1000, press/release) reports — pure pointer motion is
-    // never sent, so menu hover-highlight (menu.cpp INP_MOUSEMOVE) goes dark.
-    // Force any-motion tracking (1003) + SGR coords (1006), matching kmous=\E[<.
-    fputs("\033[?1003h\033[?1006h", stdout);
-    fflush(stdout);
-    curs_set(0);
-    if (has_colors()) {
-        start_color();
-        for (int bg = 0; bg < 8; ++bg)
-            for (int fg = 0; fg < 8; ++fg)
-                init_pair((short)(bg * 8 + fg + 1), (short)fg, (short)bg);
-    }
+
     atexit(drmon_nc_shutdown);            // restore the terminal on a normal exit
 
-    // DOS parity: InitInput() ran ctrlbrk(&CtrlBrkHander), whose return(1) told
-    // Borland C to *resume* the program — the monitor swallowed Ctrl+Break and
-    // kept running (you quit via Alt+X). Match that: ignore SIGINT. Under cbreak
-    // (ISIG on), Ctrl+C raises SIGINT, gets dropped here, and the byte is eaten
-    // by the tty driver — it never reaches getch(). (Reserved for "interrupt the
-    // target" once a debug backend exists.)
+    // DOS parity: the monitor swallowed Ctrl+Break and kept running (quit via
+    // Alt+X). Match that: ignore SIGINT so Ctrl+C never reaches getch().
     struct sigaction sa;
     memset(&sa, 0, sizeof sa);
     sigemptyset(&sa.sa_mask);
@@ -135,8 +173,72 @@ void drmon_nc_init(void)
     sigaction(SIGABRT, &sa, NULL);
     sigaction(SIGBUS,  &sa, NULL);
     sigaction(SIGFPE,  &sa, NULL);
+}
 
+// Create an ncurses SCREEN on the given streams and configure it. Returns a
+// handle (index) or -1. newterm() makes the new SCREEN current as a side effect.
+static int nc_make(FILE *outf, FILE *inf, int in_fd, const char *type)
+{
+    if (g_nctx >= DRMON_NC_MAX) return -1;
+    SCREEN *sp = newterm((char *)type, outf, inf);
+    if (!sp) return -1;
+    int h = g_nctx++;
+    NcCtx *c = &g_ctx[h];
+    memset(c, 0, sizeof *c);
+    c->sp = sp; c->outf = outf; c->in_fd = in_fd; c->used = 1;
+    nc_setup_term(c);
+    return h;
+}
+
+void drmon_nc_init(void)
+{
+    if (g_inited) return;
+    nc_global_once();
+    // Primary terminal = handle 0, on stdout/stdin, honouring $TERM (NULL type).
+    // newterm(NULL, stdout, stdin) is what initscr() does internally.
+    int h = nc_make(stdout, stdin, STDIN_FILENO, NULL);
+    if (h < 0) { fprintf(stderr, "drmon: cannot initialise terminal\n"); return; }
+    g_cur = &g_ctx[h];
     g_inited = 1;
+}
+
+// Open an additional terminal on a PTY pair (Option A: New Window). out_fd/in_fd
+// are the PTY slave the spawned xterm displays. Returns a handle or -1. The
+// previously-current terminal stays current.
+int drmon_nc_open(int out_fd, int in_fd)
+{
+    if (!g_inited) return -1;
+    FILE *outf = fdopen(out_fd, "w");
+    FILE *inf  = fdopen(in_fd,  "r");
+    if (!outf || !inf) return -1;
+    int h = nc_make(outf, inf, in_fd, "xterm");   // PTY is driven by xterm
+    if (g_cur) set_term(g_cur->sp);               // nc_make left the new one current
+    return h;
+}
+
+// Make `handle` the current terminal for subsequent draw/input calls.
+void drmon_nc_select(int handle)
+{
+    if (handle < 0 || handle >= g_nctx || !g_ctx[handle].used) return;
+    g_cur = &g_ctx[handle];
+    set_term(g_cur->sp);
+}
+
+// The input fd for `handle`, for an idle poll() across terminals (-1 if invalid).
+int drmon_nc_infd(int handle)
+{
+    if (handle < 0 || handle >= g_nctx || !g_ctx[handle].used) return -1;
+    return g_ctx[handle].in_fd;
+}
+
+// Tear down a non-primary terminal (handle 0 is never closed). Selects the
+// primary if the closed terminal was current.
+void drmon_nc_close(int handle)
+{
+    if (handle <= 0 || handle >= g_nctx || !g_ctx[handle].used) return;
+    int wasCur = (g_cur == &g_ctx[handle]);
+    nc_close_term(&g_ctx[handle]);
+    if (wasCur) drmon_nc_select(0);
 }
 
 unsigned char *drmon_nc_shiftbyte(void) { return &g_shift; }
@@ -162,19 +264,14 @@ static const wchar_t kCp437[256] = {
     0x2261,0x00B1,0x2265,0x2264,0x2320,0x2321,0x00F7,0x2248,0x00B0,0x2219,0x00B7,0x221A,0x207F,0x00B2,0x25A0,0x00A0,
 };
 
-// Blit drmon's video buffer (w*h cells of {char, attr}) to the terminal as wide chars.
-// The buffer stride stays `w` (drmon's screenWidth), but never write past the actual
-// terminal (COLS/LINES): when drmon's floored 80x25 exceeds a smaller terminal, writing
-// at x>=COLS corrupts ncurses' model and lingers after a regrow. Clip the visible span.
+// Blit drmon's video buffer (w*h cells of {char, attr}) to the current terminal as
+// wide chars. The buffer stride stays `w` (drmon's screenWidth), but never write past
+// the actual terminal (COLS/LINES of the current SCREEN): clip the visible span.
 // caretMode: -1 = no caret, 0 = overwrite (reverse block), 1 = insert (underline).
-// Self-drawn: the terminal hardware cursor stays hidden (curs_set(0)); the caret is
-// overlaid as an ncurses attribute on one cell, so it needs no save/restore (the
-// front buffer is regenerated every UpdateScreen).  A_UNDERLINE expresses what the
-// CGA attr byte can't (color text mode has no underline bit).
 void drmon_nc_blit(const unsigned char *buf, int w, int h,
                    int caretX, int caretY, int caretMode)
 {
-    if (!g_inited || !buf) return;
+    if (!g_inited || !g_cur || !buf) return;
     int vw = (w < COLS)  ? w : COLS;     // visible width  (buffer stride stays w)
     int vh = (h < LINES) ? h : LINES;    // visible height
     for (int y = 0; y < vh; ++y) {
@@ -194,10 +291,8 @@ void drmon_nc_blit(const unsigned char *buf, int w, int h,
 }
 
 // ---- keyboard: ncurses keys -> DOS extended-key byte stream ----------------
-static int  pend[6];
-static int  pendHead = 0, pendTail = 0;
 
-static void push(int b) { if (pendTail < (int)(sizeof pend / sizeof pend[0])) pend[pendTail++] = b; }
+static void push(int b) { NcCtx *c = g_cur; if (c && c->pendTail < (int)(sizeof c->pend / sizeof c->pend[0])) c->pend[c->pendTail++] = b; }
 
 // DOS keyboard scan codes for Alt+A .. Alt+Z (from keys.hpp KEY_ALT*).
 static const unsigned char kAltScan[26] = {
@@ -232,26 +327,28 @@ static void translate(int k)
 
 static void pump(void)
 {
-    if (pendHead < pendTail) return;          // bytes still buffered
-    pendHead = pendTail = 0;
-    int k = getch();                          // nodelay: ERR if nothing
+    NcCtx *c = g_cur;
+    if (!c) return;
+    if (c->pendHead < c->pendTail) return;    // bytes still buffered
+    c->pendHead = c->pendTail = 0;
+    int k = getch();                          // current SCREEN; nodelay: ERR if nothing
     if (k == ERR) return;
 
     if (k == KEY_MOUSE) {                      // update sticky mouse state; emits no key
         MEVENT ev;
         if (getmouse(&ev) == OK) {
-            g_mx = ev.x; g_my = ev.y;
-            if (ev.bstate & BUTTON1_PRESSED)  g_mbtn |= 0x01;   // MOUSEF_BLEFT
-            if (ev.bstate & BUTTON1_RELEASED) g_mbtn &= ~0x01;
-            if (ev.bstate & BUTTON3_PRESSED)  g_mbtn |= 0x02;   // MOUSEF_BRIGHT
-            if (ev.bstate & BUTTON3_RELEASED) g_mbtn &= ~0x02;
+            c->mx = ev.x; c->my = ev.y;
+            if (ev.bstate & BUTTON1_PRESSED)  c->mbtn |= 0x01;   // MOUSEF_BLEFT
+            if (ev.bstate & BUTTON1_RELEASED) c->mbtn &= ~0x01;
+            if (ev.bstate & BUTTON3_PRESSED)  c->mbtn |= 0x02;   // MOUSEF_BRIGHT
+            if (ev.bstate & BUTTON3_RELEASED) c->mbtn &= ~0x02;
         }
         return;
     }
 
     if (k == KEY_RESIZE) {                     // terminal resized; flag a relayout.
-        g_resized = 1;                         // drmon_nc_resync() (called from
-        return;                                // ReSizeViewport) rebuilds ncurses. No key.
+        c->resized = 1;
+        return;
     }
 
     if (k == 27) {                            // ESC: bare ESC, or Alt+key (ESC-prefixed)
@@ -267,12 +364,14 @@ static void pump(void)
     translate(k);
 }
 
-int drmon_nc_keyready(void) { pump(); return pendHead < pendTail; }
+int drmon_nc_keyready(void) { pump(); return g_cur && g_cur->pendHead < g_cur->pendTail; }
 
 int drmon_nc_getbyte(void)
 {
-    while (pendHead >= pendTail) { pump(); if (pendHead >= pendTail) napms(2); }
-    return pend[pendHead++];
+    NcCtx *c = g_cur;
+    if (!c) return 0;
+    while (c->pendHead >= c->pendTail) { pump(); if (c->pendHead >= c->pendTail) napms(2); }
+    return c->pend[c->pendHead++];
 }
 
 int drmon_nc_bioskeybrd(int cmd)
@@ -292,15 +391,13 @@ int drmon_nc_havemouse(void) { return 1; }
 int drmon_nc_getmouse(short *fx, short *fy)
 {
     drmon_nc_keyready();                 // pump pending events so state is current
-    if (fx) *fx = (short)(g_mx * 8);     // drmon divides fine coords by 8 -> cell
-    if (fy) *fy = (short)(g_my * 8);
-    return g_mbtn;
+    int mx = g_cur ? g_cur->mx : 0, my = g_cur ? g_cur->my : 0;
+    if (fx) *fx = (short)(mx * 8);       // drmon divides fine coords by 8 -> cell
+    if (fy) *fy = (short)(my * 8);
+    return g_cur ? g_cur->mbtn : 0;
 }
 
-// ---- viewport size: track the terminal's COLS/LINES exactly ----
-// Must equal what ncurses thinks stdscr is: any floor ABOVE the real terminal size
-// makes drmon's framebuffer wider/taller than stdscr, and the stride mismatch garbles
-// the blit (and wedges the next resize). So clamp to a sane max only, never up.
+// ---- viewport size: track the current terminal's COLS/LINES exactly ----
 void drmon_nc_size(int *cols, int *rows)
 {
     int c = COLS, r = LINES;
@@ -310,20 +407,20 @@ void drmon_nc_size(int *cols, int *rows)
     if (rows) *rows = r;
 }
 
-// Returns (and clears) the sticky resize flag set when KEY_RESIZE arrives.
+// Returns (and clears) the current terminal's sticky resize flag.
 int drmon_nc_resized(void)
 {
     drmon_nc_keyready();                 // pump so an idle-frame KEY_RESIZE is seen
-    int r = g_resized; g_resized = 0; return r;
+    if (!g_cur) return 0;
+    int r = g_cur->resized; g_cur->resized = 0; return r;
 }
 
 // Re-sync ncurses to the current terminal size. endwin()+refresh() is the documented
 // way to make ncurses re-read the tty geometry and rebuild its screen model after a
-// resize; without it, shrinking leaves stdscr/curscr larger than the terminal and the
-// blit garbles. Call before re-reading drmon_nc_size() in a relayout.
+// resize. Call before re-reading drmon_nc_size() in a relayout.
 void drmon_nc_resync(void)
 {
-    if (!g_inited) return;
+    if (!g_inited || !g_cur) return;
     endwin();
     refresh();
     clearok(stdscr, TRUE);               // force a full repaint on the next blit

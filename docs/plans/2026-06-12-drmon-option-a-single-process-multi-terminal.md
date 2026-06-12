@@ -1,0 +1,94 @@
+# drmon Option A — one process, N terminals, one game
+
+**Date:** 2026-06-12
+**Branch:** `feature/drmon-option-a-multiterm`
+**Status:** in progress
+**Spike proof:** `devsys/tools/drmon/linux/spikes/multiterm_spike.c` (architecture confirmed)
+**Supersedes (if it lands):** the multi-*process* spawn tagged `drmon-multiwindow-v1`
+
+## Context
+
+"Multiple monitors" = spread drmon's sub-windows (Memory, Register, …) across several OS terminal
+windows, **all viewing one running game**. The shipped multi-*process* spawn can't do this: the MAME
+bridge is single-client, so separate processes can't share one debug session. The fix is to make **one**
+drmon process drive **N** terminals: one MAME connection + one debug/breakpoint state (already global,
+already shared — no change), with **N independent "desktops"** (each its own window set + framebuffer +
+ncurses SCREEN). The spike proved the three mechanics (independent `newterm()` SCREENs, `poll()` input
+mux, `xterm -S` real windows). This plan integrates them into drmon.
+
+## Key design decision: virtualize globals by NAME, not by save/restore
+
+drmon keeps its whole UI in ~global state. ~15 of those globals are **per-desktop** (window list,
+object list, front window, framebuffer, cursor, console history, per-window singleton flags); the rest
+(MAME socket, run-state, breakpoints, registers, config) are **shared** and stay exactly as-is.
+
+`layBase`, `statTextBase`, `cmdTextBase` are **intrusive list heads**: heap nodes store the head's
+*address* in their `prev`. So a "copy the globals in/out on switch" scheme would corrupt them (nodes
+would point at a head that now holds another desktop's data). Instead, give each desktop's state a
+**stable address** inside a `Desktop` struct and redirect the global *names*:
+
+```c
+struct Desktop { _layerBase layBase; _object *pObjBase, *frontObj; char far *screen,*scrBuffer; … int nc; };
+extern Desktop *g_desk;                 // the active desktop
+#define layBase  (g_desk->layBase)      // every existing reference now hits the active desktop
+#define pObjBase (g_desk->pObjBase)     // …no per-call-site rewrite, no save/restore, stable addresses
+```
+
+`switchDesktop(d)` is then just `g_desk = d; drmon_nc_select(d->nc);`. The macros live in one header
+included early (via `moninc.hpp`); the old definitions/externs of those globals are removed (their
+storage now lives in `Desktop`). To keep terminals uniform (so `screenWidth/Height` can stay shared),
+spawned xterms are fixed to the primary's size for v1.
+
+## Phases (each builds + smoke-tests + commits)
+
+### Phase 1 — ncurses layer goes multi-SCREEN  *(self-contained; keeps N=1 identical)*
+`linux/ncurses_io.cpp` + `include/ncurses_io.h`: replace the single-`stdscr` statics with a small
+per-SCREEN context array.
+- `drmon_nc_init()` keeps one-time global setup (locale, signals, `atexit`) but creates SCREEN 0 via
+  `newterm(NULL, stdout, stdin)` (== what `initscr` did) and runs the per-SCREEN setup.
+- new `int drmon_nc_open(int out_fd, int in_fd)` → `newterm` on a PTY, per-SCREEN setup, returns a handle.
+- new `void drmon_nc_select(int handle)` → `set_term(ctx->sp)` + point the "current ctx" at it.
+- new `int drmon_nc_infd(int handle)` → the PTY read fd, for `poll()`.
+- `blit/getbyte/keyready/size/resized/getmouse` operate on the current ctx + current SCREEN
+  (`COLS/LINES` track the current SCREEN after `set_term`). `shift` stays one global (pointer is cached
+  by `input.cpp`; only the active terminal's modifiers matter at a time).
+- `drmon_nc_shutdown`/emergency restore tear down all SCREENs.
+**Verify:** `task build`; `task smoke` (single-terminal path unchanged).
+
+### Phase 2 — `Desktop` struct + global virtualization  *(compiles, still single-desktop at runtime)*
+- new `desktop.hpp` (struct + `g_desk` + the `#define` redirects) and `desktop.cpp` (`Desktop *g_desk`,
+  `MakeDesktop()`, `switchDesktop()`); include `desktop.hpp` from `moninc.hpp`.
+- Move the per-desktop globals' **storage** into `Desktop`; delete their old definitions in
+  `layer.cpp/object.cpp/drmon.cpp/display.cpp/screen.cpp/menu.cpp/manager.cpp/command.cpp/console.cpp/`
+  `reg.cpp/break.cpp/symbol.cpp/source.cpp/monmenu.cpp`, and the matching `extern`s in the headers.
+- `Init()` allocates desktop 0 (= primary), points `g_desk` at it, runs existing init into it.
+**Verify:** `task build`; `task smoke` — behaviour identical with exactly one desktop.
+
+### Phase 3 — main loop over desktops + input mux + New Window  *(delivers the feature)*
+- `MainLoop()` (drmon.cpp): iterate the desktop list — `switchDesktop(d); pObjBase->Update();
+  UpdateScreen();` per desktop. Input becomes `poll()` over every desktop's `drmon_nc_infd()`; a
+  readable fd → `switchDesktop(d)` then pump (existing `Manager`/`InputPending` path, unchanged).
+- Replace `SpawnNewWindow()` (multi-process) with `NewDesktop()`: `openpty` (primary's winsize) →
+  fork `xterm -S<master>` (CPR-handshake to confirm attach, per the spike) → `drmon_nc_open(slave…)` →
+  `MakeDesktop()` → run the per-desktop init (InitScreen/Display/Manager/menu) into it. `monmenu.cpp`
+  `MenuNewWindow` calls `NewDesktop()`. Closing a desktop's window tears it down (and never the last).
+**Verify:** `task build`; `task smoke`; **live**: `task mame` + `task run`, open Memory in terminal 1
+and Register in terminal 2, step the CPU from either — both update; one `ss` connection to the bridge.
+
+## Files
+
+- New: `desktop.hpp`, `desktop.cpp`, `NewDesktop()` (replacing `linux/spawn_window.*`).
+- Heavy edits: `linux/ncurses_io.cpp`/`.h`, `drmon.cpp` (MainLoop, Init), `monmenu.cpp`.
+- Mechanical (remove def/extern of a virtualized global): `layer.cpp/.hpp`, `object.cpp/.hpp`,
+  `display.cpp/.hpp`, `screen.cpp/.hpp`, `menu.cpp`, `manager.cpp`, `command.cpp`, `console.cpp`,
+  `reg.cpp`, `break.cpp`, `symbol.cpp`, `source.cpp`, `global.hpp`.
+
+## Non-goals / risks
+
+- Per-terminal *different sizes* deferred (v1 fixes spawned terminals to the primary's size so
+  `screenWidth/Height` stay shared). Resize of a non-primary terminal deferred.
+- No change to the MAME bridge, breakpoints, or run-state (shared by design).
+- Risk: missing a per-desktop global in the virtualization → cross-desktop bleed. Mitigated by the
+  macro approach (a missed global is a *compile error* on the deleted symbol, not silent bleed).
+- Reversible: all on a branch; if shelved, delete the branch (main untouched, `drmon-multiwindow-v1`
+  still tags the shipped multi-process feature).

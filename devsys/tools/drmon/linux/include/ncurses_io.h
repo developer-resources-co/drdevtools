@@ -4,8 +4,12 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-void           drmon_nc_init(void);
+void           drmon_nc_init(void);          // primary terminal (handle 0)
 void           drmon_nc_shutdown(void);
+int            drmon_nc_open(int out_fd, int in_fd);  // additional terminal on a PTY; handle or -1
+void           drmon_nc_select(int handle);  // make `handle` the current terminal
+int            drmon_nc_infd(int handle);    // input fd of `handle` (for poll), or -1
+void           drmon_nc_close(int handle);   // tear down a non-primary terminal
 void           drmon_nc_blit(const unsigned char *buf, int w, int h,
                              int caretX, int caretY, int caretMode);
 unsigned char *drmon_nc_shiftbyte(void);
