@@ -98,9 +98,14 @@ and Register in terminal 2, step the CPU from either — both update; one `ss` c
      open flags, pGadgDown); (b) the new terminal rendered blank-blue because `refreshEnable`
      (statically TRUE in layer.cpp) is value-initialized to FALSE in a fresh Desktop — set in
      `InitDesktop`.
-4. **One game, one connection** — structural: there is a single `sliomame.cpp` connection and a
-   single shared run/breakpoint state for the whole process; desktops only virtualize UI. (Live
-   step-from-either-terminal against MAME not yet exercised headlessly.)
+4. **One game, one connection (live MAME)** — `task mame`-style headless SNES (drmon-test.sfc) +
+   container snesmon connected. The primary connects (status **Running**); F3 from the primary halts
+   the CPU (primary Register shows a live `PC:9A24 SP:01FF`) and the **New Window desktop reads
+   "Stopped"** — i.e. a run-state change in terminal 1 is seen in terminal 2. Bridge connections
+   (drmon→:port, ESTABLISHED) measured **1** at 1 desktop, **1** at 1 desktop+Register, and **1** at
+   2 desktops — one process, one client serving both views. PASS.
+   - Harness gotcha (not a product bug): the bridge is single-client, so a `/dev/tcp` readiness probe
+     steals the one slot and the real client is then refused. Don't pre-probe; connect once.
 
 ## Non-goals / risks
 

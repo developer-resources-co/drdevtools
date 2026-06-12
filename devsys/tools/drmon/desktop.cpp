@@ -197,7 +197,10 @@ int NewDesktop(void)
         snprintf(geom,  sizeof geom,  "%hux%hu+%d+%d", screenWidth, screenHeight, off, off);
         snprintf(title, sizeof title, "drmon #%d", g_numDesktops);
         setsid();
-        execlp("xterm", "xterm", arg, "-geometry", geom, "-title", title, (char *)NULL);
+        // metaSendsEscape: send Alt+key as ESC-prefixed so drmon's Alt-shortcuts
+        // (Alt-M/Alt-R/...) decode (ncurses_io maps ESC-letter -> Alt scan code).
+        execlp("xterm", "xterm", arg, "-geometry", geom, "-title", title,
+               "-xrm", "XTerm*metaSendsEscape: true", (char *)NULL);
         _exit(127);
     }
     close(master);                             // parent (drmon) drives the SLAVE
