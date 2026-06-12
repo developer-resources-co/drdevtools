@@ -17,7 +17,7 @@ the two are independent.
   task mame SYS=snes CART=path/to/game.sfc
   ```
 
-## Capabilities (Tier 1)
+## Capabilities
 
 | Feature | Support |
 |---------|---------|
@@ -27,10 +27,10 @@ the two are independent.
 | Instruction breakpoints | ✓ |
 | Registers | ✓ — full register set with Memory Inspector links |
 | Read memory | ✓ — hex address in Memory Inspector |
-| Evaluate expression | ✓ — `$addr` reads a byte; register name reads register |
-| Source breakpoints | — (no source map yet; use instruction breakpoints) |
-| Disassembly view | — (Tier 2) |
-| Symbol names | — (Tier 3) |
+| Evaluate expression | ✓ — `$addr` byte; register name; symbol name (with `--symbols`) |
+| Disassembly view | ✓ — 65816 / 68k mnemonics; label annotations (with `--symbols`) |
+| Source breakpoints | ✓ — file:line → address via `--symbols` |
+| Symbol names | ✓ — binary `.sld` + Sierra COFF via `--symbols <path>` |
 
 ---
 
@@ -66,14 +66,60 @@ Then register the adapter type in `.vscode/settings.json` (or a workspace extens
 ```
 
 > A minimal VS Code extension (~3 files: `package.json`, `extension.ts`, binary)
-> that registers `"type": "drmon"` as a first-class debug type is a Tier 2
-> deliverable. The `debug.extensionHost` workaround above works today without
+> that registers `"type": "drmon"` as a first-class debug type would remove the
+> `debug.extensionHost` workaround. The workaround above works today without
 > installing anything from the marketplace.
 
 Once attached, open the **Memory Inspector** (Debug toolbar → hex icon) and type a
 hex address such as `0x7e0000` to view SNES work-RAM. Registers in the Variables
 pane each carry a memory-reference link — click the hex icon next to SP or PC to
 jump straight to that address in the inspector.
+
+---
+
+## Emacs (dap-mode)
+
+Install [dap-mode](https://github.com/emacs-lsp/dap-mode) (requires lsp-mode),
+then add to your config:
+
+```elisp
+(require 'dap-mode)
+
+(dap-register-debug-provider
+ "drmon-snes"
+ (lambda (conf)
+   (plist-put conf :program "/tmp/drmon-build/drmon-dap-snes")))
+
+(dap-register-debug-provider
+ "drmon-gen"
+ (lambda (conf)
+   (plist-put conf :program "/tmp/drmon-build/drmon-dap-gen")))
+
+(dap-register-debug-template
+ "MAME SNES attach"
+ (list :type    "drmon-snes"
+       :request "attach"
+       :name    "MAME SNES attach"))
+
+(dap-register-debug-template
+ "MAME Genesis attach"
+ (list :type    "drmon-gen"
+       :request "attach"
+       :name    "MAME Genesis attach"))
+```
+
+Start a session with `M-x dap-debug` → pick "MAME SNES attach".
+
+Useful commands once attached:
+
+| Command | Action |
+|---------|--------|
+| `M-x dap-continue` | Resume execution |
+| `M-x dap-next` | Step over |
+| `M-x dap-step-in` | Step into |
+| `M-x dap-breakpoint-toggle` | Add/remove breakpoint at point |
+| `M-x dap-ui-repl` | Open expression evaluator (`$7e0032`, `PC`, etc.) |
+| `M-x dap-ui-locals` | Show Registers scope |
 
 ---
 
@@ -131,49 +177,33 @@ dap.set_breakpoint(nil, nil, nil, { instructionReference = '0x80a000' })
 
 ---
 
-## Emacs (dap-mode)
+## Symbol file (`--symbols`)
 
-Install [dap-mode](https://github.com/emacs-lsp/dap-mode) (requires lsp-mode),
-then add to your config:
+Pass a Developer Resources binary `.sld` or Sierra COFF (`.cof`) file to enable:
 
-```elisp
-(require 'dap-mode)
+- **Disassembly labels** — instruction addresses with a matching symbol show the
+  label name in the disassembly pane.
+- **Symbol evaluation** — type a symbol name in the Watch or Debug Console (`RESET`,
+  `GameLoop`, etc.); the adapter resolves it to its address.
+- **Source breakpoints** — set breakpoints by file and line number (requires a `.sld`
+  file with file:line→address records from the assembler).
 
-(dap-register-debug-provider
- "drmon-snes"
- (lambda (conf)
-   (plist-put conf :program "/tmp/drmon-build/drmon-dap-snes")))
-
-(dap-register-debug-provider
- "drmon-gen"
- (lambda (conf)
-   (plist-put conf :program "/tmp/drmon-build/drmon-dap-gen")))
-
-(dap-register-debug-template
- "MAME SNES attach"
- (list :type    "drmon-snes"
-       :request "attach"
-       :name    "MAME SNES attach"))
-
-(dap-register-debug-template
- "MAME Genesis attach"
- (list :type    "drmon-gen"
-       :request "attach"
-       :name    "MAME Genesis attach"))
+```bash
+/tmp/drmon-build/drmon-dap-snes --symbols /path/to/game.sld
+# or
+/tmp/drmon-build/drmon-dap-snes --symbols /path/to/game.cof
 ```
 
-Start a session with `M-x dap-debug` → pick "MAME SNES attach".
+The adapter tries `.sld` format first; if the header doesn't match it falls back to
+Sierra COFF. Pass the flag in a wrapper script so the editor picks it up:
 
-Useful commands once attached:
-
-| Command | Action |
-|---------|--------|
-| `M-x dap-continue` | Resume execution |
-| `M-x dap-next` | Step over |
-| `M-x dap-step-in` | Step into |
-| `M-x dap-breakpoint-toggle` | Add/remove breakpoint at point |
-| `M-x dap-ui-repl` | Open expression evaluator (`$7e0032`, `PC`, etc.) |
-| `M-x dap-ui-locals` | Show Registers scope |
+```bash
+#!/bin/sh
+exec /tmp/drmon-build/drmon-dap-snes \
+  --host "${DRMON_HOST:-127.0.0.1}" \
+  --port "${DRMON_PORT:-41816}" \
+  --symbols "${DRMON_SYMBOLS:-}"
+```
 
 ---
 
