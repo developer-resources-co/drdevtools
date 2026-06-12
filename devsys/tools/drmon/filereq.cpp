@@ -51,8 +51,9 @@ struct _fileList
 
 _fileList fileListBase;
 _fileList dirListBase;
-char patternString[13] = "*.*         ";
-static char fileReqFileName[13] = "            ";
+char patternString[_MAX_PATH] = "*.*         ";
+static char fileReqFileName[_MAX_PATH] = "            ";
+static char fileReqDirName[_MAX_PATH]  = "            ";	// dir field (was a SetGadgString heap buf, cap 13)
 
 //=============================================================================
 
@@ -146,7 +147,7 @@ AddFileReqGadgets(_window *pWindow)
 	gPtr->ySize = 1;
 	gPtr->xPos = 2;
 	gPtr->yPos = FREQ_YSIZE-5;
-	SetGadgString(gPtr,"            ");
+	gPtr->gadgText = fileReqDirName;
 	gPtr->gNum = FRGAD_DIR;
 	gPtr->gadgAttr = windowBorderAttr;
 
@@ -242,7 +243,7 @@ DoFileReq(char* title,int xPos,int yPos,void (*fileRoutine)(void* data,char* pat
 	if(sPtr)
 	 {
 		gPtr = FindGadget(&pWindow->gadgBase,FRGAD_FILE);
-		strcpy(gPtr->gadgText,sPtr->Name());
+		snprintf(gPtr->gadgText,_MAX_PATH,"%s",sPtr->Name());
 		PadString(gPtr->gadgText,gPtr->xSize);
 	 }
 
@@ -251,7 +252,7 @@ DoFileReq(char* title,int xPos,int yPos,void (*fileRoutine)(void* data,char* pat
 	if(sPtr)
 	 {
 		gPtr = FindGadget(&pWindow->gadgBase,FRGAD_DIR);
-		strcpy(gPtr->gadgText,sPtr->Name());
+		snprintf(gPtr->gadgText,_MAX_PATH,"%s",sPtr->Name());
 		PadString(gPtr->gadgText,gPtr->xSize);
 	 }
 
@@ -436,7 +437,7 @@ FileReqInput(_input *in,_object *oPtr)
 	if((dirIn & LRIF_INPUTUSED) == boolean::TRUE)			// if list req used input, must update string gadgets
 	 {
 		gPtr = FindGadget(&pWindow->gadgBase,FRGAD_DIR);
-		strcpy(gPtr->gadgText,dirListPtr->Name());
+		snprintf(gPtr->gadgText,_MAX_PATH,"%s",dirListPtr->Name());
 		PadString(gPtr->gadgText,gPtr->xSize);
 	 }
 
@@ -469,7 +470,7 @@ FileReqInput(_input *in,_object *oPtr)
 	 {
 		gPtr = FindGadget(&pWindow->gadgBase,FRGAD_DIR);
 		if(dirListPtr)
-			strcpy(gPtr->gadgText,dirListPtr->Name());
+			snprintf(gPtr->gadgText,_MAX_PATH,"%s",dirListPtr->Name());
 		else
 			*gPtr->gadgText = 0;							// null terminate
 		PadString(gPtr->gadgText,gPtr->xSize);
@@ -485,7 +486,7 @@ FileReqInput(_input *in,_object *oPtr)
 	 {
 		gPtr = FindGadget(&pWindow->gadgBase,FRGAD_FILE);
 		if(fileListPtr)
-			strcpy(gPtr->gadgText,fileListPtr->Name());
+			snprintf(gPtr->gadgText,_MAX_PATH,"%s",fileListPtr->Name());
 		else
 			*gPtr->gadgText = 0;							// null terminate
 		PadString(gPtr->gadgText,gPtr->xSize);

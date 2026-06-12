@@ -11,9 +11,8 @@
 
 //=============================================================================
 
-#define FILENAME_SIZE 9
 _object *menuBarObject;
-char logFileName[14] = { 0 };
+char logFileName[_MAX_PATH] = { 0 };
 
 //============================================================================
 
@@ -55,7 +54,7 @@ void
 SetLogFile(void *data,char *path,char *fileName)
 {
 	char*s;
-	strcpy(logFileName,fileName);
+	snprintf(logFileName,_MAX_PATH,"%s",fileName);
 }
 
 //============================================================================

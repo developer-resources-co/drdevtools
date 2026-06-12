@@ -11,6 +11,6 @@ DoFileReq(char *title,int xPos,int yPos,void (*fileRoutine)(void *data,char *pat
 FLAG
 FileReqInput(_input *in,_object *oPtr);
 
-extern char patternString[13];
+extern char patternString[_MAX_PATH];
 
 //=============================================================================

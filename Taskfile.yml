@@ -160,6 +160,12 @@ tasks:
     cmds:
       - '{{.DOCKER}} bash linux/signal-test.sh /build/{{.BIN}}'
 
+  overflow:
+    desc: "Regression test — ASan catches DOS 8.3 filename/path buffer overflows (no ROM/TTY needed)"
+    deps: [image]
+    cmds:
+      - '{{.DOCKER}} bash linux/overflow-test.sh'
+
   clean:
     desc: Remove the build tree
     cmds:

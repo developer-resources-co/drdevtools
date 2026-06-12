@@ -295,7 +295,7 @@ boolean
 	{
 	FILE *fp;
 	FILE *fpo;
-	char szTempName[13];
+	char szTempName[_MAX_PATH];	// _MAX_PATH (was [13]): tmpnam writes ~L_tmpnam bytes — resizing prevents the overflow (mkstemp would also avoid TOCTOU but changes behavior)
 	char szBuff[256];
 
 	if (( fp = fopen( lpFileName, "a+t" ) )!=0)

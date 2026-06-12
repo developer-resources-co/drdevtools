@@ -19,6 +19,6 @@ GetMenuBarLayer(void);
 extern char* speedMenuItems[];
 extern FLAG ((*memOpsMenuRoutines[])(_menuItem *iPtr,_object *oPtr,int choice));
 extern char* memOpsMenuItems[];
-extern char logFileName[14];
+extern char logFileName[_MAX_PATH];
 
 //============================================================================
