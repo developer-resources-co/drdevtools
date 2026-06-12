@@ -84,22 +84,13 @@ drmon_target(genmon "GENESIS;SYSTEMGEN" "")
 # Phase 3: drmon-dap — DAP front end (cppdap, C++17, no TUI dependency)
 #==============================================================================
 
-include(FetchContent)
-FetchContent_Declare(cppdap
-    GIT_REPOSITORY https://github.com/google/cppdap.git
-    GIT_TAG        dap-1.58.0-a
-)
-# cppdap's own CMakeLists may try to build tests/examples; suppress them.
-set(CPPDAP_BUILD_TESTS   OFF CACHE BOOL "" FORCE)
-set(CPPDAP_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-# Use the system JsonCpp instead of cppdap's bundled submodule. FetchContent
-# does not fetch cppdap's third_party/json submodule, so the bundled JSON
-# backend is empty and the Json::Value symbols are undefined at link time.
-# CPPDAP_USE_EXTERNAL_JSONCPP_PACKAGE makes cppdap find_package(jsoncpp);
-# build hosts need libjsoncpp-dev (Ubuntu) / jsoncpp (vcpkg/brew) installed.
-set(CPPDAP_USE_EXTERNAL_JSONCPP_PACKAGE ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(cppdap)
-find_package(jsoncpp REQUIRED)
+# cppdap (Debug Adapter Protocol) from the system package. We deliberately do
+# NOT FetchContent it: FetchContent clones cppdap without its git submodules,
+# so its bundled JsonCpp backend is empty and Json::Value fails to link. The
+# system cppdap is built correctly and pulls JsonCpp transitively
+# (cppdap::cppdap interface-links JsonCpp::JsonCpp). On Debian/Ubuntu install
+# libcppdap-dev (26.04 ships 1.58.0a, matching the previously-vendored tag).
+find_package(cppdap CONFIG REQUIRED)
 
 find_package(Threads REQUIRED)
 
@@ -118,7 +109,7 @@ function(drmon_dap_target TARGET SYSTEM_DEFINE DISASM_WRAPPER)
     # Legacy disassembler source: suppress modern-warning noise, allow C-style casts.
     set_source_files_properties(${DISASM_WRAPPER}
         PROPERTIES COMPILE_OPTIONS "-w;-fpermissive")
-    target_link_libraries(${TARGET} PRIVATE cppdap jsoncpp_lib Threads::Threads)
+    target_link_libraries(${TARGET} PRIVATE cppdap::cppdap Threads::Threads)
     target_compile_definitions(${TARGET} PRIVATE ${SYSTEM_DEFINE})
     target_compile_options(${TARGET} PRIVATE
         -include ${CMAKE_CURRENT_SOURCE_DIR}/linux/linux_compat.hpp
