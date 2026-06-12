@@ -7,6 +7,7 @@
 #include        <iostream.h>
 #include        <fstream.h>
 #include        "help.hpp"
+#include        "linux/spawn_window.hpp"
 
 //=============================================================================
 
@@ -130,8 +131,19 @@ menuItems fileMenu[] =
 
 //============================================================================
 
+FLAG
+MenuNewWindow(_menuItem *iPtr, _object *oPtr, int choice)
+{
+	SpawnNewWindow();
+	return(boolean::TRUE);
+}
+
+//============================================================================
+
 menuItems windowMenu[] =
 {
+	{"&New Window             ",(unsigned int (*)(_menuItem *,_object *,int))MenuNewWindow,   0},
+	{"\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4",NULL, 0},
 	{"&Memory       Alt-M",(unsigned int (*)(_menuItem *,_object *,int))OpenMemory,      0},
 	{"&Register     Alt-R",(unsigned int (*)(_menuItem *,_object *,int))OpenReg,         0},
 #ifdef SPC700

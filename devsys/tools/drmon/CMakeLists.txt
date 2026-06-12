@@ -24,7 +24,7 @@ set(DRMON_CXX_SRC
     zardoz.cpp monmenu.cpp about.cpp general.cpp config.cpp filereq.cpp
     profile.cpp filename.cpp search.cpp
     # Linux port shims:
-    linux/dos_stubs.cpp linux/ncurses_io.cpp
+    linux/dos_stubs.cpp linux/ncurses_io.cpp linux/spawn_window.cpp
 )
 set(DRMON_C_SRC lexyy.c ytab.c)
 

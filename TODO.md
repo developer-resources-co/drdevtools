@@ -32,7 +32,7 @@ Plan-first: non-trivial work gets a `docs/plans/YYYY-MM-DD-<topic>.md` and a TOD
 
 ## DRMON — UI / UX
 
-- [ ] **Support multiple "monitors"** (as windows)
+- [ ] **Support multiple "monitors"** (as windows) — Phase 1 COMPLETE (Windows ▸ New Window → independent xterm session); Phase 2 (shared breakpoint/symbol state hub) parked — [Phase 1 plan](docs/plans/2026-06-12-multiple-top-level-windows.md) · [Phase 2 plan](docs/plans/2026-06-12-multiple-top-level-windows-phase2.md)
 
 ## DRMON — CLEANUP
 
