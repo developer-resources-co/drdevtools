@@ -32,7 +32,7 @@ Plan-first: non-trivial work gets a `docs/plans/YYYY-MM-DD-<topic>.md` and a TOD
 
 ## DRMON — UI / UX
 
-- [verify] **Support multiple "monitors"** (as windows) — Option A implemented on `feature/drmon-option-a-multiterm`: one drmon process drives N xterms, each an independent desktop sharing one MAME connection. All verifications passed; **pending merge to main** — [Option A plan](docs/plans/2026-06-12-drmon-option-a-single-process-multi-terminal.md) · [Phase 2 plan (shared state, parked)](docs/plans/2026-06-12-multiple-top-level-windows-phase2.md)
+_(none)_
 
 ## DRMON — CLEANUP
 
@@ -100,6 +100,7 @@ _(none)_
 
 ## DONE
 
+- [x] 2026-06-13 — Support multiple "monitors" (Option A): one drmon process drives N in-process xterms, each an independent desktop (per-terminal SCREEN + virtualized screenWidth/Height/Size) sharing one MAME connection; Windows▸New Window opens an in-process terminal; spawned desktops send Alt as ESC-prefix; ~293 LOC isolated; all verifications passed, merged to main — [plan](docs/plans/2026-06-12-drmon-option-a-single-process-multi-terminal.md)
 - [x] 2026-06-12 — Phase 3 Tier 3 — DAP symbol loading: fresh `SymbolTable` (binary `.sld` + Sierra COFF) in `linux/dap/`; `--symbols` CLI flag; `disassemble` label annotation, `evaluate` symbol lookup, `setBreakpoints` source-line resolution, `loadedSources` handler; 5/5 reproducible verifications — [plan](docs/plans/2026-06-12-phase-3-drmon-dap-tier-3-symbol-loading.md)
 - [x] 2026-06-12 — Phase 3 Tier 2 — DAP disassembly view: `dis816_dap.cpp`/`dis68000_dap.cpp` wrappers + `disasm_preamble.hpp`/`disasm_stubs.cpp` break `moninc.hpp` dependency; `procMode` from live FLAGS; 5/5 reproducible verifications (VS Code pane needs live MAME) — [plan](docs/plans/2026-06-12-phase-3-drmon-dap-tier-2-disassembly-view.md)
 - [x] 2026-06-12 — SPC700 (SNES audio co-CPU) debugging UI: editable **SPC register window** (Alt-N, `PC/A/X/Y/SP/PSW` via bridge `GA`/`PA`) + **APU-RAM memory window** (`MTYPE_SPC`, Type→SPC RAM or Ctrl-R, byte dump via `RA`/`ReadSlaveApuRam`); guarded `#ifdef SPC700` (feature, not platform — SNES block `#define`s it, genmon excludes all of it); caught+fixed a `mTypeText[]` NULL-deref; 27/27 bridge tests, smoke + connected TUI clean — [plan](docs/plans/2026-06-12-spc700-window.md)
