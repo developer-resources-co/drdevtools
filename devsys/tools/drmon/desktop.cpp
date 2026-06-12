@@ -60,7 +60,7 @@ extern FLAG        exprOpen;    extern _object *exprObjPtr;
 extern FLAG        spcRegOpen;  extern _object *spcRegObjPtr;
 #endif
 extern _object    *searchObjPtr;
-extern unsigned short screenWidth, screenHeight;   // SHARED (uniform terminal size)
+extern unsigned short screenWidth, screenHeight, screenSize;
 
 //-----------------------------------------------------------------------------
 
@@ -75,6 +75,7 @@ static void desktop_save(Desktop *d)
     d->layBase = layBase; d->refreshAll = refreshAll; d->refreshEnable = refreshEnable;
     d->pObjBase = pObjBase; d->frontObj = frontObj;
     d->screen = screen; d->screen2 = screen2; d->scrBuffer = scrBuffer; d->scrBuffer2 = scrBuffer2;
+    d->screenW = screenWidth; d->screenH = screenHeight; d->screenSz = screenSize;
     d->cursorX = cursorX; d->cursorY = cursorY; d->curOn = curOn; d->cursorInsert = cursorInsert;
     d->menuBarObject = menuBarObject; d->managerObjPtr = managerObjPtr; d->messageLayer = messageLayer;
     d->commandWindow = commandWindow; d->cmdObjPtr = cmdObjPtr;
@@ -96,6 +97,7 @@ static void desktop_load(Desktop *d)
     layBase = d->layBase; refreshAll = d->refreshAll; refreshEnable = d->refreshEnable;
     pObjBase = d->pObjBase; frontObj = d->frontObj;
     screen = d->screen; screen2 = d->screen2; scrBuffer = d->scrBuffer; scrBuffer2 = d->scrBuffer2;
+    screenWidth = d->screenW; screenHeight = d->screenH; screenSize = d->screenSz;
     cursorX = d->cursorX; cursorY = d->cursorY; curOn = d->curOn; cursorInsert = d->cursorInsert;
     menuBarObject = d->menuBarObject; managerObjPtr = d->managerObjPtr; messageLayer = d->messageLayer;
     commandWindow = d->commandWindow; cmdObjPtr = d->cmdObjPtr;

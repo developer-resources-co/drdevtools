@@ -31,6 +31,7 @@ struct Desktop
     _object     *pObjBase;
     _object     *frontObj;
     char far    *screen, *screen2, *scrBuffer, *scrBuffer2;
+    unsigned short screenW, screenH, screenSz;   // this terminal's dimensions
     int          cursorX, cursorY;
     FLAG         curOn;
     int          cursorInsert;
