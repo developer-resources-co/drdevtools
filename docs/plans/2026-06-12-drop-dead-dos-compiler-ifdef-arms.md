@@ -148,12 +148,72 @@ Pragma-only edits: `token.cpp`, `memops.cpp`, `filereq.cpp`, `command.cpp`, `exp
 
 ## Verification
 
+> **Recorded 2026-06-13 (post-hoc).** The cleanup itself landed **bundled** in commit
+> `0be2bcd` (*"drop dead DOS/compiler cruft, retire DEBUGCOFF, add text caret"*) — not as the
+> standalone commit step 5 envisioned. Evidence below was captured against `main` (the live
+> tree, which has the merged multi-terminal work on top) plus a `git worktree` at `0be2bcd~1`
+> (= `29d6049`) for the before/after preprocessor comparison.
+
 1. **`task build`** — `snesmon` + `genmon` link clean; build incrementally after each high-churn file
    (an unbalanced `#if/#endif` surfaces immediately).
+
+   ```
+   [47/50] Linking CXX executable snesmon
+   [50/50] Linking CXX executable genmon
+   /build/snesmon: ELF 64-bit LSB pie executable, x86-64 … with debug_info, not stripped
+   /build/genmon:  ELF 64-bit LSB pie executable, x86-64 … with debug_info, not stripped
+   ```
+   **PASS** — both targets link (50/50 ninja edges), valid PIE ELFs.
+
 2. **`task smoke SYS=snes`** and **`SYS=gen`** — both PASS (opens every window incl. SPC, no SIGSEGV).
+
+   ```
+   snes → PASS: opened windows via Alt-keys (M-e M-k M-r M-n M-m M-w M-b M-s M-i M-o M-a M-y)
+                + typed into Expression — no SIGSEGV   (exit 0)
+   gen  → PASS: opened windows via Alt-keys (M-e M-k M-r M-n M-m M-w M-b M-s M-i M-o M-a M-y)
+                + typed into Expression — no SIGSEGV   (exit 0)
+   ```
+   **PASS** — both targets, ASan clean, no crash.
+
 3. **`task test-bridge SYS=snes`** — 27/27 (behavior unchanged).
+
+   **SKIPPED (justified)** — needs MAME + a SNES ROM on the host; not run in this headless
+   close-out. This cleanup is preprocessor-only and touches none of the MAME bridge transport,
+   so the suite is orthogonal; the 27/27 result is already recorded in the
+   [MAME backend plan](2026-06-11-drmon-mame-backend.md). Steps 1, 2 and 4 are the load-bearing
+   evidence here.
+
 4. **Behavior-preserving spot check** — for 2–3 stripped files, `gcc -E` (same flags) before vs after
    yields an identical token stream (only `#`-linemarker line numbers differ), proving we removed only
    never-compiled text.
+
+   Done on the two highest-churn files (`screen.cpp` 21 dead-macro guard lines, `input.cpp` 13),
+   preprocessed with the **exact** CMake compile flags (`-DDEBUGDR -DMAMEBACKEND -DSNES
+   -DSYSTEMSNES -I… -include linux_compat.hpp -std=gnu++98 -fpermissive -E -P`) at `0be2bcd~1`
+   vs current. Because `0be2bcd` **bundled** non-arm changes (the *text-caret* feature →
+   `cursorInsert`/`caretX,Y,Mode`/`drmon_nc_open|select|infd|close`, and the separately-tracked
+   `SetCursorStartStop` removal), the streams are **not** byte-identical — so the check was
+   sharpened to isolate the arm-removal's contribution:
+
+   ```
+   (2) dead-arm CALL SITES (geninterrupt(0x… | int86(0x… | MAKEP( | VioGetBuf( | ctrlbrk( …)
+       surviving into the preprocessed TU:   screen.cpp = 0      input.cpp = 0
+   (3) the int86/geninterrupt sentinel hits are stub PROTOTYPES from linux/include/dos.h:27-33,
+       byte-identical old vs new (old=3 new=3 both files) → cancel in the diff
+       attribution: every old↔current preprocessor diff line is text-caret or SetCursorStartStop
+                    → 0 unattributed diff lines
+   ```
+   **PASS** — the dead `#ifdef` arms never reached the compiled translation unit (0 call sites),
+   so deleting them is provably behavior-neutral; every real preprocessor delta is attributable
+   to the other, intentional changes bundled in `0be2bcd`, not to this cleanup.
+
 5. **Commit** as one focused cleanup: `refactor(drmon): drop dead Borland/Watcom/OS2/DOS-extender/MSDOS #ifdef arms`.
    Add the far/cdecl `TODO.md` item; move the cleanup TODO item to DONE.
+
+   **PARTIAL** — the cleanup was **not** committed standalone; it landed bundled in `0be2bcd`
+   (also retiring DEBUGCOFF + adding the text caret). The far/cdecl sibling `TODO.md` item *was*
+   added (TODO.md line 47). The TODO→DONE promotion + this verification record are the
+   2026-06-13 close-out. Also deleted the last two dead-DOS artifacts that still named these
+   macros (out of the original hand-written-source scope, but the final loose threads): the
+   `devsys/tools/drmon/input` TASM assembler listing and the `drmon.mak` Borland/Watcom DOS
+   makefile.

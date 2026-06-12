@@ -36,14 +36,6 @@ _(none)_
 
 ## DRMON — CLEANUP
 
-- [ ] **Finish dropping Borland / Watcom / OS2 / DOS-extender support.** `compat.hpp` is
-  Linux-only now, but legacy `#ifdef __BORLANDC__` / `__WATCOMC__` / `__OS2__` / `DOSX286` /
-  `__MSDOS__` (+ `__SC__` / `__TURBOC__`) arms remain scattered across the tree. Strip the dead
-  arms so the source carries a single modern/Linux path; also drop the never-implemented
-  `MASTERSYSTEM` / `NES` stub hooks (no disassembler/reg-map exists). Keep `DEBUGZARDOZ` / `EMUL`
-  (revivable build variants) and the `far`/`cdecl` shims (see below); `DEBUGCOFF` is being removed
-  separately ([plan](docs/plans/2026-06-12-retire-debugcoff-tui-loader.md)).
-  [plan](docs/plans/2026-06-12-drop-dead-dos-compiler-ifdef-arms.md).
 - [ ] **Strip the `far` / `near` / `huge` / `cdecl` / `pascal` keyword shims.** These are
   `#define`d to nothing in `linux/linux_compat.hpp` and sprinkled across ~50 files. Remove the
   keywords from declarations so the source no longer leans on the compat macros. Larger,
@@ -100,6 +92,7 @@ _(none)_
 
 ## DONE
 
+- [x] 2026-06-13 — Drop dead DOS/compiler `#ifdef` arms (Borland/Watcom/OS2/DOSX286/MSDOS/SC/TurboC) + `MASTERSYSTEM`/`NES` stub hooks; kept `DEBUGZARDOZ`/`EMUL` + far/cdecl shims. Executed bundled in `0be2bcd`; verification recorded (build+smoke snes/gen PASS, `gcc -E` proves arm-removal behavior-neutral); deleted last dead-DOS artifacts `input` (TASM listing) + `drmon.mak` — [plan](docs/plans/2026-06-12-drop-dead-dos-compiler-ifdef-arms.md)
 - [x] 2026-06-13 — Support multiple "monitors" (Option A): one drmon process drives N in-process xterms, each an independent desktop (per-terminal SCREEN + virtualized screenWidth/Height/Size) sharing one MAME connection; Windows▸New Window opens an in-process terminal; spawned desktops send Alt as ESC-prefix; ~293 LOC isolated; all verifications passed, merged to main — [plan](docs/plans/2026-06-12-drmon-option-a-single-process-multi-terminal.md)
 - [x] 2026-06-12 — Phase 3 Tier 3 — DAP symbol loading: fresh `SymbolTable` (binary `.sld` + Sierra COFF) in `linux/dap/`; `--symbols` CLI flag; `disassemble` label annotation, `evaluate` symbol lookup, `setBreakpoints` source-line resolution, `loadedSources` handler; 5/5 reproducible verifications — [plan](docs/plans/2026-06-12-phase-3-drmon-dap-tier-3-symbol-loading.md)
 - [x] 2026-06-12 — Phase 3 Tier 2 — DAP disassembly view: `dis816_dap.cpp`/`dis68000_dap.cpp` wrappers + `disasm_preamble.hpp`/`disasm_stubs.cpp` break `moninc.hpp` dependency; `procMode` from live FLAGS; 5/5 reproducible verifications (VS Code pane needs live MAME) — [plan](docs/plans/2026-06-12-phase-3-drmon-dap-tier-2-disassembly-view.md)
