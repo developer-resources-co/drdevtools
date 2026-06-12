@@ -8,10 +8,6 @@
 #include        <fstream.h>
 #include        "help.hpp"
 
-#ifdef DEBUGCOFF
-#include        "coff.hpp"
-#endif
-
 //=============================================================================
 
 #define FILENAME_SIZE 9
@@ -51,43 +47,6 @@ FileMenuLoad(_menuItem *iPtr,_object *oPtr,int choice)
 #endif
 
 //============================================================================
-
-#ifdef DEBUGCOFF
-
-void
-LoadCOFFFile(void *data,char *path,char *fileName)
-{
-	ifstream *coffStream;
-	strcpy(textBuffer,fileName);
-	UnPadString(textBuffer);
-
-	FILE* fp;
-	if ( fp = fopen( textBuffer, "rb" ) )
-	 {
-		delete coffBase;
-//              coffStream = (istream *) new ifstream(textBuffer,ios::in|ios::binary);
-		coffStream = new ifstream(textBuffer,ios::in|ios::binary);
-//              coffBase = new coff( fp , coffStream );
-		coffBase = new coff( fp , (istream *)coffStream );
-		fclose( fp );
-//              delete coffStream;
-	 }
-	// Translate symbols into debugger internal structures
-}
-
-//============================================================================
-
-FLAG
-FileMenuLoadCOFF(_menuItem *iPtr,_object *oPtr,int choice)
-{
-	int i;
-	strcpy(patternString,"*.out       ");
-	DoFileReq("Load COFF File",10,1,LoadCOFFFile,0);
-
-	return(boolean::TRUE);
-}
-
-#endif
 
 //==============================================================================
 
@@ -141,15 +100,6 @@ FileMenuQuit(_menuItem *iPtr,_object *oPtr,int choice)
 
 //============================================================================
 
-#ifdef __MSDOS__
-FLAG
-FileMenuDosShell(_menuItem *iPtr,_object *oPtr,int choice)
-{
-	DosShell();
-	return(boolean::TRUE);
-}
-#endif
-
 FLAG
 LoadINI(_menuItem *iPtr,_object *oPtr,int choice)
 {
@@ -172,13 +122,7 @@ menuItems fileMenu[] =
 #if defined( DEBUGDR ) || defined( DEBUGZARDOZ )
 	{"&Load...                 ",FileMenuLoad,       0},
 #endif
-#ifdef DEBUGCOFF
-	{"&Load COFF...            ",FileMenuLoadCOFF,   0},
-#endif
 	{"Execute &Script...       ",FileMenuExecute,    0},
-#ifdef __MSDOS__
-	{"&DOS Shell          Alt-D",FileMenuDosShell,   0},
-#endif
 	{"\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4" ,NULL,               0},
 	{"E&xit               Alt-X",FileMenuQuit,0},
 	{0,0,0}

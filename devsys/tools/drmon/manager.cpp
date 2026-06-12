@@ -345,11 +345,6 @@ GlobInput(_input *in,_object *oPtr)
 				case CMD_MENU:
 					ActivateMenuBar();
 					break;
-				case CMD_DOSSHELL:
-#ifdef __MSDOS__
-					DosShell();
-#endif
-					break;
 				case CMD_NEXTWINDOW:
 					 (layBase.Tail())->ToBack();
 					ActivateFrontWindow();

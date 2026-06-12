@@ -12,18 +12,13 @@
 
 //=============================================================================
 
-#include "coff.hpp"
-
 extern _object *symbolObjPtr;
 extern struct _symbolList symbolListBase;
 
 class _symbolList : public _stringList
 {
 public:
-	_symbolList() : _stringList() { addr = 0; ivType = 0; ivStorageClass = 0;
-#ifdef DEBUGCOFF
-	scope = NULL;
-#endif
+	_symbolList() : _stringList() { addr = 0;
 	}
 
 //	_stringList list;
@@ -33,12 +28,6 @@ public:
 		if(symbolObjPtr)
 			ChangeListRect((_window*)symbolObjPtr->layer,(_listRectDesc *)symbolObjPtr->dataPtr3,(_stringList *)&symbolListBase);
 	 }
-
-	uword Type() { return(ivType); }
-	uword Type( uword newType ) { ivType = newType; return(ivType); }
-
-	byte StorageClass() { return(ivStorageClass); }
-	byte StorageClass(byte newStorageClass ) { ivStorageClass = newStorageClass; return(ivStorageClass); }
 
 	ULONG *AddressAddr(void) { return(&addr); }
 
@@ -51,15 +40,8 @@ public:
 
 	void SymbolClear(void);
 
-#ifdef DEBUGCOFF
-	Scope* scope;
-#endif
-
 private:
 	ULONG addr;						// address of symbol
-	// New COFF stuff
-	uword ivType;
-	byte ivStorageClass;
 };
 
 //==============================================================================
@@ -68,7 +50,7 @@ extern FLAG symbolOpen;
 
 //==============================================================================
 
-_symbolList* AddSymbolQuick(ULONG addr, char *text, uword type=0, byte storageClass=C_LABEL );
+_symbolList* AddSymbolQuick(ULONG addr, char *text);
 errorcode AddSymbol(ULONG addr,char *string);
 errorcode AssignSymbol(char *name, ULONG value);
 errorcode SymbolNameClear(char *name);

@@ -10,7 +10,6 @@ FLAG OpenHelpFile(void);
 FLAG OpenHelpFile(void);
 FLAG OpenBreak(void);
 FLAG OpenSource(void);
-void DosShell(void);
 FLAG OpenTextView(void);
 FLAG OpenAbout(void);
 FLAG OpenASCIIChart(void);

@@ -61,9 +61,10 @@ errorcode TokenizeExpression( token * * t , char * * s )
 			case '%':
 				(*s)--;	/* put back that character */
 				AddToken(t,TOKEN_CONST);
-#pragma warn -pia
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wparentheses"
 				if (error = AddConst(t,s))
-#pragma warn +pia
+#pragma GCC diagnostic pop
 					return error;
 				break;
 			case '=':

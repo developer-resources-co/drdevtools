@@ -174,9 +174,10 @@ SetRegAsSymbol(char *string, ULONG v)
 
 	sPtr = string;
 	sPtr2 = s;
-#pragma warn -pia
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wparentheses"
 	while ( *sPtr2++ = toupper(*sPtr++));
-#pragma warn +pia
+#pragma GCC diagnostic pop
 
 	for ( i = 0 ; i<NUMREGS; i++)
 	 {

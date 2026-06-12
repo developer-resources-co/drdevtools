@@ -4,7 +4,6 @@
 
 #include "moninc.hpp"
 #include "sld.hpp"
-#include "coff.hpp"
 
 //==============================================================================
 
@@ -248,115 +247,6 @@ drSld::ReSyncSource(ULONG pc)
 #endif
 
 //==============================================================================
-
-#ifdef DEBUGCOFF
-
-//==============================================================================
-///////////////////////////////////////////////////////////////////////////////
-//
-// EXTERNAL INTERFACE CALLS
-//
-
-errorcode
-coffSld::SourceLoad(char *fileName)
-{
-	// not used by coff, use load from file menu instead
-	return(NOERR);
-}
-
-//============================================================================
-// convert current source code line to address, for setting breakpoints, etc.
-
-ULONG
-coffSld::SourceToAddress(char *fileName, UWORD line)
-{
-	errorcode error = NOERR;
-
-	coffSection *csPtr;
-	coffLineNo *lnPtr;
-
-	boolean found = boolean::FALSE;
-
-	if(coffBase)
-	 {
-			// for now, start at top each time
-		csPtr = coffBase->GetSectionPtr();
-
-		while(csPtr && !found)
-		 {
-			lnPtr = &csPtr->GetLineNo();
-
-			if(lnPtr->FindAddress(fileName,line))
-				found = boolean::TRUE;
-			else
-				csPtr = csPtr->GetNext();
-		 }
-
-		if(found)
-			return(lnPtr->CurrentPC());
-		else
-			error = ERROR_NOSOURCEINFO;
-
-		if(error)
-			PrintError(error);
-	 }
-}
-
-//==============================================================================
-
-void
-coffSld::ReSyncSource(ULONG pc)
-{
-	errorcode error = NOERR;
-
-	coffSection *csPtr;
-	coffLineNo *lnPtr;
-
-	boolean found = boolean::FALSE;
-
-	if(coffBase)
-	 {
-		if(badPC == pc || SourceAddress() == pc)
-			return;
-
-			// for now, start at top each time
-		csPtr = coffBase->GetSectionPtr();
-
-		while(csPtr && !found)
-		 {
-			lnPtr = &csPtr->GetLineNo();
-
-			if(lnPtr->FindSource(pc))
-			 {
-				found = boolean::TRUE;
-				exactMatch = lnPtr->ExactMatch();
-			 }
-			else
-				csPtr = csPtr->GetNext();
-		 }
-
-		if(found)
-		 {
-			sourceLine = lnPtr->CurrentSourceLine();
-			SourceAddress(pc);
-		    const char *fnPtr = lnPtr->FileName();
-			if(fnPtr)
-				strncpy(fileName,fnPtr,_MAX_PATH);
-		 }
-		else
-			error = ERROR_NOSOURCEINFO;
-
-
-		if(error)
-			PrintError(error);
-		if(error == ERROR_NOSOURCEINFO)
-			badPC = pc;
-	 }
-}
-
-//==============================================================================
-
-#endif
 
 
 #if defined( DEBUGZARDOZ )

@@ -56,102 +56,6 @@ static char fileReqFileName[13] = "            ";
 
 //=============================================================================
 
-#if defined( __WATCOMC__ )
-#include <direct.h>
-
-inline int getdisk()
-	{
-	unsigned drive;
-
-	_dos_getdrive( &drive );
-	return( drive );
-	}
-
-
-inline int setdisk( unsigned drive )
-	{
-	unsigned totalDrives;
-
-	_dos_setdrive( drive, &totalDrives );
-
-	return( totalDrives );
-	}
-
-void
-ScanDir( void )
-	{
-	_fileList* listNode;
-	DIR* dir;
-	struct dirent* fileBlock;
-
-	InitListBase( (_list*)&fileListBase );
-	InitListBase( (_list*)&dirListBase );
-
-	// first do directories
-	dir = opendir( "*.*" );
-	assert( dir );
-
-	while ( fileBlock = readdir( dir ) )
-		{
-		if ( fileBlock->d_attr & _A_SUBDIR )
-			{
-			if ( listNode = (_fileList*)malloc( sizeof( _fileList ) ) )
-				{
-				if (listNode->list.Name(DupString(fileBlock->d_name)))
-					{
-					InsertListNode(GetLastNode((_list *)&dirListBase),(_list *)listNode);
-					}
-				else
-					{
-					free( listNode );
-					PrintError( ERROR_NOMEM );
-					break;
-					}
-				}
-			else
-				{
-				PrintError(ERROR_NOMEM);
-				break;
-				}
-			}
-		}
-	closedir( dir );
-
-	// now do files
-	dir = opendir( patternString );
-	assert( dir );
-
-	while ( fileBlock = readdir( dir ) )
-		{
-		if ( !(fileBlock->d_attr & _A_SUBDIR) )
-			{
-			if ( listNode = (_fileList*)malloc( sizeof( _fileList ) ) )
-				{
-				if (listNode->list.Name(DupString(fileBlock->d_name)))
-					{
-					InsertListNode(GetLastNode((_list *)&fileListBase),(_list *)listNode);
-					}
-				else
-					{
-					free( listNode );
-					PrintError( ERROR_NOMEM );
-					break;
-					}
-				}
-			else
-				{
-				PrintError(ERROR_NOMEM);
-				break;
-				}
-			}
-		}
-	closedir( dir );
-
-	SortListRect((_stringList *)&fileListBase);
-	SortListRect((_stringList *)&dirListBase);
-	}
-
-#else
 
 void
 ScanDir(void)
@@ -228,7 +132,6 @@ ScanDir(void)
 	SortListRect((_stringList *)&dirListBase);
 	return;
 }
-#endif
 
 //===========================================================================
 #include <direct.h>

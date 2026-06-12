@@ -239,9 +239,10 @@ HandleExpr(_object *oPtr)
 				gPtr = FindGadget(&pWindow->gadgBase,EXPGAD_RESBIN);
 				*PrintBinary32Bits(gPtr->gadgText,exprAnswer) = 0;
 
-#pragma warn -pia
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wparentheses"
 				if(sPtr = FindHexSymbol(exprAnswer))
-#pragma warn +pia
+#pragma GCC diagnostic pop
 					*PrintString(textBuffer,sPtr->Name()) = 0;
 				else
 					textBuffer[0] = 0;

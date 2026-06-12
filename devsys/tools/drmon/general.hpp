@@ -7,10 +7,6 @@
 
 //=============================================================================
 
-#if defined( __OS2__ ) || defined( __SC__ )
-void delay( unsigned milliseconds );
-#endif
-
 extern FLAG printCheckForSymbol;
 extern char hexTable[16];
 

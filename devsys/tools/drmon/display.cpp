@@ -15,12 +15,7 @@ extern char far *screen;
 
 //=============================================================================
 
-#ifdef __OS2__
-#include <bse.h>
-char _far16 *scrBuffer;
-#else
 char far* scrBuffer;
-#endif
 
 char far *scrBuffer2 = NULL;
 unsigned int displayWidth,displayHeight;
@@ -118,7 +113,8 @@ UpdateScreen(void)
 	if(twoScreen)
 		CopyScreen(screen2,scrBuffer2,screenSize2);
 #if defined(__GNUC__)
-	drmon_nc_blit((const unsigned char*)screen, screenWidth, screenHeight);
+	drmon_nc_blit((const unsigned char*)screen, screenWidth, screenHeight,
+		cursorX, cursorY, curOn ? (cursorInsert ? 1 : 0) : -1);
 #endif
 	refreshAll = boolean::FALSE;
 }
@@ -191,7 +187,7 @@ SetupDisplay(void)
 	{
 
 						// kts check for no memory
-#if defined(__MSDOS__) || defined(__GNUC__)
+#if defined(__GNUC__)
 	// The mouse-pointer backdrop (ErasePointer) caches a raw pointer into scrBuffer;
 	// drop it before we free scrBuffer so a later ErasePointer can't write through the
 	// dangling pointer after a resize realloc (use-after-free caught by ASan).
@@ -199,11 +195,6 @@ SetupDisplay(void)
 	if ( scrBuffer ) free( scrBuffer );
 	scrBuffer = (char far *)farmalloc(screenSize);
 #endif
-
-#ifdef __OS2__
-	VioGetBuf( (PULONG16)&scrBuffer, &screenSize, 0 );
-#endif
-
 
 	ClearScrBuff(scrBuffer,backgroundChar,backgroundAttr,screenSize);
 

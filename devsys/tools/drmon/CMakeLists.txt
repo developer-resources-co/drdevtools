@@ -18,9 +18,9 @@ set(DRMON_CXX_SRC
     symbol.cpp board.cpp listrect.cpp menu.cpp object.cpp layer.cpp
     app.cpp info.cpp drmon.cpp display.cpp screen.cpp list.cpp memory.cpp
     reg.cpp spc_reg.cpp mouse.cpp window.cpp gadget.cpp input.cpp macro.cpp manager.cpp
-    menubar.cpp message.cpp memops.cpp break.cpp expr.cpp control.cpp shell.cpp
+    menubar.cpp message.cpp memops.cpp break.cpp expr.cpp control.cpp
     textview.cpp console.cpp help.cpp command.cpp error.cpp cmdmacro.cpp
-    charts.cpp source.cpp which.cpp watch.cpp mem.cpp sld.cpp coff.cpp
+    charts.cpp source.cpp which.cpp watch.cpp mem.cpp sld.cpp
     zardoz.cpp monmenu.cpp about.cpp general.cpp config.cpp filereq.cpp
     profile.cpp filename.cpp search.cpp
     # Linux port shims:

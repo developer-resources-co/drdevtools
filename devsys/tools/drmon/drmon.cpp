@@ -5,9 +5,6 @@
 #include <io.h>
 #include <time.h>
 #include <setjmp.h>
-#ifdef DOSX286
-#include <phapi.h>
-#endif
 
 #include "moninc.hpp"
 #include "about.hpp"
@@ -226,10 +223,6 @@ MainLoop()
 
 //=============================================================================
 
-#ifdef DOSX286
-PEHANDLER oldgp;
-#endif
-
 errorcode CleanUp( char* szError = NULL );
 
 errorcode
@@ -241,10 +234,6 @@ CleanUp( char* szError )
 
 	delete drMon;
 	if ( xferBuffer ) farfree( xferBuffer );
-
-#ifdef DOSX286
-	DosSetExceptionHandler( 0, oldgp, NULL );
-#endif
 
 	if ( szError && *szError )
 		{
@@ -258,29 +247,12 @@ CleanUp( char* szError )
 
 jmp_buf toplevel;
 
-#ifdef DOSX286
-
-void interrupt far gpfault( EXCEP_FRAME e )
-	{
-	PrintToStatWindow( "GP Fault\n" );
-	PrintToStatWindow( "AX=%04x BX=%04x CX=%04x DX=%04x  ES=%04x DS=%04x\n", e.ax, e.bx, e.cx, e.dx, e.es, e.ds );
-	PrintToStatWindow( "DI=%04x SI=%04x BP=%04x SP=%04x  ERRORCODE=%04x\n", e.di, e.si, e.bp, 0, e.error_code );
-	UpdateScreen();
-
-	longjmp( toplevel, 0 );
-	}
-#endif
-
 //============================================================================
 
 int
 main( int argc, char* argv[] )
 	{
 	char* errorString;
-
-#ifdef DOSX286
-	DosSetExceptionHandler( 0x0D, gpfault, &oldgp );
-#endif
 
 	errorString = Init( argc, argv );
 

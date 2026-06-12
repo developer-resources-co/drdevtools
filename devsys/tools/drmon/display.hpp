@@ -9,12 +9,7 @@
 
 //=============================================================================
 
-#ifdef __OS2__
-extern char _far16 *scrBuffer;
-#include <os2.h>
-#else
 extern char far *scrBuffer;
-#endif
 
 extern unsigned int displayWidth,displayHeight;
 extern unsigned int virtualXOffset,virtualYOffset,virtualXSize,virtualYSize;

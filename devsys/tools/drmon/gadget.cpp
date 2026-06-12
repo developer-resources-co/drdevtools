@@ -12,6 +12,7 @@
 #include	"keys.hpp"
 #include	"monkeys.hpp"
 #include	"input.hpp"
+#include	"screen.hpp"
 #include	"gadget.hpp"
 #include	"object.hpp"
 #include	"listrect.hpp"
@@ -426,10 +427,7 @@ ActivateStrGadget(_window* pWindow,_gadget *gPtr)
 	pWindow->cursorOn = boolean::TRUE;
 	pWindow->cursorX = gPtr->cursorX+gPtr->xPos;
 	pWindow->cursorY = gPtr->yPos;
-	if(gPtr->mode & STRGADF_MODE_INSERT)
-		pWindow->cStartLine = 4;
-	else
-		pWindow->cStartLine = 6;
+	cursorInsert = (gPtr->mode & STRGADF_MODE_INSERT) ? 1 : 0;
 	UpdateCursor();
 }
 
@@ -456,10 +454,7 @@ StrGadgInput(_window* pWindow,_gadget *gPtr,_input *in)
 		 {
 			case KEY_INSERT:
 				gPtr->mode ^= STRGADF_MODE_INSERT;
-				if(gPtr->mode & STRGADF_MODE_INSERT)
-					pWindow->cStartLine = 4;
-				else
-					pWindow->cStartLine = 6;
+				cursorInsert = (gPtr->mode & STRGADF_MODE_INSERT) ? 1 : 0;
 				UpdateCursor();
 				break;
 			case KEY_DELETE:

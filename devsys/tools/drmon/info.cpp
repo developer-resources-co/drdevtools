@@ -4,24 +4,6 @@
 
 #include "moninc.hpp"
 #include "help.hpp"
-#include "coff.hpp"
-
-#if defined( __WATCOMC__ )
-#include <i86.h>
-
-struct meminfo {
-    unsigned LargestBlockAvail;
-    unsigned MaxUnlockedPage;
-    unsigned LargestLockablePage;
-    unsigned LinAddrSpace;
-    unsigned NumFreePagesAvail;
-    unsigned NumPhysicalPagesFree;
-    unsigned TotalPhysicalPages;
-    unsigned FreeLinAddrSpace;
-    unsigned SizeOfPageFile;
-    unsigned Reserved[3];
-} MemInfo;
-#endif
 
 //============================================================================
 
@@ -50,46 +32,6 @@ ProjectInfoRoutine(_object *oPtr)
 
 	unsigned int nLine = 2;
 
-#ifdef __MSDOS__
-	size = coreleft();
-#endif
-
-#ifdef __WATCOMC__
-#define DPMI_INT	0x31
-
-    union REGS regs;
-    struct SREGS sregs;
-
-    regs.x.eax = 0x00000500;
-    memset( &sregs, 0, sizeof(sregs) );
-    sregs.es = FP_SEG( &MemInfo );
-    regs.x.edi = FP_OFF( &MemInfo );
-
-    int386x( DPMI_INT, &regs, &regs, &sregs );
-	size = MemInfo.LargestBlockAvail;
-#if 0
-    printf( "Largest available block (in bytes): %lu\n",
-	    MemInfo.LargestBlockAvail );
-    printf( "Maximum unlocked page allocation: %lu\n",
-	    MemInfo.MaxUnlockedPage );
-    printf( "Pages that can be allocated and locked: %lu\n",
-	    MemInfo.LargestLockablePage );
-    printf( "Total linear address space including allocated"
-	    " pages: %lu\n", MemInfo.LinAddrSpace );
-    printf( "Number of free pages available: %lu\n",
-	     MemInfo.NumFreePagesAvail );
-    printf( "Number of physical pages not in use: %lu\n",
-	     MemInfo.NumPhysicalPagesFree );
-    printf( "Total physical pages managed by host: %lu\n",
-	     MemInfo.TotalPhysicalPages );
-    printf( "Free linear address space (pages): %lu\n",
-	     MemInfo.FreeLinAddrSpace );
-    printf( "Size of paging/file partition (pages): %lu\n",
-	     MemInfo.SizeOfPageFile );
-#endif
-
-#endif
-
 	sPtr = PrintString(textBuffer,"Memory Free: ");
 	*PrintDecimal32Bits(sPtr,size) = '\0';
 	PrintLay(lPtr,textBuffer,3,nLine++);
@@ -109,11 +51,6 @@ ProjectInfoRoutine(_object *oPtr)
 	*sPtr = 0;
 	PrintLay(lPtr,textBuffer,3,nLine++);
 
-#ifdef DEBUGCOFF
-	if ( coffBase )
-		{
-		}
-#endif
 }
 
 

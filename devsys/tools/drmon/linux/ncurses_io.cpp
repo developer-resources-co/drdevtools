@@ -166,7 +166,13 @@ static const wchar_t kCp437[256] = {
 // The buffer stride stays `w` (drmon's screenWidth), but never write past the actual
 // terminal (COLS/LINES): when drmon's floored 80x25 exceeds a smaller terminal, writing
 // at x>=COLS corrupts ncurses' model and lingers after a regrow. Clip the visible span.
-void drmon_nc_blit(const unsigned char *buf, int w, int h)
+// caretMode: -1 = no caret, 0 = overwrite (reverse block), 1 = insert (underline).
+// Self-drawn: the terminal hardware cursor stays hidden (curs_set(0)); the caret is
+// overlaid as an ncurses attribute on one cell, so it needs no save/restore (the
+// front buffer is regenerated every UpdateScreen).  A_UNDERLINE expresses what the
+// CGA attr byte can't (color text mode has no underline bit).
+void drmon_nc_blit(const unsigned char *buf, int w, int h,
+                   int caretX, int caretY, int caretMode)
 {
     if (!g_inited || !buf) return;
     int vw = (w < COLS)  ? w : COLS;     // visible width  (buffer stride stays w)
@@ -178,6 +184,8 @@ void drmon_nc_blit(const unsigned char *buf, int w, int h)
             wchar_t wc[2] = { kCp437[ch] ? kCp437[ch] : L' ', 0 };
             cchar_t cc;
             attr_t  a = (attr & 0x08) ? A_BOLD : 0;     // bright foreground
+            if (caretMode >= 0 && x == caretX && y == caretY)
+                a |= (caretMode == 1) ? A_UNDERLINE : A_REVERSE;
             setcchar(&cc, wc, a, (short)pairFor(attr), NULL);
             mvadd_wch(y, x, &cc);
         }

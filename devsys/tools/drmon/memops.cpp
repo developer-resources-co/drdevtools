@@ -321,9 +321,10 @@ void
 LoadGUIBinaryFile(ULONG addr, void *dataPtr)
 {
 	errorcode error;
-#pragma warn -pia
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wparentheses"
 	if(error = LoadBinaryFile(addr,(char *)dataPtr))
-#pragma warn +pia
+#pragma GCC diagnostic pop
 		PrintError(error);
 }
 
@@ -357,9 +358,10 @@ void
 SaveGUIBinaryFile(ULONG outLen,void *dataPtr)
 {
 	errorcode error;
-#pragma warn -pia
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wparentheses"
 	if(error = SaveBinaryFile(globTemp,outLen,(char *)dataPtr))
-#pragma warn +pia
+#pragma GCC diagnostic pop
 		PrintError(error);
 }
 //=============================================================================

@@ -6,7 +6,8 @@ extern "C" {
 #endif
 void           drmon_nc_init(void);
 void           drmon_nc_shutdown(void);
-void           drmon_nc_blit(const unsigned char *buf, int w, int h);
+void           drmon_nc_blit(const unsigned char *buf, int w, int h,
+                             int caretX, int caretY, int caretMode);
 unsigned char *drmon_nc_shiftbyte(void);
 int            drmon_nc_keyready(void);
 int            drmon_nc_getbyte(void);

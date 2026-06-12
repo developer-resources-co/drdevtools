@@ -1303,9 +1303,10 @@ CmdWinInput(_input *in,_object *oPtr)
 							{
 								case CMDGAD_CMD:
 									gPtr = pWindow->activeGadget;
-#pragma warn -pia
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wparentheses"
 									if(error = DoCmd(gPtr))
-#pragma warn +pia
+#pragma GCC diagnostic pop
 										CmdError(error);
 									else
 									{

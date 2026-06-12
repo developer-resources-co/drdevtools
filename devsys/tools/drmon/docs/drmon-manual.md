@@ -251,7 +251,7 @@ The authoritative bindings for this Linux build (from `monkeys.hpp`).
 | `F7` | Step Into / Trace *(backend)* | `Alt+X` | Quit |
 | `F8` | Step Over *(backend)* | `Alt+Z` | Zoom window |
 | `Ctrl+F7` / `Ctrl+F8` | Step Into / Over (assembly) | `Alt+P` | Log window to file |
-| `Alt+F7` / `Alt+F8` | Step Into / Over (source) | `Alt+D` | Shell *(legacy; no-op on Linux)* |
+| `Alt+F7` / `Alt+F8` | Step Into / Over (source) | | |
 
 ### Text-field editing (string gadgets)
 
@@ -392,7 +392,6 @@ Wired in Phase 2 but still incomplete, even when connected:
 - **Console** receives nothing — the target's print channel isn't carried over the bridge yet.
 - **All Genesis non-CPU state** (VDP/CRAM/VSRAM, Z80) is still stubbed. (See the project TODO.)
   The SNES PPU/VRAM, SPC700 registers, and SPC RAM windows *do* read live data when connected.
-- **`Alt+D` shell** is a DOS-era no-op on Linux.
 
 See [BUGS.md](../../../../docs/BUGS.md) for fixed issues and the
 [port plan](../../../../docs/plans/2026-06-10-port-drmon-linux.md) for the phased roadmap.

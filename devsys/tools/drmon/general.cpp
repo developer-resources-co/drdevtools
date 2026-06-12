@@ -14,17 +14,6 @@
 #include "general.hpp"
 #include "screen.hpp"
 
-#ifdef __OS2__
-#define INCL_BASE
-#include <os2.h>
-
-void delay( unsigned milliseconds )
-	{
-	DosSleep( milliseconds );
-	}
-#else
-#endif
-
 
 FLAG printCheckForSymbol = boolean::TRUE;
 
@@ -132,12 +121,13 @@ char * far
 Print32Bits(char *buffer,ULONG num)
 {
 #ifdef GENESIS
-#pragma warn -pia
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wparentheses"
 	_symbolList *sPtr;
 	if(printCheckForSymbol)
 		if(sPtr = FindHexSymbol(num))
 			return(PrintString(buffer,sPtr->Name()));
-#pragma warn +pia
+#pragma GCC diagnostic pop
 #endif
 		return(PrintRaw32Bits(buffer, num));
 }
@@ -290,32 +280,11 @@ PrintString(char *buffer, const char* string)
 void
 CopyScreen(char far *dBuff,char far *sBuff,unsigned int len)
 {
-#ifdef __OS2__
-	VioShowBuf( 0, screenSize, 0 );
-#elif __BORLANDC__
-	asm{
-		push	ds
-		push	es
-		push	si
-		push	di
-
-		lds		si,[bp+10]
-		les		di,[bp+6]
-		mov		cx,[bp+14]
-		shr		cx,1
-		rep		movsw
-		pop		di
-		pop		si
-		pop		es
-		pop		ds
-	 }
-#else
 	// Copy len bytes. The old body did `len /= 4` then copied `long`s — correct only
 	// where sizeof(long)==4 (16-bit DOS); on 64-bit Linux long is 8 bytes, so it copied
 	// 2x len and ran screenSize bytes past both buffers (garbled the screen at widths
 	// whose over-copy hit live heap, and corrupted the heap). memcpy copies exactly len.
 	memcpy(dBuff, sBuff, len);
-#endif
 }
 
 //=============================================================================

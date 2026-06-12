@@ -96,7 +96,6 @@ public:
 	unsigned int xMin,xMax,yMin,yMax;			// minumim & maximum sizes for window
 	unsigned int oldXPos,oldYPos,oldXSize,oldYSize;  	// for zoom & un-zoom operations
 	FLAG cursorOn;								// if zero, no cursor in this window
-	int cStartLine,cStopLine; 	  				// cursor top & bottom line settings for this window
 	unsigned int cursorX;						// cursor x position inside layer
 	unsigned int cursorY;						// cursor y position inside layer
     void (*activateRoutine)(_object *o);	// called whenever this layer becomes active

@@ -42,13 +42,5 @@
 // #include "dis700.cpp"   // TODO: SPC700 disassembler never written — SPC RAM window is byte/ascii
 #endif
 
-#ifdef MASTERSYSTEM
-#include "disZ80.cpp"
-#endif
-
-#ifdef NES
-#include "dis6502.cpp"
-#endif
-
 //=============================================================================
 

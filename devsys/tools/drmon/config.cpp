@@ -195,41 +195,6 @@ GetParamAsSymbol(char *string)
 }
 
 //==============================================================================
-// determine if color or monochrome card is primary
-
-FLAG
-IsCGA(void)
-{
-#ifdef __MSDOS__
-	asm {
-		mov     ah,0Fh                                          // get video mode
-		INT     10H
-		}
-	return( _AL != 7 );
-#else
-	return( boolean::TRUE );
-#endif
-
-#if 0
-	FLAG cga;
-	unsigned char far *biosData;
-
-	if(*((char far *)0x00400087) == 0)
-	 {
-		// no ega, lets check for color card(cga)
-
-		if((*((char far *)0x00400010) &  0x30) == 48)
-			cga = boolean::FALSE;
-		else
-			cga = boolean::TRUE;
-	 }
-	else
-		cga = boolean::TRUE;                                                    // actually ,ega or above
-	return(cga);
-#endif
-}
-
-//============================================================================
 
 void
 SetupConfig(void)
@@ -242,7 +207,7 @@ SetupConfig(void)
 
 	writeProtect = boolean::TRUE;
 	twoScreen = boolean::FALSE;
-	primaryDispCGA = IsCGA();
+	primaryDispCGA = boolean::TRUE;
 
 // this set for cga/ega/vga primary
 	if(primaryDispCGA)

@@ -48,11 +48,7 @@ ReadSlaveData(unsigned long addr,char far *data,unsigned int len)
 {
 	char far* bPtr = (char far *)addr;
 	while ( len-- )
-#ifdef DOSX286
-		*data++ = 0;
-#else
 		*data++ = *bPtr++;
-#endif
 }
 
 #ifdef GENESIS
@@ -235,9 +231,6 @@ boolean StepOverBreak (long addr, uword inst)
 
 unsigned long MemRead(unsigned long addr,UBYTE size)
 {
-#if defined( DOSX286 ) || defined( __WATCOMC__ )
-	return 0;
-#else
 	unsigned long data;
 	unsigned long far *bPtr;
 	bPtr = (unsigned long far *)addr;
@@ -245,7 +238,6 @@ unsigned long MemRead(unsigned long addr,UBYTE size)
 	data = *bPtr;
 	data &= 0xffffffff >> ((4-size)*8);
 	return(data);
-#endif
 }
 
 //----------------------------------------------------------------------------

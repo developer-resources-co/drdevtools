@@ -11,7 +11,6 @@
 #include	"word.hpp"	/* allow reserved words */
 #include	"display.hpp"
 
-#include "coff.hpp"
 
 //=============================================================================
 
@@ -53,15 +52,7 @@ InitSymbols()
 boolean
 _symbolList::InScope( ULONG addr )
 	{
-#ifdef DEBUGCOFF
-	if ( scope )
-		return( scope->InScope( addr ) );
-	else
-		return( boolean::TRUE );
-//	return( scope ? scope->InScope( addr ) : boolean::TRUE );
-#else
 	return( boolean::TRUE );
-#endif
 	}
 
 //=============================================================================
@@ -69,152 +60,7 @@ _symbolList::InScope( ULONG addr )
 ULONG
 _symbolList::Eval()
 	{
-#ifdef DEBUGCOFF
-	static ulong mask[ 4 ] =
-		{
-		0xFF,
-		0xFFFF,
-		0xFFFFFF,
-		0xFFFFFFFF
-		};
-
-	static int tblnBytes[ 16 ] =
-		{
-		0,		// NULL
-		0,		// long double
-		1,		// character
-		2,		// short
-		4,		// integer
-		4,		// long integer
-		0,		// float
-		0,		// double
-		4,		// structure (address?)
-		4,		// union (address?)
-		4,		// enumeration (?)
-		4,		// moe (?)
-		1,		// unsigned character
-		2,		// unsigned short
-		4,		// unsigned int
-		4		// unsigned long int
-		};
-
-	ULONG v = addr;
-
-	//PrintToStatWindow( "type = %d", ivType );
-	switch ( ivStorageClass )
-		{
-		case C_ARG:
-			v = MemRead( GetReg( REG_A6 )+addr, 4 );
-			break;
-
-		case C_AUTO:
-			v = MemRead( GetSP()+addr, 4 );
-			break;
-
-		case C_REG:
-		case C_REGPARM:
-			v = GetReg( addr );
-			break;
-
-		case C_MOS:
-		case C_LABEL:
-		case C_MOE:
-			break;
-
-		// Don't know if about this section (for sure)
-		case C_BLOCK:
-			PrintToStatWindow( "C_BLOCK" );
-			break;
-
-		case C_FCN:
-			PrintToStatWindow( "C_FCN" );
-			break;
-
-		// Don't really know if these work correctly
-		case C_EXT:
-		case C_STAT:
-			v = addr;
-			break;
-
-		case C_FIELD:
-			PrintToStatWindow( "Bit fields not currently supported" );
-			v = 0;
-			break;
-
-		case C_FILE:
-			PrintToStatWindow( "C_FILE" );
-			break;
-
-		case C_ALIAS:
-			PrintToStatWindow( "C_ALIAS" );
-			break;
-
-		case C_HIDDEN:
-			PrintToStatWindow( "C_HIDDEN" );
-			break;
-
-		case C_STRTAG:
-		case C_MOU:
-		case C_UNTAG:
-		case C_TPDEF:
-		case C_ENTAG:
-			v = addr;
-			break;
-
-		// Used internally by the compiler and assemblers
-		case C_EFCN:
-		case C_ARRAY:
-		case C_SUE:
-		case C_SKIP:
-			PrintToStatWindow( "Internal storage class %d used", ivStorageClass );
-
-		default:
-			v = 0;
-			break;
-		}
-
-	unsigned int type = ivType & 0x0F;
-	unsigned int nBytes = tblnBytes[ type ];
-
-	if ( nBytes == 0 )
-		{
-		PrintToStatWindow( "Don't know how to deal with type %X", type );
-		return( v );
-		}
-	else
-		{
-		v &= mask[nBytes-1];
-
-		switch ( type )
-			{
-			case T_UCHAR:
-			case T_USHORT:
-			case T_UINT:
-			case T_ULONG:
-				break;
-
-			case T_NULL:
-			case T_LDOUBLE:
-			case T_CHAR:
-			case T_SHORT:
-			case T_INT:
-			case T_LONG:
-			case T_FLOAT:
-			case T_DOUBLE:
-			case T_STRUCT:
-			case T_UNION:
-			case T_ENUM:
-			case T_MOE:
-				// sign extend
-				unsigned int nBits = 32-8*nBytes;
-				v <<= nBits, v >>= nBits;
-				break;
-			}
-		}
-	return( v );
-#else
 	return( addr );
-#endif
 	}
 
 
@@ -314,22 +160,6 @@ FindSymbol(char *text)
 			break;
 		}
 
-#ifdef DEBUGCOFF
-	if ( !sPtr )
-		{
-		char* buffer = (char*)alloca( strlen(text)+1+1 );
-		assert( buffer );
-		*buffer = '_';
-		strcpy( buffer+1, text );
-
-		for ( sPtr = (_symbolList*)symbolListBase.Next(); sPtr; sPtr = (_symbolList*)sPtr->Next() )
-			{
-			if ( ( strcmp(sPtr->Name(),buffer) == 0 ) && ( sPtr->InScope() ) )
-				break;
-			}
-		}
-#endif
-
 #ifdef DEBUGZARDOZ
 	if ( !sPtr )
 		{
@@ -370,7 +200,7 @@ FindHexSymbol(ULONG value)
 //=============================================================================
 
 _symbolList*
-AddSymbolQuick(ULONG addr, char *text, uword type, byte storageClass )
+AddSymbolQuick(ULONG addr, char *text)
 {
 	_symbolList *sPtr;
 
@@ -386,9 +216,6 @@ AddSymbolQuick(ULONG addr, char *text, uword type, byte storageClass )
 			InsertListNode((_list *)&symbolListBase,(_list *)sPtr);
 			sPtr->Name( string );
 			sPtr->Address( addr );
-
-			sPtr->Type( type );
-			sPtr->StorageClass( storageClass );
 	 	 }
 		else
 			{
@@ -637,155 +464,6 @@ SymbolPrintListEntry(_stringList *stPtr, unsigned char *attr, unsigned* nLines )
 	*string++ = ' ';
 	*string++ = ' ';
 	string = PrintString( (char*)string, (char*)sPtr->Name() );
-#ifdef DEBUGCOFF
-	*string++ = ' ';
-	*string++ = ' ';
-	*string++ = '(';
-
-	char* szStorageClass;
-
-	switch ( sPtr->StorageClass() )
-		{
-		case C_EFCN:
-			szStorageClass = "C_EFCN";
-			break;
-
-		case C_NULL:
-			szStorageClass = "C_NULL";
-			break;
-
-		case C_AUTO:
-			szStorageClass = "Automatic";
-			break;
-
-		case C_EXT:
-			szStorageClass = "External";
-			break;
-
-		case C_STAT:
-			szStorageClass = "Static";
-			break;
-
-		case C_REG:
-			szStorageClass = "Register ";
-			string = PrintString( (char*)string, szStorageClass );
-			szStorageClass = regNameArray[ sPtr->Address() ];
-			break;
-
-		case C_EXTDEF:
-			szStorageClass = "External Definition";
-			break;
-
-		case C_LABEL:
-			szStorageClass = "Label";
-			break;
-
-		case C_ULABEL:
-			szStorageClass = "Undefined Label";
-			break;
-
-		case C_MOS:
-			szStorageClass = "Member of Structure";
-			break;
-
-		case C_ARG:
-			szStorageClass = "Function Argument";
-			break;
-
-		case C_STRTAG:
-			szStorageClass = "Structure Tag";
-			break;
-
-		case C_MOU:
-			szStorageClass = "Member of Union";
-			break;
-
-		case C_UNTAG:
-			szStorageClass = "Union Tag";
-			break;
-
-		case C_TPDEF:
-			szStorageClass = "Type Definition";
-			break;
-
-		case C_USTATIC:
-			szStorageClass = "Unitialized Static";
-			break;
-
-		case C_ENTAG:
-			szStorageClass = "Enumeration Tag";
-			break;
-
-		case C_MOE:
-			szStorageClass = "Member of Enumeration";
-			break;
-
-		case C_REGPARM:
-			szStorageClass = "Register Parameter";
-			break;
-
-		case C_FIELD:
-			szStorageClass = "Bit Field";
-			break;
-
-		case C_ARRAY:
-			szStorageClass = "Array Dimension Information";
-			break;
-
-		case C_SUE:
-			szStorageClass = "Structure, Union, or Enumeration";
-			break;
-
-		case C_SKIP:
-			szStorageClass = "C_SKIP: Should not be output";
-			break;
-
-		case C_BLOCK:
-			szStorageClass = "Beginning and end of Block";
-			break;
-
-		case C_FCN:
-			szStorageClass = "Beginning and end of Function";
-			break;
-
-		case C_EOS:
-			szStorageClass = "End of Structure";
-			break;
-
-		case C_FILE:
-			szStorageClass = "Filename";
-			break;
-
-		case C_ALIAS:
-			szStorageClass = "Duplicate Tag";
-			break;
-
-		case C_HIDDEN:
-			szStorageClass = "Like static, used to avoid name conflicts";
-			break;
-
-		default:
-			szStorageClass = (char*)calloc( 20, 1 );
-			assert( szStorageClass );
-			sprintf( szStorageClass, "%d", sPtr->StorageClass() );
-			break;
-		}
-	string = PrintString( (char*)string, szStorageClass );
-
-#if 0
-	{ // Print the scope
-	char buffer[80];
-
-	if ( sPtr->scope )
-		{
-		sprintf( buffer, " %lX-%lX", sPtr->scope->Start(), sPtr->scope->End() );
-		string = PrintString( (char*)string, buffer );
-		}
-	}
-#endif
-
-	*string++ = ')';
-#endif
 
 	*string = '\0';
 

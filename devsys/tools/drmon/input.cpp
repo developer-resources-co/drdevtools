@@ -7,14 +7,8 @@
 #define INCL_BASE
 
 #include <conio.h>
-#if !defined( __OS2__ )
 #include <bios.h>
 #include <dos.h>
-#endif
-
-#ifdef DOSX286
-#include <phapi.h>
-#endif
 
 #include "base.hpp"
 #include "global.hpp"
@@ -42,11 +36,6 @@
 #include "error.hpp"
 #include "macro.hpp"
 #include "debug.hpp"
-
-#ifdef __OS2__
-#define INCL_BASE
-#include <bse.h>
-#endif
 
 //=============================================================================
 
@@ -131,7 +120,6 @@ UpdateCursor()
 	 {
 		CursorOn();
 		PositionCursor(lPtr->cursorX+lPtr->xPos,lPtr->cursorY+lPtr->yPos);
-		SetCursorStartStop(lPtr->cStartLine,lPtr->cStopLine);
 	 }
 	else
 		CursorOff();
@@ -141,9 +129,6 @@ UpdateCursor()
 // 0 = no shift keys pressed, 1 = at least one shift key pressed
 
 static unsigned char far* keyboardStatus;
-#ifdef __OS2__
-static KBDINFO ki;
-#endif
 
 unsigned char
 GetShiftStatus(void)
@@ -169,18 +154,7 @@ GetScrollLockStatus(void)
 
 //=============================================================================
 
-#ifdef __MSDOS__
-static int dosgetch( void )
-	{
-	int rc;
-	_asm {
-		mov ax,0x800;
-		int 21h;
-		mov rc,ax;
-		}
-	return rc & 0xFF;
-	}
-#elif defined(__GNUC__)
+#if defined(__GNUC__)
 #define dosgetch()	drmon_nc_getbyte()
 #else
 #define dosgetch()	getch()
@@ -213,10 +187,6 @@ InputPending(_input *in)
 {
 	int shift,scroll;
 	short oldMouseX,oldMouseY,oldMouseButtons;
-
-#ifdef __OS2__
-	KbdGetStatus( &ki, 0 );
-#endif
 
 	if(macroKeyPtr)
 	 {
@@ -271,18 +241,9 @@ InputPending(_input *in)
 			return(boolean::TRUE);
 		 }
 	 }
-#ifdef __OS2__
-	KBDKEYINFO ki;
-	KbdPeek( &ki, 0 );
-#endif
-
 	if (
-#if defined( __OS2__ )
-	( ki.fbStatus & 64 )
-#else
 	_bios_keybrd( _KEYBRD_READY )
 //	bioskey( 1 )
-#endif
 	&& ( in->inputMask & INPF_KEY ) )
 		{
 		in->inputType = INP_KEY;
@@ -322,35 +283,16 @@ InitMouse( void )
 
 //=============================================================================
 
-#ifdef __MSDOS__
-int
-CtrlBrkHander(void)
-{
-	return(1);
-}
-#endif
-
 //==============================================================================
 
 void
 InitInput(void)
 {
-#ifdef __OS2__
-	ki.cb = sizeof( ki );
-	keyboardStatus = (unsigned char*)&( ki.fsState );
-#endif
-#ifdef DOSX286
-	unsigned short sel;
-
-	DosGetBIOSSeg( &sel );
-	keyboardStatus = (unsigned char far*)MAKEP( sel, 0x17 );
-#else
-#ifdef __MSDOS__
-	keyboardStatus = (unsigned char far*)0x417;
-#endif
+	// DOS swallowed Ctrl+Break via ctrlbrk(&CtrlBrkHander); the Linux build
+	// ignores SIGINT instead (linux/ncurses_io.cpp). keyboardStatus comes from
+	// the ncurses backend's shift-state byte.
 #if defined(__GNUC__)
 	keyboardStatus = drmon_nc_shiftbyte();
-#endif
 #endif
 	InitMouse();
 	inBase.mouseButtons = GetMouse(&inBase.fineMouseX,&inBase.fineMouseY);
@@ -358,10 +300,6 @@ InitInput(void)
 	inBase.mouseY = inBase.fineMouseY/8;
 	inBase.inputMask = INPF_KEY|INPF_MOUSEMOVE;
 	copyBuffer[0] = '\0';                                   // start paste buffer with empty string
-
-#ifdef __MSDOS__
-	ctrlbrk(&CtrlBrkHander);
-#endif
 }
 
 //=============================================================================

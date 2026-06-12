@@ -421,9 +421,7 @@ OpenSource(void)
 
 		if ( !stSld )
 			{
-#if defined( DEBUGCOFF )
-			stSld = (_sld *)new coffSld();
-#elif defined( DEBUGDR )
+#if defined( DEBUGDR )
 			stSld = (_sld *)new drSld();
 #elif defined( DEBUGZARDOZ )
 			stSld = (_sld*)new zardozSld();

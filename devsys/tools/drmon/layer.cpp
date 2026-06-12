@@ -192,8 +192,6 @@ _layer::_layer( int xPos,int yPos,int xSize,int ySize,unsigned char charAttr,uns
 	lPtr->deactivateRoutine = NULL;
 	lPtr->data = 0;
 	lPtr->cursorOn = boolean::FALSE;
-	lPtr->cStartLine = 6;
-	lPtr->cStopLine = 7;
 	lPtr->gadgetHdr.prev = 0;
 	lPtr->gadgetHdr.next = 0;
 	lPtr->windowNum = 0;

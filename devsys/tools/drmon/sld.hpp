@@ -119,67 +119,6 @@ private:
 
 //==============================================================================
 
-#ifdef DEBUGCOFF
-
-class coffSld : _sld
-{
-public:
-	coffSld()
-	 {
-		MarkInvalid();
-		streamPtr = NULL;
-		fileName[0] = NULL;
-		sldFileName[0] = NULL;
-	 }
-
-	coffSld(istream *newStream)
-	 {
-		MarkInvalid();
-		streamPtr = newStream;
-		fileName[0] = NULL;
-		sldFileName[0] = NULL;
-	 }
-
-
-	coffSld(coffSld *cop)
-	 {
-		MarkInvalid();
-		strcpy(fileName,cop->fileName);
-		SourceLoad(cop->sldFileName);
-	 }
-
-	~coffSld()
-	 {
-		if(streamPtr)
-			delete streamPtr;
-	 }
-
-	uword SourceLine(void) { return(sourceLine); }
-	const char *SourceFileName(void) { return(fileName); }
-	void MarkInvalid(void) { sourceAddr = 0; badPC = 0xfffffffe; }
-
-	errorcode SourceLoad(char *fileName);
-	void ReSyncSource(ULONG pc);
-	ULONG SourceToAddress( char *fileName,UWORD line);
-	boolean ExactMatch(void) { return(exactMatch); }
-
-private:
-	// internal
-	ulong SourceAddress(void) { return(sourceAddr); }
-	ulong SourceAddress(ulong newSAddr) { sourceAddr = newSAddr; return(sourceAddr); }
-
-	// variables
-	unsigned long badPC;
-	char fileName[_MAX_PATH];				// desired file
-	boolean exactMatch;
-	istream *streamPtr;
-	char sldFileName[_MAX_PATH];			// filename of sld file
-	uword sourceLine;
-	unsigned long sourceAddr;
-};
-
-#endif
-
 //==============================================================================
 
 #ifdef DEBUGZARDOZ

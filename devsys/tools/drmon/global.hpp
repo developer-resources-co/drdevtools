@@ -11,27 +11,6 @@
 #include "compat.hpp"
 #include <dos.h>
 
-#ifdef __BORLANDC__
-
-#undef  far
-#define far
-#undef  near
-#define near
-#undef  _far
-#define _far
-#undef  _near
-#define _near
-
-//#define farfree free
-//#define farmalloc malloc
-
-#define TRUE TRUE
-#define FALSE FALSE
-
-//?void delay( unsigned );
-
-#endif
-
 //=============================================================================
 
 #ifdef SYSTEMGEN
@@ -41,10 +20,6 @@
 #ifdef SYSTEMSNES
 #define SNES
 #define SPC700		// SNES has an SPC700 audio co-CPU (feature, not platform)
-#endif
-
-#ifdef DEBUGCOFF
-#define SYMBOL_CASE_SENSITIVE
 #endif
 
 #ifdef DEBUGDR
@@ -114,16 +89,6 @@ const unsigned long OUT_OF_BAND = 0xFFFFFFFF;
 #define PLATFORMNAME "Genesis"
 #endif
 
-#ifdef MASTERSYSTEM
-#define PROCESSORNAME "Z80"
-#define PLATFORMNAME "MasterSystem"
-#endif
-
-#ifdef NES
-#define PROCESSORNAME "65C02"
-#define PLATFORMNAME "NES"
-#endif
-
 //=============================================================================
 // standard includes
 
@@ -132,11 +97,6 @@ const unsigned long OUT_OF_BAND = 0xFFFFFFFF;
 //#include <alloc.h>
 #include <string.h>
 #include <assert.h>
-
-#if defined( DOSX286 ) || defined( __OS2__ )
-#define farmalloc malloc
-#define farfree free
-#endif
 
 //=============================================================================
 

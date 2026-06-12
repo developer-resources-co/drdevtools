@@ -9,13 +9,7 @@
 //
 //==============================================================================
 
-#ifndef __OS2__
 #define DO_MOUSE
-#endif
-
-#ifdef __WATCOMC__
-#undef DO_MOUSE
-#endif
 
 #include <assert.h>
 
@@ -27,7 +21,6 @@
 #include <ncurses_io.h>     // Linux: mouse comes from the ncurses backend
 #endif
 
-#pragma in_line
 
 //==============================================================================
 

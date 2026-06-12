@@ -21,13 +21,6 @@ public:
 private:
 	char szStartingDirectory[ _MAX_PATH ];
 	int disk;
-#ifdef __MSDOS__
-	int x, y;
-	text_info ti;
-	size_t cbScreen;
-	void far* pScreenMem;
-	void far* pPhysicalScreenMem;
-#endif
 	};
 
 #endif

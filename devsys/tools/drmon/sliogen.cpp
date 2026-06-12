@@ -6,10 +6,6 @@
 #include <mem.h>
 #include <dos.h>
 
-#ifdef DOSX286
-#include <phapi.h>
-#endif
-
 #include <pclib/boolean.hpp>
 
 #include "global.hpp"
@@ -218,9 +214,10 @@ GetMessage(void)
 	{
 		delay(10);
         GetRegsFromSlave(regs);
-#pragma warn -pia
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wparentheses"
 		if(bPtr = FindBreak(GetReg(REG_INSTRUCTIONPOINTER)))
-#pragma warn +pia
+#pragma GCC diagnostic pop
 		{
 			if(bPtr->count)
 				if(!(--bPtr->count))
@@ -366,14 +363,7 @@ InitSlaveIO(int base, unsigned short slaveBufferSeg )
 	slaveBank = base++;
 	slaveWorm = base;
 
-#ifdef DOSX286
-	unsigned short sel;
-
-	DosMapRealSeg( slaveBufferSeg, 65536, &sel );
-	slaveBufferCmd = (char far*)MAKEP( sel, 0 );
-#else
 	slaveBufferCmd = (unsigned char*)( slaveBuffer << 16 );
-#endif
 	slaveBufferData = slaveBufferCmd+2;
 	slaveCtrlBits = DB_CTRL_NORM;
 //	slaveRunningCtrlBits = DB_CTRL_NORM|DB_CTRL_WP;
