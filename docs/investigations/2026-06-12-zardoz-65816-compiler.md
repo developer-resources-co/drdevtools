@@ -29,9 +29,12 @@ below. Whether that ABI originated with Zardoz or was independently designed by 
 
 - **Attribution:** Jim Goodnow / "jimg" — referenced in multiple community threads on
   [nesdev.org](https://forums.nesdev.org/viewtopic.php?t=12330) and
-  [assemblergames.org](https://assemblergames.org/viewtopic.php?t=60992).
-- **Archived homepage:** [web.archive.org](https://web.archive.org/web/19970720124726/www.oro.net/~jimg/cdev.html)
-  — snapshot from ~1997, could not be fetched to verify content.
+  [assemblergames.org](https://assemblergames.org/viewtopic.php?t=60992). A Jim Goodnow
+  (1939–2012) is listed in BillionGraves records at Terlingua Cemetery, Brewster County, TX —
+  plausible age for a professional programmer active in the 1990s, but not confirmed to be the
+  same person. No current web presence (GitHub, LinkedIn, forums) found.
+- **Archived homepage:** [web.archive.org snapshot ~1997](https://web.archive.org/web/19970720124726/www.oro.net/~jimg/cdev.html)
+  — could not be fetched to verify content. oro.net no longer appears to exist as an ISP.
 - **Source code:** Not publicly available. No GitHub repository, archive.org source dump, or
   public release has been identified.
 - **Platform scope:** Community claims it targeted the 65816 across platforms (SNES, Apple IIGS).
@@ -124,10 +127,15 @@ Contributor @asiekierka stated on 2024-10-25 in
 > "The rest was put on hold until I got around to porting the compiler backend proper, which I
 > never did. In short — LLVM-MOS ships a 65816 assembler and linker, but not a compiler."
 
-[Issue #32](https://github.com/llvm-mos/llvm-mos/issues/32) (the main 65816 tracking issue)
-remained open with no merged C compiler backend PRs through June 2026.
+**Updated status (June 2026):** [Issue #32](https://github.com/llvm-mos/llvm-mos/issues/32)
+saw renewed activity in January 2026 — @asiekierka posted substantive technical constraints for
+a C backend design: flat vs. banked memory model tradeoffs, register-width handling (8/16-bit
+mode switching), pointer size decisions. This is design-phase discussion, not implementation.
+No C compiler backend PRs have been opened or merged. No new contributor has taken over the work.
+@asiekierka's last code commit to the repo was October 2025 (SPC700 bug fix); their last
+65816-specific code was the assembler fixes merged in March 2024.
 
-**Status: assembler/linker only; no C.**
+**Status: design discussion only; no C compiler implementation; no active implementer.**
 
 ### cc65 — extending to 65816
 
@@ -293,12 +301,11 @@ adversarial verification — they should not be treated as established fact:
 1. **Zardoz ↔ WDC lineage.** What documentary evidence — purchase agreement, changelog, release
    announcement — links Jim Goodnow's Zardoz to WDC816CC? The archived homepage
    ([1997 snapshot](https://web.archive.org/web/19970720124726/www.oro.net/~jimg/cdev.html))
-   could not be fetched; its content may shed light.
+   could not be fetched; its content may shed light. Jim Goodnow appears to be deceased
+   (BillionGraves: 1939–2012, Terlingua TX — unconfirmed identity match), which means the
+   primary source for this history may be gone.
 
-2. **llvm-mos 65816 backend post-2024.** Has any work resumed on the C compiler backend since
-   @asiekierka's October 2024 statement? Is there an active maintainer?
-
-3. **Zardoz ABI vs. WDC816CC ABI.** Will Norris used Zardoz commercially — does the PHD/TCD
+2. **Zardoz ABI vs. WDC816CC ABI.** Will Norris used Zardoz commercially — does the PHD/TCD
    Direct Page frame trick described in the WDC816CC manual match what Zardoz actually generated?
    If the ABIs differ, drmon's symbol/stack unwinding assumptions may need to account for both.
 
