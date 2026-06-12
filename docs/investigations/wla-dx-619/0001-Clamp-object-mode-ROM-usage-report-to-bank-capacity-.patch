@@ -1,0 +1,68 @@
+From 58315b181cd065b4f1221994376d2695a89df491 Mon Sep 17 00:00:00 2001
+From: Will Norris <wbnorris@gmail.com>
+Date: Fri, 12 Jun 2026 16:24:14 +0700
+Subject: [PATCH] Clamp object-mode ROM usage report to bank capacity (issue
+ #619)
+
+show_project_information_object() prints per-bank ROM usage as the sum of
+two independent tallies: used_rom (a byte scan of g_rom_banks_usage_table)
+and used_sections (a per-.SECTION size total). .BACKGROUND memsets the
+whole image region of the usage table, so used_rom alone can already equal
+a full bank; any .SECTION that overlaps that region is then counted a
+second time via used_sections, and the printed figure runs past 100%
+(reporters saw 100.61%, 456.18%, 955.11%).
+
+This is a verbose-only display statistic computed after the object file is
+written, so output is unaffected -- but the number is wrong. A bank can
+never be more than full, so clamp the reported per-bank usage to the bank
+size. The summary total is the sum of the clamped per-bank figures and is
+therefore bounded by the ROM size as well.
+---
+ phase_4.c | 20 +++++++++++++++-----
+ 1 file changed, 15 insertions(+), 5 deletions(-)
+
+diff --git a/phase_4.c b/phase_4.c
+index 8409b69..35a5aee 100644
+--- a/phase_4.c
++++ b/phase_4.c
+@@ -3377,7 +3377,7 @@ int show_project_information_object(void) {
+     
+   for (i = 0; i < g_rombanks; i++) {  
+     int bank_address = g_bankaddress[i], j, used_rom = 0, found_block, block_start, used_sections = 0, bank_size = g_banks[i];
+-    int uncounted_overwrite_sections = 0;
++    int uncounted_overwrite_sections = 0, bank_used = 0;
+ 
+     total_rom_size += bank_size;
+     
+@@ -3439,14 +3439,24 @@ int show_project_information_object(void) {
+       s = s->next;
+     }
+ 
+-    total_used_rom += used_rom + used_sections;
++    /* used_rom is a byte-map scan that already counts the whole .BACKGROUND image (it
++       memsets g_rom_banks_usage_table over the background range); used_sections is a
++       separate per-.SECTION size tally. When sections overlap .BACKGROUND-initialised
++       ROM the two describe the same bytes, so their sum can run past the bank's
++       capacity and report >100% used. A bank can never be more than full, so clamp the
++       reported figure to its size. See GitHub issue #619. */
++    bank_used = used_rom + used_sections;
++    if (bank_used > bank_size)
++      bank_used = bank_size;
+ 
+-    if (used_rom + used_sections == 0)
++    total_used_rom += bank_used;
++
++    if (bank_used == 0)
+       continue;
+ 
+     if (g_verbose_level >= 100) {
+-      f = ((float)(used_rom + used_sections))/bank_size * 100.0f;
+-      print_text(YES, "ROM bank %d (%d bytes (%.2f%%) used)\n", i, used_rom + used_sections, f);
++      f = ((float)bank_used)/bank_size * 100.0f;
++      print_text(YES, "ROM bank %d (%d bytes (%.2f%%) used)\n", i, bank_used, f);
+       print_text(YES, "  - Outside .SECTIONs (%d bytes)\n", used_rom);
+     }
+     
+-- 
+2.51.0
+
