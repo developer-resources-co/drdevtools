@@ -107,6 +107,29 @@ and Register in terminal 2, step the CPU from either — both update; one `ss` c
    - Harness gotcha (not a product bug): the bridge is single-client, so a `/dev/tcp` readiness probe
      steals the one slot and the real client is then refused. Don't pre-probe; connect once.
 
+## Code footprint — chunky & isolated, not strewn
+
+**~293 net LOC** (526 added / 233 removed) across 11 files. The shape matters more than the count:
+
+- **Two new, self-contained files carry the feature**: `desktop.hpp` (67) + `desktop.cpp` (243) =
+  **310 lines** — the whole desktop abstraction (struct, `desktop_save`/`desktop_load`,
+  `switchDesktop`, `MakeDesktop`, `InitDesktop`, `NewDesktop`).
+- **One self-contained rewrite**: `linux/ncurses_io.cpp` (+191 / −94) — single-`stdscr` → N-`SCREEN`,
+  entirely within the ncurses layer (+`ncurses_io.h` +5/−1).
+- **Surgical taps into the 30-year-old TUI core** (clean seams, ~20 lines total): `moninc.hpp` **+1**
+  (one `#include`), `drmon.cpp` **+9/−4** (the MainLoop desktop loop + one line creating desktop 0),
+  `monmenu.cpp` **+3/−3** (New Window callback), `CMakeLists.txt` **+2/−2**.
+- **Removed**: `spawn_window.cpp/.hpp` (−127) — the old multi-process path.
+
+The headline: **every one of the ~18 files that *define* a virtualized per-desktop global is byte-for-byte
+unchanged** — `layer.cpp`, `screen.cpp`, `display.cpp`, `object.cpp`, `reg.cpp`, `break.cpp`,
+`symbol.cpp`, `command.cpp`, `console.cpp`, `menu.cpp`, `manager.cpp`, `source.cpp`, `about.cpp`,
+`expr.cpp`, `search.cpp`, `gadget.cpp`, `spc_reg.cpp`, `debug.hpp`. The save/restore design
+`extern`-references and swaps those globals from `desktop.cpp`, so the legacy core logic never had to be
+touched. (The macro-virtualization alternative would have edited the declaration of every one of them —
+that's the ~2× churn this approach avoided.) Net effect: the feature reads as a bolt-on module plus a
+few one-line seams, not a refactor spread through the codebase.
+
 ## Non-goals / risks
 
 - Per-terminal *different sizes* deferred (v1 fixes spawned terminals to the primary's size so
