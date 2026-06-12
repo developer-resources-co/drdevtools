@@ -84,7 +84,12 @@ _(none)_
 
 ## PACKAGING
 
-_(none)_
+- [ ] **Vendor Calypsi binaries before the project disappears.** Calypsi is closed-source,
+  hobby-only, no commercial tier — classic abandonware risk. Download and archive all current
+  release binaries (65816, 68000, 6502 targets) and the open-source support packages
+  ([hth313/Calypsi-tool-chains](https://github.com/hth313/Calypsi-tool-chains)).
+  See [Zardoz investigation](docs/investigations/2026-06-12-zardoz-65816-compiler.md) and
+  [toolchain survey](docs/investigations/2026-06-11-snes-65816-toolchains.md).
 
 
 ## VERIFY
