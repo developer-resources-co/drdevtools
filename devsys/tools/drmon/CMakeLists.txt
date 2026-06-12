@@ -103,6 +103,7 @@ set(DRMON_DAP_SRC_COMMON
     linux/dap/backend.cpp
     linux/dap/breakpoints.cpp
     linux/dap/disasm_stubs.cpp
+    linux/dap/symbols.cpp
 )
 
 function(drmon_dap_target TARGET SYSTEM_DEFINE DISASM_WRAPPER)

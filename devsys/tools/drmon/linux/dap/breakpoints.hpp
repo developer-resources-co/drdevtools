@@ -16,6 +16,8 @@ public:
         std::vector<uint32_t> removed;
     };
     Delta sync(const std::vector<uint32_t>& desired);
+    void  add(uint32_t addr);
+    void  remove(uint32_t addr);
     void  clear();
     const std::vector<Breakpoint>& all() const { return bps_; }
 

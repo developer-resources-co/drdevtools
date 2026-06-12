@@ -20,18 +20,14 @@ Plan-first: non-trivial work gets a `docs/plans/YYYY-MM-DD-<topic>.md` and a TOD
   opening a 2nd socket for `:vdp`/`:z80snd` device reads (the SNES bridge proves the
   device-access path). Deferred from the
   [SNES stub-lift](docs/plans/2026-06-11-lift-snes-out-of-scope-stubs.md); revisit on concrete need.
-- [wip] **Phase 3 — DAP front end Tier 1 built; Tiers 2–3 remain.** `drmon-dap-snes` / `drmon-dap-gen`
-  DAP adapters ship alongside `snesmon`/`genmon` (two binaries in parallel; TUI stays indefinitely).
-  Tier 1 (done 2026-06-12): initialize/attach/continue/pause/step/registers/readMemory/instruction
-  breakpoints; SNES 65816 step engine with correct branch targets. Tier 3: symbol file loading
-  (`.sld`/COFF). Verification items 3–8 (connected session, breakpoint, registers, memory,
-  disassembly, regression) need live MAME.
-  [plan](docs/plans/2026-06-12-phase-3-dap.md).
-- [wip] **Phase 3 Tier 2 — DAP disassembly view.** Wire `dis816.cpp`/`dis68000.cpp` into the DAP
-  binaries via a stub preamble + stubs TU (forward-declare `_object`, stub `_symbolList`/Print*
-  to break the `moninc.hpp` dependency chain); add `disassemble` DAP request handler with
-  `procMode` derived from live FLAGS register for correct 65816 immediate operand sizes.
-  [plan](docs/plans/2026-06-12-phase-3-drmon-dap-tier-2-disassembly-view.md).
+- [wip] **Phase 3 — DAP front end (Tiers 1–3 complete; live-MAME items remain).** `drmon-dap-snes` /
+  `drmon-dap-gen` DAP adapters: attach/continue/pause/step/registers/readMemory/instruction
+  breakpoints/disassembly/symbol-file loading (binary `.sld` + Sierra COFF). VS Code setup doc at
+  `docs/dap-setup.md`. Verification items needing live MAME still open (connected session, breakpoint
+  fires, registers/memory match, VS Code pane/source view).
+  [Tier 1 plan](docs/plans/2026-06-12-phase-3-dap.md) ·
+  [Tier 2 plan](docs/plans/2026-06-12-phase-3-drmon-dap-tier-2-disassembly-view.md) ·
+  [Tier 3 plan](docs/plans/2026-06-12-phase-3-drmon-dap-tier-3-symbol-loading.md).
 
 
 ## DRMON — UI / UX
@@ -79,6 +75,8 @@ _(none)_
 
 ## DONE
 
+- [x] 2026-06-12 — Phase 3 Tier 3 — DAP symbol loading: fresh `SymbolTable` (binary `.sld` + Sierra COFF) in `linux/dap/`; `--symbols` CLI flag; `disassemble` label annotation, `evaluate` symbol lookup, `setBreakpoints` source-line resolution, `loadedSources` handler; 5/5 reproducible verifications — [plan](docs/plans/2026-06-12-phase-3-drmon-dap-tier-3-symbol-loading.md)
+- [x] 2026-06-12 — Phase 3 Tier 2 — DAP disassembly view: `dis816_dap.cpp`/`dis68000_dap.cpp` wrappers + `disasm_preamble.hpp`/`disasm_stubs.cpp` break `moninc.hpp` dependency; `procMode` from live FLAGS; 5/5 reproducible verifications (VS Code pane needs live MAME) — [plan](docs/plans/2026-06-12-phase-3-drmon-dap-tier-2-disassembly-view.md)
 - [x] 2026-06-12 — SPC700 (SNES audio co-CPU) debugging UI: editable **SPC register window** (Alt-N, `PC/A/X/Y/SP/PSW` via bridge `GA`/`PA`) + **APU-RAM memory window** (`MTYPE_SPC`, Type→SPC RAM or Ctrl-R, byte dump via `RA`/`ReadSlaveApuRam`); guarded `#ifdef SPC700` (feature, not platform — SNES block `#define`s it, genmon excludes all of it); caught+fixed a `mTypeText[]` NULL-deref; 27/27 bridge tests, smoke + connected TUI clean — [plan](docs/plans/2026-06-12-spc700-window.md)
 - [x] 2026-06-12 — Revive `EvalCommand`: the whole command-verb dispatcher (OPEN/CLOSE/RUN/STOP/STEP/OVER/RESET/BSET/SET/LOAD/SAVE/macros/…) shipped `#if 0`'d since the 2003 DOS import, so every typed command + script was a no-op; un-`#if 0`'d `EvalCommand`+`GetNumbers`, routed expr/number args through the live flex/bison `DoExp` (not the obsolete hand-written eval); zero signature drift; `OPEN MEMORY`/`OPEN SEARCHLIST` open windows, smoke clean — [plan](docs/plans/2026-06-12-revive-evalcommand.md)
 - [x] 2026-06-12 — Revive scrollable mem-search results window: hits land in a `_searchList` list-rect window (mirrors symbol/break), Enter/Ctrl-G → Memory window at the hit, Del clears; `OpenMemoryAt()` helper; build + smoke clean (visual = manual via MemOps→Search) — [plan](docs/plans/2026-06-12-search-results-window.md)

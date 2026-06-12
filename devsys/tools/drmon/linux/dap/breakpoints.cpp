@@ -23,6 +23,18 @@ BreakpointTable::Delta BreakpointTable::sync(const std::vector<uint32_t>& desire
     return d;
 }
 
+void BreakpointTable::add(uint32_t addr) {
+    for (const auto& b : bps_)
+        if (b.addr == addr) return;
+    bps_.push_back({addr});
+}
+
+void BreakpointTable::remove(uint32_t addr) {
+    bps_.erase(std::remove_if(bps_.begin(), bps_.end(),
+        [addr](const Breakpoint& b) { return b.addr == addr; }),
+        bps_.end());
+}
+
 void BreakpointTable::clear() {
     bps_.clear();
 }

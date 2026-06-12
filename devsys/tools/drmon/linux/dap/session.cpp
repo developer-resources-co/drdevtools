@@ -17,10 +17,13 @@
 extern int procMode;
 unsigned int Disassem(unsigned long addr, char* inBuff, char* outBuff, int disMode);
 
-DapSession::DapSession(std::string host, int port, const RegTable& regs)
+DapSession::DapSession(std::string host, int port, const RegTable& regs,
+                       const char* symbolPath)
     : backend_(std::move(host), port, regs)
     , session_(dap::Session::create())
 {
+    if (symbolPath && *symbolPath)
+        symtab_.loadSld(symbolPath) || symtab_.loadCoff(symbolPath);
     registerHandlers();
 }
 
@@ -65,6 +68,7 @@ void DapSession::registerHandlers() {
         resp.supportsReadMemoryRequest           = true;
         resp.supportsInstructionBreakpoints      = true;
         resp.supportsDisassembleRequest          = true;
+        resp.supportsLoadedSourcesRequest        = true;
         session_->send(dap::InitializedEvent{});
         return resp;
     });
@@ -89,17 +93,57 @@ void DapSession::registerHandlers() {
         return dap::ConfigurationDoneResponse{};
     });
 
-    // --- setBreakpoints (source-level — not supported; return unverified) ----
+    // --- setBreakpoints (source-level) ----------------------------------------
     s->registerHandler([&](const dap::SetBreakpointsRequest& req)
                         -> dap::SetBreakpointsResponse {
         dap::SetBreakpointsResponse resp;
         if (!req.breakpoints.has_value()) return resp;
+
+        // Remove previously-set source breakpoints (VS Code sends full replacement list)
+        {
+            std::lock_guard<std::mutex> lk(bptMu_);
+            for (uint32_t addr : srcBptAddrs_) {
+                backend_.clearBreakpoint(addr);
+                bptable_.remove(addr);
+            }
+            srcBptAddrs_.clear();
+        }
+
+        std::string file;
+        if (req.source.path.has_value())       file = req.source.path.value();
+        else if (req.source.name.has_value())  file = req.source.name.value();
+
         for (const auto& sb : req.breakpoints.value()) {
             dap::Breakpoint b;
-            b.verified = false;
-            b.message  = "Source breakpoints not supported; use instruction breakpoints";
-            b.line     = sb.line;
+            b.line = sb.line;
+            uint32_t addr = symtab_.addrForSrc(file, sb.line);
+            if (addr) {
+                backend_.setBreakpoint(addr);
+                std::lock_guard<std::mutex> lk(bptMu_);
+                bptable_.add(addr);
+                srcBptAddrs_.push_back(addr);
+                b.verified             = true;
+                b.instructionReference = hexAddr(addr);
+            } else {
+                b.verified = false;
+                b.message  = symtab_.empty()
+                    ? "No symbol file loaded (use --symbols)"
+                    : "Source line not found in symbol file";
+            }
             resp.breakpoints.push_back(b);
+        }
+        return resp;
+    });
+
+    // --- loadedSources --------------------------------------------------------
+    s->registerHandler([&](const dap::LoadedSourcesRequest&)
+                        -> dap::LoadedSourcesResponse {
+        dap::LoadedSourcesResponse resp;
+        for (const auto& f : symtab_.sourceFiles()) {
+            dap::Source src;
+            src.name = f;
+            src.path = f;
+            resp.sources.push_back(src);
         }
         return resp;
     });
@@ -261,6 +305,16 @@ void DapSession::registerHandlers() {
                     break;
                 }
             }
+            if (resp.result.empty() && !symtab_.empty()) {
+                const Symbol* sym = symtab_.findByName(expr);
+                if (sym) {
+                    char buf[20];
+                    snprintf(buf, sizeof(buf), "0x%x", sym->addr);
+                    resp.result          = buf;
+                    resp.type            = "symbol";
+                    resp.memoryReference = hexAddr(sym->addr);
+                }
+            }
             if (resp.result.empty())
                 resp.result = "<unknown expression>";
         }
@@ -303,6 +357,11 @@ void DapSession::registerHandlers() {
             dap::DisassembledInstruction di;
             di.address     = hexAddr(cur);
             di.instruction = obuf;
+            if (!symtab_.empty()) {
+                const Symbol* sym = symtab_.findByAddr(cur);
+                if (sym && sym->addr == cur)
+                    di.symbol = sym->name;
+            }
             char hbuf[32] = {}; char* h = hbuf;
             for (unsigned i = 0; i < len && idx + i < mem.size(); i++)
                 h += sprintf(h, "%02X ", mem[idx + i]);

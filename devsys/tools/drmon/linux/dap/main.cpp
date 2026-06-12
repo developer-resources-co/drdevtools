@@ -2,11 +2,12 @@
 // main.cpp: drmon-dap entry point.
 //
 // Usage:
-//   drmon-dap-snes [--host <host>] [--port <port>]
-//   drmon-dap-gen  [--host <host>] [--port <port>]
+//   drmon-dap-snes [--host <host>] [--port <port>] [--symbols <path>]
+//   drmon-dap-gen  [--host <host>] [--port <port>] [--symbols <path>]
 //
 // Communicates with the IDE over stdin/stdout (DAP stdio transport).
 // Connects to MAME via TCP on the specified host:port (default 127.0.0.1:41816).
+// --symbols loads a binary .sld or Sierra COFF symbol file for name resolution.
 //=============================================================================
 
 #include "session.hpp"
@@ -29,13 +30,15 @@ static const RegTable& kSystemRegs = kGenRegs;
 int main(int argc, char* argv[]) {
     std::string host = "127.0.0.1";
     int port = 41816;
+    const char* symbolPath = nullptr;
 
     for (int i = 1; i < argc - 1; i++) {
-        if (strcmp(argv[i], "--host") == 0) host = argv[i + 1];
-        if (strcmp(argv[i], "--port") == 0) port = atoi(argv[i + 1]);
+        if (strcmp(argv[i], "--host") == 0)    host = argv[i + 1];
+        if (strcmp(argv[i], "--port") == 0)    port = atoi(argv[i + 1]);
+        if (strcmp(argv[i], "--symbols") == 0) symbolPath = argv[i + 1];
     }
 
-    DapSession session(host, port, kSystemRegs);
+    DapSession session(host, port, kSystemRegs, symbolPath);
     session.run();
     return 0;
 }
