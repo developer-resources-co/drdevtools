@@ -2,23 +2,26 @@
 
 **Date:** 2026-06-12  
 **Method:** Deep-research harness — 5 search angles, 15 sources fetched, 25 claims adversarially
-verified (11 confirmed, 14 killed), 97 subagents.  
+verified (11 confirmed, 14 killed), 97 subagents; supplemented by primary-source testimony from
+Will Norris (commercial SNES developer, Demolition Man and Izzy's Olympic Quest).  
 **Primary source:** [WDC W65C816S C Compiler Manual (816cc.pdf)](https://www.westerndesigncenter.com/wdc/documentation/816cc.pdf)
 
 ---
 
 ## Summary
 
-Zardoz is a 65816 C compiler that community sources consistently attribute to **Jim Goodnow**
-("jimg"), formerly hosted at `www.oro.net/~jimg/cdev.html` (archived ~1997). It is frequently
-described as the direct ancestor of Western Design Center's commercial **WDC816CC** compiler —
-either acquired by WDC or relabelled. **That lineage claim could not be confirmed from any primary
-source.** Every assertion of WDC acquisition or direct derivation was refuted 0-3 in adversarial
+Zardoz is a 65816 C compiler attributed to **Jim Goodnow** ("jimg"), formerly hosted at
+`www.oro.net/~jimg/cdev.html` (archived ~1997). It was used to ship commercial SNES titles in the
+1990s — confirmed by Will Norris, who used it to develop *Demolition Man* and *Izzy's Olympic
+Quest* for SNES; other commercial titles likely exist.
+
+Zardoz is frequently described as the direct ancestor of Western Design Center's commercial
+**WDC816CC** compiler. **That lineage claim could not be confirmed from any primary source** —
+every assertion of WDC acquisition or direct derivation was refuted 0-3 in adversarial
 verification; it rests entirely on community forum memory.
 
 What *is* well-established from the WDC compiler manual is a technically distinctive ABI, described
-in detail below. Whether that ABI originated with Zardoz or was independently designed by WDC is
-unknown.
+below. Whether that ABI originated with Zardoz or was independently designed by WDC is unknown.
 
 ---
 
@@ -32,9 +35,10 @@ unknown.
 - **Source code:** Not publicly available. No GitHub repository, archive.org source dump, or
   public release has been identified.
 - **Platform scope:** Community claims it targeted the 65816 across platforms (SNES, Apple IIGS).
-  This was not confirmed from primary sources.
-- **SNES commercial use:** Community claims that commercial SNES titles used Zardoz. No specific
-  title was confirmed from a primary source — refuted 0-3.
+  Not confirmed from secondary sources, but the SNES use is confirmed (see below).
+- **SNES commercial use:** **Confirmed.** Will Norris used Zardoz to develop *Demolition Man*
+  (SNES) and *Izzy's Olympic Quest* (SNES, official 1996 Olympics game). Additional commercial
+  titles likely exist.
 
 ---
 
@@ -125,18 +129,44 @@ remained open with no merged C compiler backend PRs through June 2026.
 
 **Status: assembler/linker only; no C.**
 
-### cc65
+### cc65 — extending to 65816
 
-[cc65](https://github.com/cc65/cc65) includes ca65 (assembler) which supports 65816, but the
-**C compiler only generates 8-bit 6502 code** — it does not emit 65816 instructions. Not a
-successor for C on 65816.
+[cc65](https://github.com/cc65/cc65) includes ca65 (assembler, which supports 65816), but the
+**C compiler only generates 8-bit 6502 code** — it does not emit 65816 instructions. Adding a
+65816 C backend has been raised ([issue #850](https://github.com/cc65/cc65/issues/850), Feb 2019)
+but attracted no substantive response and no active effort exists.
+
+**Feasibility: possible but substantial.** The key obstacles, drawn from the cc65 internals docs
+and the [FUZIX cc65/65C816 case study](https://github.com/EtchedPixels/FUZIX/wiki/Using-CC65-on-the-65C816):
+
+- **Register width model.** cc65's code generator (`codegen.c`) is built around an 8-bit
+  accumulator / AX pseudo-register pair. The 65816's mode-switched 16-bit A, X, Y would require
+  a dual-width register model woven throughout the optimizer and emission stages — not a local
+  change.
+- **Self-modifying code patterns.** The cc65 runtime helpers `callax` and `callptr4` store
+  addresses inline (self-modifying code). This breaks under 65816 bank switching: cross-bank
+  execution moves the code page, and inline stores become stale. The entire affected runtime
+  library would need rewriting.
+- **ABI overhaul.** cc65's fastcall convention passes the rightmost argument in A/X/sreg.
+  A 65816 ABI using the PHD/TCD Direct Page trick (as WDC816CC does) would require new
+  prologue/epilogue sequences, re-mapping of pseudo-registers to real 16-bit registers, and
+  updated calling convention docs.
+- **Bank-aware linker.** The 65816's segmented bank model requires the linker to distinguish
+  near vs. far calls (JSR vs. JSL) and route data references accordingly. cc65's linker has no
+  concept of this.
+
+No fork targeting 65816 C has been found. The most realistic path to an open-source optimizing
+65816 C compiler remains the llvm-mos backend.
 
 ### Calypsi C Compiler
 
 [Calypsi](https://www.calypsi.cc/) is a modern proprietary retro C compiler supporting 65816
-(and 68000). It is actively maintained (v5.17 as of May 2026) and is the closest modern
-alternative to WDC816CC. It is not open source and is free for hobby use only — not packageable
-for a foundry apt repo. See also the [toolchain survey](2026-06-11-snes-65816-toolchains.md).
+(and 68000, 6502). Actively maintained (v5.17 as of May 2026). **Free to download; hobby-only
+license** — the license prohibits using it to "make your living… either directly or indirectly"
+(small side/hobby income is explicitly permitted; commercial product development is not). It is
+closed-source, so it cannot be packaged for redistribution. No paid commercial tier exists.
+
+See also the [toolchain survey](2026-06-11-snes-65816-toolchains.md).
 
 ### PVSnesLib / 816-tcc
 
@@ -164,9 +194,31 @@ packaging notes.
 
 ### ORCA/C (Apple IIGS)
 
-ORCA/C is another known 65816 C compiler from the era, targeting the Apple IIGS. It has since
-been [open-sourced by Byte Works](https://github.com/byteworksinc/ORCA-C). Its ABI, memory model,
-and code quality relative to WDC816CC remain uncharacterised in this research — this is a gap.
+[ORCA/C](https://github.com/byteworksinc/ORCA-C) is a 65816 C compiler from the era targeting the
+Apple IIGS, now source-available from Byte Works. **License: source-available, not OSI open
+source** — the LICENSE file permits private use and forking but prohibits redistribution without
+written permission. Not packageable for an apt repo.
+
+**ABI** (from source code analysis of `Gen.pas`): ORCA/C uses the same fundamental **PHD + TCD**
+stack-frame trick as WDC816CC — TSC loads the stack pointer into C, PHD saves the old Direct Page,
+then TCD redirects DP to the new frame base, giving direct-page-speed access to locals. Arguments
+are pushed left-to-right before JSL.
+
+**Return values**: byte/word in A; 32-bit long in A (low) + X (high) — identical convention to
+WDC816CC. 64-bit values are returned via caller-supplied pointer.
+
+**Memory model**: Single "small memory model" (`smallMemoryModel := true`). No equivalent of
+WDC816CC's four-model system. An optional `dataBank` flag saves/restores the data bank register
+around function calls for multi-bank programs, but this is a pragma, not a full memory model.
+
+**Optimization**: DAG-based + peephole, enabled with `-O`. The peephole window is ~128 bytes.
+Supports common subexpression elimination and loop optimizations when enabled. More capable than
+816-tcc; comparable to WDC816CC for a 1990s compiler.
+
+**SNES suitability**: Low. ORCA/C is tightly coupled to the Apple IIGS runtime (System 6+,
+toolbox bindings). The bank model assumes 64 KB flat-within-bank access, whereas SNES uses 8 KB
+ROM windows per bank. Adapting it to SNES would require stripping the IIGS runtime entirely and
+replacing it with a SNES BSP — substantial work with no active effort known.
 
 ---
 
@@ -178,11 +230,11 @@ accept a proprietary license.
 | Option | Compiler | License | Code quality | SNES-specific support | Verdict |
 |--------|----------|---------|-------------|----------------------|---------|
 | **[PVSnesLib](https://github.com/alekmaul/pvsneslib)** | 816-tcc (TCC port) | MIT | Unoptimized but correct | Full SDK: VRAM, DMA, controllers, sprites, sound | **Best open-source choice** |
-| **[Calypsi](https://www.calypsi.cc/)** | Calypsi C (proprietary) | Proprietary, free (hobby-only) | Optimizing | 65816 target; SNES needs manual BSP | **Best code quality, non-redistributable** |
+| **[Calypsi](https://www.calypsi.cc/)** | Calypsi C (proprietary) | Free DL, hobby-only | Optimizing | 65816 target; SNES needs manual BSP | **Best code quality, non-redistributable** |
 | **[WDC816CC](https://www.westerndesigncenter.com/wdc/products/C-Compiler.cfm)** | WDC C (commercial) | Commercial | Optimizing | 65816; no SNES SDK | Expensive, no active community |
-| **[ORCA/C](https://github.com/byteworksinc/ORCA-C)** | ORCA/C | MIT | Mature | Targets Apple IIGS, not SNES | Needs significant porting work |
+| **[ORCA/C](https://github.com/byteworksinc/ORCA-C)** | ORCA/C | Source-available | Mature, peephole opt | Targets Apple IIGS, not SNES | Needs heavy porting; not redistributable |
 | **[llvm-mos](https://github.com/llvm-mos/llvm-mos)** | LLVM (incomplete) | Apache-2.0 | — | Assembler/linker only | No C compiler yet |
-| **[cc65](https://github.com/cc65/cc65)** | cc65 C | Zlib | Moderate | 6502 only | Does not emit 65816 |
+| **[cc65](https://github.com/cc65/cc65)** | cc65 C | Zlib | Moderate | 6502 only | Does not emit 65816; extension is substantial work |
 
 ### If you want to write C for SNES homebrew right now
 
@@ -205,9 +257,9 @@ regardless of compiler.
 understands the 65816's direct-page and bank-switching model. The download is **free of charge**,
 but the license prohibits using it to "make your living… either directly or indirectly" — hobby
 and small side-income use is explicitly permitted, commercial product development is not. It is
-also closed-source, so it cannot be packaged for a redistributable apt repo. If you are writing a
-personal project, it is worth evaluating; see [calypsi.cc](https://www.calypsi.cc/) for the
-current license terms.
+also closed-source, so it cannot be packaged for a redistributable apt repo. No paid commercial
+tier exists. If you are writing a personal project, it is worth evaluating; see
+[calypsi.cc](https://www.calypsi.cc/) for the current license terms.
 
 ### The gap nobody has filled
 
@@ -228,7 +280,6 @@ adversarial verification — they should not be treated as established fact:
 |-------|------|--------|
 | WDC acquired Zardoz from Jim Goodnow | 0-3 | [assemblergames.org](https://assemblergames.org/viewtopic.php?t=60992) |
 | WDC816CC is directly based on / identical to Zardoz | 0-3 | [nesdev.org](https://forums.nesdev.org/viewtopic.php?p=115927), [nesdev.org](https://forums.nesdev.org/viewtopic.php?t=10336) |
-| Zardoz was used to develop commercial SNES titles | 0-3 | [nesdev.org](https://forums.nesdev.org/viewtopic.php?t=10336) |
 | WDC816CC license explicitly prohibits use with non-WDC processors (restricting SNES use) | 0-3 | [nesdev.org](https://forums.nesdev.org/viewtopic.php?p=115927) |
 | Zardoz targeted Apple IIGS as well as SNES | 0-3 | [assemblergames.org](https://assemblergames.org/viewtopic.php?t=60992) |
 | WDC816CC is a full ANSI C / ISO C99 implementation with Plum Hall validation | 0-3 | [816cc.pdf](https://www.westerndesigncenter.com/wdc/documentation/816cc.pdf) |
@@ -244,25 +295,21 @@ adversarial verification — they should not be treated as established fact:
    ([1997 snapshot](https://web.archive.org/web/19970720124726/www.oro.net/~jimg/cdev.html))
    could not be fetched; its content may shed light.
 
-2. **SNES commercial titles.** Were any commercial SNES games verifiably compiled with Zardoz or
-   WDC816CC? Community assertions exist but no specific title has been confirmed from a primary
-   source (credits, developer post-mortem, interview).
-
-3. **llvm-mos 65816 backend post-2024.** Has any work resumed on the C compiler backend since
+2. **llvm-mos 65816 backend post-2024.** Has any work resumed on the C compiler backend since
    @asiekierka's October 2024 statement? Is there an active maintainer?
 
-4. **ORCA/C comparison.** How does [ORCA/C](https://github.com/byteworksinc/ORCA-C) (open source,
-   Apple IIGS 65816 target) compare to WDC816CC in ABI, memory model, and generated code quality?
-   ORCA/C is a potential open-source reference implementation worth studying.
+3. **Zardoz ABI vs. WDC816CC ABI.** Will Norris used Zardoz commercially — does the PHD/TCD
+   Direct Page frame trick described in the WDC816CC manual match what Zardoz actually generated?
+   If the ABIs differ, drmon's symbol/stack unwinding assumptions may need to account for both.
 
 ---
 
 ## Caveats
 
-- The WDC816CC manual (revised 2013) is the strongest primary source, but it describes a
+- The WDC816CC manual (revised 2013) is the strongest secondary source, but it describes a
   post-Zardoz commercial product. Its ABI may or may not match the original Zardoz design.
-- The ABI findings above describe WDC816CC as documented; whether Zardoz had an identical or
-  merely similar ABI is unverified.
 - llvm-mos backend status is time-bounded to October 2024; it may have changed.
 - Source searches found no public repository or archive dump of either Zardoz or WDC816CC source
   code.
+- ORCA/C source analysis is based on reading `Gen.pas` directly; the ORCA/C manual (not in the
+  repo) would be the authoritative ABI reference.
