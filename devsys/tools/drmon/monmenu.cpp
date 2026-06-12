@@ -134,7 +134,8 @@ menuItems fileMenu[] =
 FLAG
 MenuNewWindow(_menuItem *iPtr, _object *oPtr, int choice)
 {
-	SpawnNewWindow();
+	if (SpawnNewWindow() < 0)
+		PrintMessageBar("New Window: no terminal found - set $DRMON_TERMINAL (e.g. \"xterm -e\")");
 	return(boolean::TRUE);
 }
 

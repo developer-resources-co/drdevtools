@@ -38,19 +38,37 @@ Window positions cascade: each new window is offset `+80+25` pixels from the pre
 
 ### New: `linux/spawn_window.hpp` + `linux/spawn_window.cpp`
 
-`SpawnNewWindow()` — reads own binary from `/proc/self/exe`, forks, execs xterm with
-the binary as the child command. Installs a one-time `SIGCHLD` handler to reap zombies.
-Cascades window position by `+80+25` pixels per call.
+`SpawnNewWindow()` — reads own binary from `/proc/self/exe`, resolves a terminal
+emulator, forks, and execs `<terminal> … <binary>`. A one-time `SIGCHLD` handler
+reaps the terminal children; `setsid()` detaches each so closing one can't signal
+another.
+
+**Terminal resolution (not hardcoded xterm — that's the bug the first cut hit):**
+1. `$DRMON_TERMINAL` — launcher prefix incl. its run-flag (`gnome-terminal --`,
+   `kitty`, `konsole -e`, `xterm -e`); the binary is appended.
+2. else `x-terminal-emulator -e` — the system's configured default terminal.
+3. else `xterm -e`.
+4. none → returns `-1` (caller reports it; see below).
+
+**Failure is no longer silent:** a close-on-exec pipe lets the parent read the
+child's `errno`, so a failed `exec` (no terminal / bad `$DRMON_TERMINAL`) returns
+`-1` instead of a child that silently `_exit`s.
 
 ### Modified: `monmenu.cpp`
 
-- Added `#include "linux/spawn_window.hpp"`
-- Added `MenuNewWindow()` callback
-- Added "New Window" entry + separator at the top of `windowMenu[]`
+- Added `#include "linux/spawn_window.hpp"`, the `MenuNewWindow()` callback, and the
+  "New Window" entry + separator at the top of `windowMenu[]`.
+- `MenuNewWindow()` now reports via `PrintMessageBar()` when `SpawnNewWindow()` fails
+  ("no terminal found — set $DRMON_TERMINAL").
 
-### Modified: `CMakeLists.txt`
+### Modified: `CMakeLists.txt`, `linux/Dockerfile`, `Taskfile.yml`
 
-Added `linux/spawn_window.cpp` to `DRMON_CXX_SRC`.
+- `CMakeLists.txt`: `linux/spawn_window.cpp` in `DRMON_CXX_SRC`.
+- `linux/Dockerfile`: install `xterm` (also registers `x-terminal-emulator`), so the
+  in-container fallback resolves — required for the `task run` (Docker) path.
+- `Taskfile.yml` `run`: pass the display into the container (`-e DISPLAY`,
+  `-v /tmp/.X11-unix:/tmp/.X11-unix`, `-e DRMON_TERMINAL`) and best-effort
+  `xhost +local:` so a spawned terminal draws on the host X server.
 
 ---
 
@@ -72,8 +90,10 @@ Added `linux/spawn_window.cpp` to `DRMON_CXX_SRC`.
    ```
    **PASS**
 
-3. **Spawn**: Run snesmon on a Linux desktop; select Windows ▸ New Window; a second xterm
-   opens with a fresh independent drmon TUI. **(Needs live desktop — not yet recorded.)**
+3. **Spawn**: Run snesmon (`task run`); select Windows ▸ New Window; a second terminal opens
+   with a fresh independent drmon TUI. **Environment verified** — image carries
+   `xterm` + `x-terminal-emulator`, and a container terminal reaches the host X through the
+   `run`-task flags (`xterm -e true` → connected). Final in-TUI click is a manual desktop step.
 
 4. **Independence**: Open a Memory window in window 1; confirm it does not appear in
    window 2. **(Needs live desktop.)**

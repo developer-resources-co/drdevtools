@@ -52,10 +52,15 @@ tasks:
       - '{{.DOCKER}} bash -euc "file /build/snesmon && file /build/genmon"'
 
   run:
-    desc: "Run drmon in a terminal (SYS=snes|gen; needs TTY ≥ 80×25). With MAME: set DRMON_MAME_ADDR if not on localhost:41816."
+    desc: "Run drmon in a terminal (SYS=snes|gen; needs TTY ≥ 80×25). With MAME: set DRMON_MAME_ADDR if not on localhost:41816. Windows ▸ New Window needs X: run 'xhost +local:' once on the host."
     deps: [build]
     cmds:
-      - docker run --rm -it --network=host -v {{.ROOT_DIR}}:/src -v {{.BUILD}}:/build -w /build -e TERM=xterm-256color -e ASAN_OPTIONS={{.ASAN}} -e DRMON_MAME_ADDR={{.DRMON_MAME_ADDR}} -e DRMON_GDB_ADDR={{.DRMON_GDB_ADDR}} {{.IMAGE}} ./{{.BIN}}
+      # Allow the container to reach the host X server (best-effort) so Windows ▸ New Window
+      # can open a terminal on the host display. Harmless if xhost/X aren't present.
+      - xhost +local: >/dev/null 2>&1 || true
+      # -e DISPLAY + the X11 socket carry the display into the container.
+      # DRMON_TERMINAL (optional) overrides the spawned terminal; else x-terminal-emulator/xterm in the image.
+      - docker run --rm -it --network=host -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -e DRMON_TERMINAL -v {{.ROOT_DIR}}:/src -v {{.BUILD}}:/build -w /build -e TERM=xterm-256color -e ASAN_OPTIONS={{.ASAN}} -e DRMON_MAME_ADDR={{.DRMON_MAME_ADDR}} -e DRMON_GDB_ADDR={{.DRMON_GDB_ADDR}} {{.IMAGE}} ./{{.BIN}}
 
   mame:
     desc: "Launch MAME with the drmon bridge (SYS=snes|gen, CART=<rom path>). SNES uses Lua bridge on :41816; Genesis uses native gdbstub on :23946."
