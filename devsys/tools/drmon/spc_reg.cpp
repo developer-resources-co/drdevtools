@@ -42,23 +42,24 @@ enum SPCREGGAD
 };
 
 // window content (3 rows); values are PrintLay'd over the blanks after each label.
+// Layout mirrors the 65816 Register window: A/X/Y left, PSW/SP/PC right.
 static char spcRegText[] =
-"PC:       SP:\n"
-"A:    X:    Y:\n"
-"PSW:";
+"A:          PSW:\n"
+"X:            SP:\n"
+"Y:            PC:";
 
-#define SPCPC_X   4
-#define SPCPC_Y   1
-#define SPCSP_X   14
-#define SPCSP_Y   1
 #define SPCA_X    3
-#define SPCA_Y    2
-#define SPCX_X    9
+#define SPCA_Y    1
+#define SPCX_X    3
 #define SPCX_Y    2
-#define SPCY_X    15
-#define SPCY_Y    2
-#define SPCPSW_X  6
-#define SPCPSW_Y  3
+#define SPCY_X    3
+#define SPCY_Y    3
+#define SPCPSW_X  17
+#define SPCPSW_Y  1
+#define SPCSP_X   18
+#define SPCSP_Y   2
+#define SPCPC_X   18
+#define SPCPC_Y   3
 
 //=============================================================================
 
