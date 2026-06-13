@@ -83,6 +83,11 @@ tasks:
     cmds:
       - 'bash {{.ROOT_DIR}}/{{.DRMON}}/linux/test_bridge.sh {{.SYS}}'
 
+  verify-genesis-bridge:
+    desc: "Drive the Genesis VDP/CRAM/VSRAM/Z80 Lua bridge end-to-end (genesis non-CPU plan, step 3). CART=<rom .md|.zip> (default: first ROM in roms/genesis/). Needs a desktop session — MAME's Lua autoboot engine won't run headless under an agent shell."
+    cmds:
+      - 'bash {{.ROOT_DIR}}/{{.DRMON}}/linux/verify_genesis_bridge.sh {{.CART}}'
+
   debug:
     desc: "Run drmon under gdb and print a backtrace for crash diagnosis (SYS=snes|gen)"
     deps: [build]

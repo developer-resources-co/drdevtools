@@ -37,8 +37,14 @@ local nil_read_ticks  = 0
 -- ── machine init ──────────────────────────────────────────────────────────────
 local function init_machine()
     if not manager or not manager.machine then return end
-    cpu = manager.machine.devices[":maincpu"]
-    shortname = cpu and cpu.shortname or "m68000"
+    -- Guard the maincpu probe: at autoboot-load time device indexing can throw, and an
+    -- unguarded throw here would abort the whole script before open_server() runs (the
+    -- periodic then bails on `not srv`, so the listener would never open).
+    pcall(function()
+        cpu = manager.machine.devices[":maincpu"]
+        shortname = cpu and cpu.shortname or "m68000"
+    end)
+    if not shortname then shortname = "m68000" end
 
     -- VDP VRAM (byte array, 64K) via save-state item.
     vdp = nil; vdp_vram = nil; vdp_cram = nil; vdp_vsram = nil
@@ -206,5 +212,8 @@ emu.register_periodic(function()
 end)
 
 -- ── startup ───────────────────────────────────────────────────────────────────
-init_machine()
+-- Open the listener FIRST: a throw while probing devices must never leave the bridge
+-- without a socket.  (The SNES bridge sidesteps this by deferring device init to the
+-- reset notifier + lazy periodic init; we open-then-probe for the same guarantee.)
 open_server()
+init_machine()

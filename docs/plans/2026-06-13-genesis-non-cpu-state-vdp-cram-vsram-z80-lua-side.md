@@ -206,8 +206,57 @@ on port 23946; the companion Lua script handles VDP/Z80 on port 41817.
 1. **Build clean** — `task build` (SYSTEM=GEN); any compile error means a missing stub or
    signature mismatch.
 
+   ```
+   ninja: no work to do.
+   /build/snesmon: ELF 64-bit LSB pie executable, x86-64 ... not stripped
+   /build/genmon:  ELF 64-bit LSB pie executable, x86-64 ... not stripped
+   ```
+
+   Binary string check — `Z80 RAM`, `ok drmon-genesis-bridge`, `ReadSlaveZ80`, `MTYPE_Z80`
+   all present in `/build/genmon`:
+
+   ```
+   $ strings /tmp/drmon-build/genmon | grep -E "Z80|VDP|drmon-genesis-bridge"
+   VDP Color
+   VDP VScroll
+   VDP
+   VDP Color
+   VDP VScroll
+   Z80 RAM
+   ok drmon-genesis-bridge
+   RW_VDP
+   MTYPE_VDPCO
+   ReadSlaveVDP
+   MTYPE_VDPVS
+   ReadSlaveZ80
+   MTYPE_VDP
+   MTYPE_Z80
+   WriteSlaveVDP
+   ReadSlaveZ80
+   ReadSlaveVDP
+   WriteSlaveVDP
+   ```
+
+   PASS (re-verified 2026-06-14 on a fresh main build — `Z80 RAM`, `ok drmon-genesis-bridge`,
+   `ReadSlaveZ80`, `MTYPE_Z80` all present).
+
 2. **Smoke (disconnected)** — `task smoke` or `task run` with no MAME; genmon TUI opens,
    VDP/Z80 windows show zeros (bridge not connected), no crash.
+
+   ```
+   $ task smoke SYS=gen
+   PASS: opened windows via Alt-keys (M-e M-k M-r M-n M-m M-w M-b M-s M-i M-o M-a M-y)
+         + typed into Expression — no SIGSEGV
+   ```
+
+   Disconnected TUI (task tui-shot SYS=gen):
+
+   ```
+   ☼ File Control Windows Macros Rate Settings Help       Sat Jun 13 17:53:43 2026
+    GenMon V2.1.30  Copyright 1991─1994 Developer Resources           Slave Dead
+   ```
+
+   PASS (re-verified 2026-06-14: `task smoke SYS=gen` no SIGSEGV; tui-shot disconnected, no crash).
 
 3. **Bridge protocol** (live MAME):
    ```
@@ -218,11 +267,67 @@ on port 23946; the companion Lua script handles VDP/Z80 on port 41817.
    All test commands should pass: V, RV (non-zero when game running), RC (128 bytes),
    RS (80 bytes), RZ (non-zero), BYE + reconnect.
 
+   **PASS — 2026-06-14, on the user's desktop, via `task verify-genesis-bridge`** (Aladdin
+   USA cart, free-running):
+
+   ```
+   $ task verify-genesis-bridge
+   === verify_genesis_bridge.sh: ROM=Aladdin (USA).md bridge=:41817 ===
+   Waiting for bridge on :41817 ...
+   Connected to 127.0.0.1:41817
+     PASS  V response starts with 'ok drmon-genesis-bridge'
+     PASS  RV 0 10 → 32 hex chars (16 bytes)
+     PASS  RV 0 1 → 2 hex chars (1 byte)
+     PASS  RV ffff 1 → 2 hex chars (top of 64K VRAM)
+     PASS  RC → 256 hex chars (128 bytes)
+     PASS  RS → 160 hex chars (80 bytes)
+     PASS  RZ 0 10 → 32 hex chars (16 bytes)
+     PASS  RZ 1fff 1 → 2 hex chars
+     PASS  unknown command → 'err ...'
+     PASS  reconnect after BYE + V handshake
+   Results: 10 passed, 0 failed
+   === verify_genesis_bridge.sh: PASS ===
+   ```
+
+   Two bugs were found and fixed while bringing this up (see commit / `mame_genesis_bridge.lua`):
+   - **Bridge never opened its listener:** `init_machine()` ran *before* `open_server()` at
+     autoboot, and its unguarded `:maincpu` probe could throw, aborting the script before the
+     socket opened. Fix: open the socket first; `pcall`-guard the probe (mirrors the SNES
+     bridge's defer-init structure).
+   - **Verification harness:** MAME's bridge socket is single-client, so a `connect()` readiness
+     probe consumed the slot the test needed → use a passive `ss` LISTEN check. Also hardened
+     teardown (`kill -9` + name backstop; MAME ignores SIGTERM) and added a `port=0` guard.
+
+   Environment note: MAME's Lua autoboot engine cannot run under the headless agent shell (any
+   `-autoboot_script` → exit 144/signal 16, no output; reproduced with the known-good
+   `task test-bridge SYS=snes`). This step must be run from a desktop session — hence
+   `task verify-genesis-bridge` rather than an agent-driven run.
+
 4. **UI** (live MAME + genmon connected):
    - Memory window → Type → VDP: shows non-zero VRAM tiles when game is running.
    - Memory window → Type → VDP Color: 128 bytes of palette data visible.
    - Memory window → Type → VDP VScroll: 80 bytes of vertical scroll data.
    - Memory window → Type → Z80 RAM: Z80 program space visible (sound driver code/RAM).
 
+   **Blocked — same root cause as step 3 (2026-06-14).** Needs a connected genmon against
+   live MAME (gdbstub :23946 + bridge :41817) with the Aladdin cart, on a desktop session
+   where MAME's Lua autoboot engine runs. Not reachable from the headless agent shell.
+
+### Gap found while attempting steps 3–4
+
+Neither task wires the Genesis VDP/Z80 bridge for verification:
+- `task mame SYS=gen` launches gdbstub only — no `-autoboot_script mame_genesis_bridge.lua`.
+- `task test-bridge SYS=gen` runs `test_gdb.py` (M68K RSP path), not `test_genesis_bridge.py`.
+
+So `mame_genesis_bridge.lua` + `test_genesis_bridge.py` currently have **no one-command
+runner**. A `task verify-genesis-bridge CART=<rom>` mirroring the SNES branch of
+`test_bridge.sh` would close this.
+
 5. **Build SNES** — `task build SYSTEM=SNES`; new `ReadSlaveZ80` stub in sliomame.cpp
    must not break the SNES build.
+
+   Both snesmon and genmon are built by the same `task build` invocation (step 1).
+   snesmon linked cleanly — ReadSlaveZ80 stub in sliomame.cpp compiles under the
+   `#ifdef GENESIS` guard (no-op on the SNES path).
+
+   PASS
