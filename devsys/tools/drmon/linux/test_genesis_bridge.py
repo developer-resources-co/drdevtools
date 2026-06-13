@@ -112,6 +112,26 @@ send(s, "C")
 resp = recv_line(s)
 check("C → ok", resp, lambda r: r == "ok", "'ok'")
 
+# ── CPU: T — native 68000 single-step (does it hold under -debugger none?) ─────
+print("\n=== CPU: T (native single-step) ===")
+send(s, "H"); recv_line(s)                          # halt
+send(s, "G"); pc1 = int(recv_line(s).split()[-1], 16)
+send(s, "T"); tr = recv_line(s)                     # deferred: "stopped <pc> step" | "... step-timeout"
+send(s, "G"); pc2 = int(recv_line(s).split()[-1], 16)
+delta = (pc2 - pc1) & 0xFFFFFF
+check("T reply 'stopped ... step' (native step held, not step-timeout)",
+      tr, lambda r: r.startswith("stopped") and r.split()[-1] == "step",
+      "'stopped <pc> step'")
+# A held db:command("step") is exactly one instruction; PC may move forward (sequential) or
+# to a branch target (Aladdin's boot loop branches backward), so just require it moved.
+check("T advanced PC (one instruction; forward or branch target)",
+      (pc1 != pc2), lambda c: c is True, "PC changed")
+# After the get_genpc fix the step reply PC should equal the post-step register PC.
+check("step reply PC matches the post-step register PC",
+      int(tr.split()[1], 16), lambda p: p == pc2, f"{pc2:#x}")
+print(f"  PC {pc1:#06x} -> {pc2:#06x}; reply: {tr!r}")
+send(s, "C"); recv_line(s)                           # resume
+
 # ── RV: VDP VRAM read ─────────────────────────────────────────────────────────
 print("\n=== RV: VDP VRAM read ===")
 send(s, "RV 0 10")   # 16 bytes from start of VRAM
@@ -170,8 +190,9 @@ check("RZ 1fff 1 → 2 hex chars",
       "2 hex chars")
 
 # ── data sanity: any non-zero data after the game has run? (informational) ─────
-print("\n=== data sanity (informational; needs the game to have rendered) ===")
-time.sleep(2)
+# No idle sleep here: under -nothrottle the bridge's EOF-reopen (300 nil-read ticks)
+# fires fast, so an idle pause would drop the connection mid-suite.
+print("\n=== data sanity (informational; the game has run during the suite above) ===")
 def _nz(hexstr):
     return sum(1 for i in range(0, len(hexstr) - 1, 2) if hexstr[i:i+2] != "00")
 send(s, "RV 0 200"); _rv = recv_line(s)

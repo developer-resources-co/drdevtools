@@ -144,7 +144,16 @@ end
 -- ── debugger helpers ──────────────────────────────────────────────────────────
 local function get_genpc()
     if not cpu then return 0 end
-    local s = cpu.state["GENPC"] or cpu.state["PC"]
+    -- SNES needs GENPC (the 24-bit PB:PC composite; the PC register alone is bank-relative).
+    -- m68000's GENPC reads as the *previous* PC (PPC), so use the PC register there — else
+    -- every stop reply (halt/step/bp) would report one instruction behind, breaking bp-hit
+    -- detection.  PC is the correct current value for the 68000 (and full 32-bit).
+    local s
+    if shortname == "m68000" then
+        s = cpu.state["PC"]
+    else
+        s = cpu.state["GENPC"] or cpu.state["PC"]
+    end
     return s and s.value or 0
 end
 
