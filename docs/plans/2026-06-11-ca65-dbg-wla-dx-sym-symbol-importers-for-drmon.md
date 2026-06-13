@@ -168,13 +168,19 @@ Run from repo root in the toolchain container (`task` targets). **All steps run 
 
 5. **TUI functional load (scripted).** Drive `snesmon` headlessly (extend `smoke-test.sh` or a one-off `task shot` flow): load the ca65 fixture, open the symbol window, confirm `reset`/`0x808000` appears; in the source view confirm `main.s` line 10 maps and a source-line breakpoint resolves to `0x808000`. Capture the TUI dump as evidence.
 
-   `snesmon <startup.scr>` with `LOADSYM /build/test.dbg` (and `.sym`), then Alt-S in tmux. Both formats populate the Symbol window (names uppercased via the DEBUGDR path):
-   ```
-   ┌■─Symbol──────────────1─↕
-   │00808010  LOOP          ▲
-   │00808000  RESET         █
-   ```
-   **PASS** for both ca65 `.dbg` and WLA `.sym`. (Source-view line→addr mapping is exercised programmatically by step 2's source-breakpoint cases through the same `symfmt` line table that `tableSld` consumes; an interactive source-pane screenshot needs a live MAME PC and is deferred with the other Phase-3 live-MAME items.)
+   `snesmon <startup.scr>` with `LOADSYM /build/game.dbg` (and `game.sym`), then Alt-S in tmux; the
+   pane is captured with `capture-pane -e` and rendered to PNG by `linux/render_ansi.py` (the same path
+   as `task screenshots`). Both formats populate the Symbol window with the right name→address pairs
+   (names uppercased via the DEBUGDR `strupr` in `AddSymbolQuick`):
+
+   | ca65 `.dbg` | WLA-DX `.sym` |
+   |---|---|
+   | <img src="screenshots/symbols_ca65.png" width="360"> | <img src="screenshots/symbols_wla.png" width="360"> |
+
+   **PASS** for both ca65 `.dbg` and WLA `.sym` — `RESET`/`MAIN`/`…` resolve at `0x808000`/`0x808020`/…
+   (Source-view line→addr mapping is exercised programmatically by step 2's source-breakpoint cases
+   through the same `symfmt` line table that `tableSld` consumes; an interactive source-pane screenshot
+   needs a live MAME PC and is deferred with the other Phase-3 live-MAME items.)
 
 ---
 
