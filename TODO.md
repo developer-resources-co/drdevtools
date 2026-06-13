@@ -38,16 +38,15 @@ _(none)_
 
 ## DRMON — INVESTIGATIONS
 
-- [wip] **IDA Pro + Ghidra 65816 RSP against MAME gdbstub — get real answers.**
-  [idapro_m6502](https://github.com/LucienMP/idapro_m6502) shows IDA's gdb client consuming MAME gdbstub XML for m6502.
-  Verify the same pipeline for 65816: does a 65816 processor module exist for IDA; does IDA's gdb client
-  work with a hand-authored `target.xml`; does Ghidra's RSP debugger path connect without a custom
-  agent? Needs the MAME Lua 65816 map (Tier 1 of [65816 gdbstub investigation](docs/investigations/2026-06-11-65816-gdbstub.md))
-  as the test endpoint. Write findings to `docs/investigations/`.
-  **Ghidra finding:** a working Ghidra path would need a custom connector (Ghidra's TraceRMI / a bespoke
-  RSP agent) that speaks our `target.xml` directly and bridges to Ghidra's own 65816 SLEIGH language —
-  i.e. real plugin work, not a configuration.
-  [Plan](docs/plans/2026-06-13-65816-rsp-clients-ida-ghidra.md) (depends on the Tier‑1 endpoint below).
+- [ ] **IDA Pro + Ghidra 65816 RSP against MAME gdbstub — BLOCKED (commercial license).** The
+  free part is done: the connection recipe + wire-format proof (`target.xml` + `g`-packet layout
+  match what IDA's gdb client consumes, per [idapro_m6502](https://github.com/LucienMP/idapro_m6502))
+  are written up in the investigation's `clients.md`. The remaining "does IDA actually attach" GUI
+  step needs **IDA Pro Essential (~$1,099/yr)** + a third-party 65816 processor module (IDA
+  Free/Home can't load custom procmods); **Ghidra** needs a custom TraceRMI/SLEIGH connector (real
+  plugin work, not config). Unblocks only with an IDA Pro license — recipe is ready if that happens.
+  Depends on the Tier‑1 endpoint below for a live target.
+  [Plan](docs/plans/2026-06-13-65816-rsp-clients-ida-ghidra.md) · [investigation](docs/investigations/2026-06-11-65816-gdbstub.md)
 - [wip] **Upstream MAME 65816/5A22 register map to `debuggdbstub.cpp`** (~35 lines; prove via Lua plugin
   first; propose arch name `w65c816`). See [65816 gdbstub investigation](docs/investigations/2026-06-11-65816-gdbstub.md).
   [Plan](docs/plans/2026-06-13-mame-65816-gdbstub-map.md) — Tier 1 (Lua, no rebuild) runnable now; Tier 2 (C++) authored, build‑verify disk‑gated.
