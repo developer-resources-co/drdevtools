@@ -309,9 +309,42 @@ on port 23946; the companion Lua script handles VDP/Z80 on port 41817.
    - Memory window → Type → VDP VScroll: 80 bytes of vertical scroll data.
    - Memory window → Type → Z80 RAM: Z80 program space visible (sound driver code/RAM).
 
-   **Blocked — same root cause as step 3 (2026-06-14).** Needs a connected genmon against
-   live MAME (gdbstub :23946 + bridge :41817) with the Aladdin cart, on a desktop session
-   where MAME's Lua autoboot engine runs. Not reachable from the headless agent shell.
+   **FAIL — 2026-06-14, on the user's desktop. Found a real defect: gdbstub + the autoboot
+   bridge do not coexist.** With `task mame SYS=gen` (gdbstub :23946 **+** autoboot bridge
+   :41817) and `task run SYS=gen`, genmon shows **`Slave Dead`** — both Memory windows empty,
+   no register/VDP/Z80 data.
+
+   A/B test isolated it cleanly:
+   - **gdbstub only** (`mame genesis -cart … -debug -debugger gdbstub -debugger_port 23946
+     -window`, no `-autoboot_script`) → genmon connects, status **`Stopped`**, run/stop/start
+     all work. The M68K gdb link is solid.
+   - **gdbstub + `-autoboot_script mame_genesis_bridge.lua`** → `Slave Dead`.
+
+   Socket-level evidence while broken: `:23946` in `CLOSE-WAIT` (genmon connected then closed
+   its own end), `:41817` LISTEN with pending unaccepted connections. `gdbstub: listening on
+   port 23946` did print, so gdbstub itself started.
+
+   Root-cause analysis (genmon side, `sliogdb.cpp`):
+   - `Slave Dead` ⇔ `g_fd < 0` (line 526). The gdb link is independent of the bridge —
+     `br_maybe_reconnect()` failures are non-fatal (line 522 comment), so the bridge is **not**
+     directly killing the gdb socket.
+   - **Smoking gun:** `HandleSlaveInput()` runs `br_maybe_reconnect()` *before* the gdb
+     reconnect (line 522 vs 525). `br_maybe_reconnect()` → `br_cmd("V")` waits on `select()`
+     with a **1 s** timeout (line 274). While the M68K is halted (its state right after
+     connect, until F2), the bridge's Lua pump doesn't run, so it accepts the TCP connection
+     but never answers `V` → genmon stalls ~1 s per retry on a bridge that *cannot* answer
+     while halted, ahead of the gdb work.
+
+   **Not yet confirmed: genmon-side vs MAME-side.** Decisive next step (NOT yet run — session
+   ended): with the gdbstub+bridge MAME up, run `python3 linux/test_gdb.py` (raw gdb RSP,
+   never touches the bridge). Pass ⇒ gdbstub is fine co-loaded, the bug is genmon's bridge
+   handling. Fail ⇒ the autoboot bridge breaks gdbstub at the MAME level.
+
+   **Candidate fix (if genmon-side):** in `sliogdb.cpp` — (a) reconnect gdb before the bridge,
+   and (b) only attempt the bridge handshake while the machine is *running* (`g_gdb_running`),
+   since the bridge can't answer while halted; optionally shorten `br_cmd`'s select timeout.
+   Then re-run step 4. **If MAME-side:** fold the M68K into the Lua bridge (SNES-style, one
+   `-debugger none` channel for CPU+VDP+Z80) and drop gdbstub for Genesis.
 
 ### Gap found while attempting steps 3–4 — RESOLVED
 
