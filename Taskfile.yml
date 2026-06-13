@@ -167,9 +167,12 @@ tasks:
       - '{{.DOCKER}} bash linux/overflow-test.sh'
 
   test-symbols:
-    desc: "DAP symbol-loader tests — ca65 .dbg / WLA-DX .sym / binary .sld / Sierra COFF (no MAME/TTY needed)"
+    desc: "Symbol-loader tests — symfmt parser self-test (ca65/WLA) + DAP loaders (.dbg/.sym/.sld/COFF). No MAME/TTY."
     deps: [build]
     cmds:
+      # Unit: shared symfmt parser (labels, source lines, content-sniff fall-through).
+      - '{{.DOCKER}} bash -euc "g++ -std=gnu++98 -Wall -Wextra -o /build/symfmt_selftest symfmt_selftest.cpp symfmt.cpp && /build/symfmt_selftest"'
+      # Integration: the DAP SymbolTable loaders end-to-end over stdin/stdout.
       - '{{.DOCKER}} bash -euc "DRMON_DAP_SNES=/build/drmon-dap-snes python3 linux/dap/test_symbols.py"'
 
   clean:

@@ -5,6 +5,8 @@
 #include "moninc.hpp"
 #include "sld.hpp"
 
+#include <algorithm>
+
 //==============================================================================
 
 _sld *stSld = NULL;
@@ -381,6 +383,71 @@ zardozSld::ReSyncSource( ULONG pc )
 //==============================================================================
 
 #endif
+
+//==============================================================================
+// tableSld — modern (ca65 .dbg / WLA-DX .sym) in-memory source-line table.
+// Always compiled (independent of DEBUGDR/DEBUGZARDOZ).
+//==============================================================================
+
+static bool tableSldAddrLess( const SymLine& a, const SymLine& b )
+	{ return( a.addr < b.addr ); }
+
+errorcode
+tableSld::SourceLoad(char *fileNameIn)
+	{
+	SymData d;
+	if ( !parseCa65Dbg( fileNameIn, d ) && !parseWlaSym( fileNameIn, d ) )
+		return( ERROR_NOTSLDFILE );
+
+	lines = d.lines;
+	std::sort( lines.begin(), lines.end(), tableSldAddrLess );
+	MarkInvalid();
+	return( NOERR );
+	}
+
+//============================================================================
+// Re-sync the current source line to the slave PC. Picks the nearest line whose
+// address is <= pc; ExactMatch() is true only when pc sits exactly on a line
+// boundary. A pc outside the mapped range terminates ExactMatch() too, so the
+// SlaveStepSource() loop can never hang on a format whose line addresses don't
+// land on real instruction boundaries.
+
+void
+tableSld::ReSyncSource(ULONG pc)
+	{
+	if ( lines.empty() )
+		{ exactMatch = boolean::TRUE; return; }       // no info: don't loop-step
+	if ( pc < lines.front().addr || pc > lines.back().addr )
+		{ exactMatch = boolean::TRUE; return; }       // past the mapped region
+
+	const SymLine* best = NULL;
+	for ( size_t i = 0; i < lines.size(); ++i )
+		{
+		if ( lines[i].addr <= pc ) best = &lines[i];
+		else break;                                   // sorted ascending
+		}
+	if ( best )
+		{
+		sourceLine = (uword)best->line;
+		strncpy( fileName, best->file.c_str(), sizeof(fileName) - 1 );
+		fileName[sizeof(fileName) - 1] = 0;
+		}
+	exactMatch = ( best && best->addr == pc ) ? boolean::TRUE : boolean::FALSE;
+	}
+
+//============================================================================
+// Map a source file:line to its address, for setting breakpoints from the
+// source view. Returns 0 when the line has no code.
+
+ULONG
+tableSld::SourceToAddress(char *fileNameIn, UWORD line)
+	{
+	for ( size_t i = 0; i < lines.size(); ++i )
+		if ( lines[i].line == (int)line &&
+		     strcmp( fileNameIn, lines[i].file.c_str() ) == 0 )
+			return( lines[i].addr );
+	return( 0 );
+	}
 
 //==============================================================================
 

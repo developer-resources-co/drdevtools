@@ -13,6 +13,9 @@
 #ifndef DRMON_sld_H
 #define DRMON_sld_H
 
+#include <vector>
+#include "symfmt.hpp"   // SymLine + ca65/WLA parsers (modern source formats)
+
 //==============================================================================
 
 class _sld
@@ -31,6 +34,34 @@ public:
 														// converts filename/line # into address(for set break, etc)
 	virtual ULONG SourceToAddress( char *fileName,UWORD line) = 0;
 	virtual boolean ExactMatch(void) = 0;
+	};
+
+//============================================================================
+// tableSld — source-line backend for the modern homebrew formats (ca65 .dbg,
+// WLA-DX .sym). Unlike drSld/zardozSld (which seek a binary file on demand)
+// these text formats are parsed once (via symfmt) into an address-sorted line
+// table. Always available, independent of the DEBUGDR/DEBUGZARDOZ build flag.
+
+class tableSld : public _sld
+	{
+public:
+	tableSld() { sourceLine = 0; fileName[0] = 0; MarkInvalid(); }
+	virtual ~tableSld() {}
+
+	uword SourceLine(void)           { return( sourceLine ); }
+	const char* SourceFileName(void) { return( fileName ); }
+	void MarkInvalid(void)           { exactMatch = boolean::FALSE; }
+
+	errorcode SourceLoad(char *fileName);
+	void ReSyncSource(ULONG pc);
+	ULONG SourceToAddress( char *fileName, UWORD line);
+	boolean ExactMatch(void)         { return( exactMatch ); }
+
+private:
+	std::vector<SymLine> lines;       // sorted by addr ascending
+	char fileName[_MAX_PATH];         // current source file (for ReSyncSource)
+	uword sourceLine;                 // current source line
+	boolean exactMatch;               // pc landed exactly on a line boundary
 	};
 
 //============================================================================

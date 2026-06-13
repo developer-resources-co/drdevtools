@@ -23,7 +23,8 @@ DapSession::DapSession(std::string host, int port, const RegTable& regs,
     , session_(dap::Session::create())
 {
     if (symbolPath && *symbolPath)
-        symtab_.loadSld(symbolPath) || symtab_.loadCoff(symbolPath);
+        symtab_.loadSld(symbolPath)  || symtab_.loadCoff(symbolPath) ||
+        symtab_.loadCa65Dbg(symbolPath) || symtab_.loadWlaSym(symbolPath);
     registerHandlers();
 }
 

@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         git \
         tmux \
         xterm \
+        python3 \
         libjsoncpp-dev \
         libcppdap-dev \
         libncurses-dev \

@@ -76,6 +76,42 @@ def make_coff(path: str):
     with open(path, "wb") as f:
         f.write(filhdr + syment + strtab)
 
+def make_ca65_dbg(path: str):
+    """Minimal ca65 .dbg (cc65 text format): label 'reset' @ 0x808000;
+    main.s line 10 -> 0x808000, line 20 -> 0x808010 (seg start + span offset)."""
+    lines = [
+        "version\tmajor=2,minor=0",
+        'file\tid=0,name="main.s",size=100,mtime=0x00000000,mod=0',
+        'seg\tid=0,name="CODE",start=0x808000,size=0x0020,addrsize=far,type=ro,oname="x.bin",ooffs=0',
+        "span\tid=0,seg=0,start=0,size=16",
+        "span\tid=1,seg=0,start=16,size=16",
+        "line\tid=0,file=0,line=10,span=0",
+        "line\tid=1,file=0,line=20,span=1",
+        'sym\tid=0,name="reset",addrsize=absolute,size=1,scope=0,def=0,val=0x808000,seg=0,type=lab',
+    ]
+    with open(path, "w") as f:
+        f.write("\n".join(lines) + "\n")
+
+def make_wla_sym(path: str):
+    """Minimal WLA-DX .sym (v2 sections): label 'reset' @ 0x808000;
+    main.s line 10 (0x0a) -> 0x808000, line 20 (0x14) -> 0x808010.
+    addr-to-line v2 line = 'OFFS  ROMBANK:OFFS  CPUADDR  FILEHI:FILELO:LINE'."""
+    text = (
+        "; wla symbolic information for test\n"
+        "\n"
+        "[labels]\n"
+        "80:8000 reset\n"
+        "\n"
+        "[source files v2]\n"
+        "0001:0001 00000000 main.s\n"
+        "\n"
+        "[addr-to-line mapping v2]\n"
+        "00000000 80:0000 8000 0001:0001:0000000a\n"
+        "00000010 80:0010 8010 0001:0001:00000014\n"
+    )
+    with open(path, "w") as f:
+        f.write(text)
+
 # ---------------------------------------------------------------------------
 # Test runner
 # ---------------------------------------------------------------------------
@@ -126,8 +162,15 @@ def main():
     with tempfile.TemporaryDirectory() as tmpdir:
         sld_path  = os.path.join(tmpdir, "test.sld")
         coff_path = os.path.join(tmpdir, "test.cof")
+        ca65_path = os.path.join(tmpdir, "test.dbg")
+        wla_path  = os.path.join(tmpdir, "test.sym")
+        junk_path = os.path.join(tmpdir, "test.junk")
         make_sld(sld_path)
         make_coff(coff_path)
+        make_ca65_dbg(ca65_path)
+        make_wla_sym(wla_path)
+        with open(junk_path, "wb") as f:
+            f.write(b"this is not a symbol file\x00\x01\x02\n")
 
         # ------------------------------------------------------------------
         # Verification 2: evaluate symbol (COFF)
@@ -187,6 +230,75 @@ def main():
             run_test("source breakpoint smoke (SLD)", ["--symbols", sld_path], check_src_bpt)
         except Exception as e:
             failures.append(f"source breakpoint: {e}")
+
+        # ------------------------------------------------------------------
+        # Verification 4b: modern text importers (ca65 .dbg, WLA-DX .sym)
+        # Both carry labels AND source-line info; each is exercised for
+        # evaluate (label), disassembly annotation, and source breakpoints —
+        # the same surface the COFF/SLD cases above cover, proving the shared
+        # symfmt parser feeds byAddr_/byName_/srcMap_ for these formats too.
+        # ------------------------------------------------------------------
+        def make_eval_check(symbol, addr):
+            def chk(req, init_resp):
+                resp = req("evaluate", {"expression": symbol, "context": "repl"})
+                assert resp["success"], f"evaluate failed: {resp}"
+                result = resp["body"]["result"]
+                assert result == addr, f"expected {addr}, got {result!r}"
+            return chk
+
+        def make_disasm_check(symbol, addr):
+            def chk(req, init_resp):
+                resp = req("disassemble", {
+                    "memoryReference": addr, "instructionOffset": 0, "instructionCount": 1,
+                })
+                assert resp["success"], f"disassemble failed: {resp}"
+                insns = resp["body"]["instructions"]
+                assert insns, "no instructions returned"
+                assert insns[0].get("symbol") == symbol, \
+                    f"expected symbol={symbol!r}, got {insns[0].get('symbol')!r}"
+            return chk
+
+        def make_srcbp_check(src):
+            def chk(req, init_resp):
+                resp = req("setBreakpoints", {
+                    "source": {"path": src},
+                    "breakpoints": [{"line": 10}, {"line": 20}],
+                })
+                assert resp["success"], f"setBreakpoints failed: {resp}"
+                bpts = resp["body"]["breakpoints"]
+                assert len(bpts) == 2, f"expected 2 breakpoints, got {len(bpts)}"
+                assert bpts[0]["verified"] and bpts[0].get("instructionReference") == "0x808000", \
+                    f"bpt[0]: {bpts[0]}"
+                assert bpts[1]["verified"] and bpts[1].get("instructionReference") == "0x808010", \
+                    f"bpt[1]: {bpts[1]}"
+            return chk
+
+        for fmt, path in (("ca65", ca65_path), ("WLA", wla_path)):
+            for desc, chk in (
+                ("evaluate symbol",   make_eval_check("reset", "0x808000")),
+                ("disassembly label", make_disasm_check("reset", "0x808000")),
+                ("source breakpoint", make_srcbp_check("main.s")),
+            ):
+                try:
+                    run_test(f"{desc} ({fmt})", ["--symbols", path], chk)
+                except Exception as e:
+                    failures.append(f"{desc} ({fmt}): {e}")
+
+        # ------------------------------------------------------------------
+        # Verification 4c: a non-symbol file is rejected by every loader
+        # (the loadSld||loadCoff||loadCa65Dbg||loadWlaSym chain falls through)
+        # — no crash, no bogus symbols.
+        # ------------------------------------------------------------------
+        def check_junk_fallthrough(req, init_resp):
+            resp = req("evaluate", {"expression": "reset", "context": "repl"})
+            assert resp["success"], f"evaluate failed: {resp}"
+            assert "unknown" in resp["body"]["result"].lower(), \
+                f"junk file should load no symbols, got {resp['body']['result']!r}"
+
+        try:
+            run_test("non-symbol file falls through", ["--symbols", junk_path], check_junk_fallthrough)
+        except Exception as e:
+            failures.append(f"junk fallthrough: {e}")
 
         # ------------------------------------------------------------------
         # Verification 5: no-symbols graceful

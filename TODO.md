@@ -52,9 +52,6 @@ _(none)_
 - [wip] **Upstream MAME 65816/5A22 register map to `debuggdbstub.cpp`** (~35 lines; prove via Lua plugin
   first; propose arch name `w65c816`). See [65816 gdbstub investigation](docs/investigations/2026-06-11-65816-gdbstub.md).
   [Plan](docs/plans/2026-06-13-mame-65816-gdbstub-map.md) — Tier 1 (Lua, no rebuild) runnable now; Tier 2 (C++) authored, build‑verify disk‑gated.
-- [ ] **Add ca65 `.dbg` + WLA-DX `.sym` symbol importers to drmon-core** — table stakes for the current
-  homebrew community (every active SNES toolchain outputs one of these; drmon today speaks only `.sld`/COFF/zardoz).
-  Join `sld.cpp`/`coff.cpp` behind the existing symbol layer. See [competitive analysis](docs/investigations/2026-06-11-mesen2-bsnes-plus-vs-drmon.md).
 - [ ] **llvm-mos 65816 C compiler backend — contribution/funding decision.** Research done
   ([investigation](docs/investigations/2026-06-13-llvm-mos-65816-backend.md)): llvm-mos ships a
   production 65816 *assembler + linker* but no C codegen; the work is two open design-only issues
@@ -76,6 +73,7 @@ _(none)_
 
 ## DONE
 
+- [x] 2026-06-13 — ca65 `.dbg` + WLA-DX `.sym` symbol importers: shared `symfmt.{hpp,cpp}` parser (labels + source lines) behind both the DAP `SymbolTable` (`loadCa65Dbg`/`loadWlaSym`) and the TUI `_symbolList` (`LoadSymbol`) + new `tableSld` source backend; `task test-symbols` (12 unit + 11 DAP) + smoke/overflow + headless TUI load all PASS — [plan](docs/plans/2026-06-11-ca65-dbg-wla-dx-sym-symbol-importers-for-drmon.md)
 - 2026-06-13 — [vendor-calypsi] Archived Calypsi 5.17 (65816/68000/6502/nut): all packages + PDFs + release notes in `vendor/calypsi/5.17/`; mirror clone at `vendor/calypsi/tool-chains.git`; `fetch.sh` + SHA256SUMS committed.
 - [x] 2026-06-13 — Fix DOS 8.3 filename/path buffer overflows: sized `patternString`/`fileReqFileName`/new `fileReqDirName`/`logFileName`/`szTempName` to `_MAX_PATH` + `snprintf`-bounded the requester/log copies; deleted dead `#define FILENAME_SIZE 9`. Reachable bug was `tmpnam(szTempName[13])` via Settings→Save; regression guard `task overflow` (real `profile.cpp` under ASan) FAILS pre-fix / PASSES post-fix; build + smoke snes/gen clean — [plan](docs/plans/2026-06-13-dos-83-buffer-overflow-fix.md)
 - [x] 2026-06-13 — Strip `far`/`near`/`huge`/`cdecl`/`pascal` keyword shims: removed the 16 bare `#define`s from `linux_compat.hpp` (kept `farmalloc`/`coreleft` function macros) + the keyword tokens from ~318 `far *` decls across 46 files (2 `*`-anchored sed regexes) + 7 surgical non-pointer sites; build self-checks (any miss = parse error) → 124/124 clean, smoke snes/gen PASS, `gcc -E` token stream byte-identical on 6 compiled TUs — [plan](docs/plans/2026-06-13-strip-far-cdecl-keyword-shims.md)

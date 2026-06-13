@@ -3,6 +3,7 @@
 //=============================================================================
 
 #include "symbols.hpp"
+#include "symfmt.hpp"   // shared ca65 .dbg / WLA-DX .sym parsers
 
 #include <cstdio>
 #include <cstring>
@@ -226,5 +227,33 @@ bool SymbolTable::loadCoff(const char* path) {
     }
 
     fclose(f);
+    return true;
+}
+
+//-----------------------------------------------------------------------------
+// Modern homebrew importers (ca65 .dbg, WLA-DX .sym) via the shared symfmt
+// parsers. Each feeds labels into the address/name index and source lines into
+// the file:line map, then content-sniffs via the parser's return value so the
+// loadSld() || loadCoff() || ... dispatch chain falls through cleanly.
+//-----------------------------------------------------------------------------
+
+void SymbolTable::importSymData(const SymData& d) {
+    for (size_t i = 0; i < d.labels.size(); ++i)
+        add(d.labels[i].addr, d.labels[i].name);
+    for (size_t i = 0; i < d.lines.size(); ++i)
+        addSrc({d.lines[i].addr, d.lines[i].file, d.lines[i].line});
+}
+
+bool SymbolTable::loadCa65Dbg(const char* path) {
+    SymData d;
+    if (!parseCa65Dbg(path, d)) return false;
+    importSymData(d);
+    return true;
+}
+
+bool SymbolTable::loadWlaSym(const char* path) {
+    SymData d;
+    if (!parseWlaSym(path, d)) return false;
+    importSymData(d);
     return true;
 }

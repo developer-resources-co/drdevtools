@@ -47,10 +47,46 @@ char *sourcePath = NULL;
 
 //=============================================================================
 
+// Load a source-debug file, auto-detecting the format and swapping stSld to the
+// matching backend. Modern text formats (ca65 .dbg, WLA-DX .sym) carry both
+// source lines and labels, so a single load also feeds the symbol table; the
+// legacy binary .sld path keeps its separate .sym workflow.
+errorcode
+SourceLoadFile(char *fileName)
+	{
+	// Try the modern in-memory backend first; its SourceLoad sniffs ca65/WLA.
+	_sld *modern = new tableSld();
+	errorcode error = modern->SourceLoad(fileName);
+	if ( !error )
+		{
+		if ( stSld ) delete stSld;
+		stSld = modern;
+		LoadSymbol(fileName);              // also import labels (best effort)
+		return( NOERR );
+		}
+	delete modern;
+
+	// Fall back to the legacy binary backend for native .sld / zardoz files.
+	_sld *legacy = NULL;
+#if defined( DEBUGDR )
+	legacy = (_sld *)new drSld();
+#elif defined( DEBUGZARDOZ )
+	legacy = (_sld *)new zardozSld();
+#endif
+	if ( !legacy )
+		return( error );
+	error = legacy->SourceLoad(fileName);
+	if ( error )
+		{ delete legacy; return( error ); }
+	if ( stSld ) delete stSld;
+	stSld = legacy;
+	return( NOERR );
+	}
+
 void
 SourceLoadGUI(void *data,char *path,char *fileName)
 	{
-	PrintError( stSld->SourceLoad(fileName) );
+	PrintError( SourceLoadFile(fileName) );
 	}
 
 //=============================================================================
@@ -99,9 +135,7 @@ SourceGotoSymbol(_menuItem *iPtr,_object *oPtr,int choice)
 
 menuItems sourceMenu[] =
 {
-#if defined( DEBUGDR ) || defined( DEBUGZARDOZ )
-	{"&Load SLD File...   Ctrl-L",SendWindowMessage,SOURCE_LOAD},
-#endif
+	{"&Load Source Dbg... Ctrl-L",SendWindowMessage,SOURCE_LOAD},
 	{"&Search...          Ctrl-S",SendWindowMessage,SOURCE_SEARCH},
 	{"Sea&rch Label...    Ctrl-R",SendWindowMessage,SOURCE_SEARCHLABEL},
 	{"&Next               Ctrl-N",SendWindowMessage,SOURCE_NEXT},
@@ -125,7 +159,7 @@ SourceCommand(char **s,_object *oPtr, errorcode *error)
 		{
 			case RW_WLOAD:
 			default:
-				*error = stSld->SourceLoad(*s);
+				*error = SourceLoadFile(*s);
 				*s=NULL;
 				break;
 		}
@@ -160,12 +194,10 @@ SourceInput(_input *in,_object *oPtr)
 		case INP_WINDOW_MESSAGE:
 			switch(in->message)
 			 {
-#if defined( DEBUGDR ) || defined( DEBUGZARDOZ )
 				case SOURCE_LOAD:
-					strcpy(patternString,"*.sld       ");
-					DoFileReq("Load SLD File",10,1,SourceLoadGUI,(void *)oPtr);
+					strcpy(patternString,"*.*         ");
+					DoFileReq("Load Source Debug (.sld/.dbg/.sym)",10,1,SourceLoadGUI,(void *)oPtr);
 					break;
-#endif
 				case SOURCE_SEARCH:
 					GetString(FVSearch,(void *)oPtr,"Enter Search String",pWindow);
 					break;

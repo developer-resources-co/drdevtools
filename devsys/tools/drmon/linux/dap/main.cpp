@@ -7,7 +7,9 @@
 //
 // Communicates with the IDE over stdin/stdout (DAP stdio transport).
 // Connects to MAME via TCP on the specified host:port (default 127.0.0.1:41816).
-// --symbols loads a binary .sld or Sierra COFF symbol file for name resolution.
+// --symbols loads a symbol file for name resolution and source-level
+// breakpoints. The format is auto-detected: binary .sld, Sierra COFF,
+// cc65/ca65 .dbg, or WLA-DX .sym.
 //=============================================================================
 
 #include "session.hpp"

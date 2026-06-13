@@ -8,10 +8,14 @@
 struct Symbol  { uint32_t addr; std::string name; };
 struct SrcLine { uint32_t addr; std::string file; int line; };
 
+struct SymData;  // shared parser output (symfmt.hpp)
+
 class SymbolTable {
 public:
-    bool loadSld(const char* path);   // Developer Resources binary .sld
-    bool loadCoff(const char* path);  // Sierra COFF (magic 0x0150)
+    bool loadSld(const char* path);      // Developer Resources binary .sld
+    bool loadCoff(const char* path);     // Sierra COFF (magic 0x0150)
+    bool loadCa65Dbg(const char* path);  // cc65/ca65 .dbg (text)
+    bool loadWlaSym(const char* path);   // WLA-DX .sym (text)
 
     void add(uint32_t addr, const std::string& name);
     void addSrc(const SrcLine& sl);
@@ -28,6 +32,8 @@ public:
     bool empty() const { return byAddr_.empty(); }
 
 private:
+    void importSymData(const SymData& d);  // labels + lines from a parsed file
+
     std::map<uint32_t, Symbol>                byAddr_;  // sorted; lower_bound lookup
     std::unordered_map<std::string, uint32_t> byName_;  // lowercase name → addr
     // file → sorted vector of (line, addr) pairs

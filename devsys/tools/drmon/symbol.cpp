@@ -10,6 +10,7 @@
 #include	"moninc.hpp"
 #include	"word.hpp"	/* allow reserved words */
 #include	"display.hpp"
+#include	"symfmt.hpp"	// ca65 .dbg / WLA-DX .sym text parsers
 
 
 //=============================================================================
@@ -381,9 +382,38 @@ LoadSymbol( FILE* inFile )
 	return( error );
 	}
 
+// Populate the symbol list from a parsed modern-format file (ca65/WLA), reusing
+// the same post-load housekeeping as the binary LoadSymbol(FILE*) path.
+static errorcode
+LoadSymbolData( const SymData& d )
+	{
+	PrintMessageBar( "Loading Symbols" );
+	for ( size_t i = 0; i < d.labels.size(); ++i )
+		if ( !AddSymbolQuick( d.labels[i].addr,
+		                      const_cast<char*>( d.labels[i].name.c_str() ) ) )
+			{
+			ClearMessageBar();
+			return( ERROR_NOMEM );
+			}
+	SortSymbols( symbolObjPtr );
+	if ( symbolOpen )
+		ChangeListRect( (_window*)symbolObjPtr->layer,
+		                (_listRectDesc *)symbolObjPtr->dataPtr3,
+		                (_stringList *)&symbolListBase );
+	ClearMessageBar();
+	return( NOERR );
+	}
+
 errorcode
 LoadSymbol( char* fileName )
 	{
+	// Modern homebrew formats (ca65 .dbg, WLA-DX .sym) are text and carry their
+	// own labels; sniff them first. Binary .sld/zardoz fall through to the
+	// FILE*-based loader below.
+	SymData d;
+	if ( parseCa65Dbg( fileName, d ) || parseWlaSym( fileName, d ) )
+		return( LoadSymbolData( d ) );
+
 	FILE *inFile;
 	errorcode error = NOERR;
 
