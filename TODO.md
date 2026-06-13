@@ -12,14 +12,10 @@ Plan-first: non-trivial work gets a `docs/plans/YYYY-MM-DD-<topic>.md` and a TOD
 
 ## DRMON — DEBUGGER BACKEND
 
-- [ ] **Genesis non-CPU state (VDP/CRAM/VSRAM/Z80) still stubbed.** genmon's transport is
-  MAME's native GDB RSP, which only reaches the M68K bus — VDP VRAM/CRAM/VSRAM and the Z80
-  are unreachable there, so `ReadSlaveVDP`/`ReadSlaveCRAM`/`ReadSlaveVSRAM` stay zero-stubbed
-  in `sliogdb.cpp`. Recommended approach: a **side-channel Lua companion socket** alongside
-  the gdbstub — keep GDB RSP for M68K/step/breakpoints, add a small `-autoboot_script` Lua
-  opening a 2nd socket for `:vdp`/`:z80snd` device reads (the SNES bridge proves the
-  device-access path). Deferred from the
-  [SNES stub-lift](docs/plans/2026-06-11-lift-snes-out-of-scope-stubs.md); revisit on concrete need.
+- [ ] **Genesis non-CPU state (VDP/CRAM/VSRAM/Z80) still stubbed.** `ReadSlaveVDP`/`ReadSlaveCRAM`/`ReadSlaveVSRAM`
+  zero-stubbed in `sliogdb.cpp`; no Z80 window exists. Fix: companion `mame_genesis_bridge.lua` on port
+  41817 serves `RV`/`RC`/`RS`/`RZ` commands; second socket in `sliogdb.cpp`; new `MTYPE_Z80` memory window.
+  [plan](docs/plans/2026-06-13-genesis-non-cpu-state-vdp-cram-vsram-z80-lua-side.md)
 - [wip] **Phase 3 — DAP front end (Tiers 1–3 complete; live-MAME items remain).** `drmon-dap-snes` /
   `drmon-dap-gen` DAP adapters: attach/continue/pause/step/registers/readMemory/instruction
   breakpoints/disassembly/symbol-file loading (binary `.sld` + Sierra COFF). VS Code setup doc at
@@ -46,21 +42,30 @@ _(none)_
 
 ## DRMON — INVESTIGATIONS
 
-- [ ] **IDA Pro + Ghidra 65816 RSP against MAME gdbstub — get real answers.**
+- [wip] **IDA Pro + Ghidra 65816 RSP against MAME gdbstub — get real answers.**
   [idapro_m6502](https://github.com/LucienMP/idapro_m6502) shows IDA's gdb client consuming MAME gdbstub XML for m6502.
   Verify the same pipeline for 65816: does a 65816 processor module exist for IDA; does IDA's gdb client
   work with a hand-authored `target.xml`; does Ghidra's RSP debugger path connect without a custom
   agent? Needs the MAME Lua 65816 map (Tier 1 of [65816 gdbstub investigation](docs/investigations/2026-06-11-65816-gdbstub.md))
   as the test endpoint. Write findings to `docs/investigations/`.
-- [ ] **Upstream MAME 65816/5A22 register map to `debuggdbstub.cpp`** (~35 lines; prove via Lua plugin
+  [Plan](docs/plans/2026-06-13-65816-rsp-clients-ida-ghidra.md) (depends on the Tier‑1 endpoint below).
+- [wip] **Upstream MAME 65816/5A22 register map to `debuggdbstub.cpp`** (~35 lines; prove via Lua plugin
   first; propose arch name `w65c816`). See [65816 gdbstub investigation](docs/investigations/2026-06-11-65816-gdbstub.md).
+  [Plan](docs/plans/2026-06-13-mame-65816-gdbstub-map.md) — Tier 1 (Lua, no rebuild) runnable now; Tier 2 (C++) authored, build‑verify disk‑gated.
 - [ ] **Add ca65 `.dbg` + WLA-DX `.sym` symbol importers to drmon-core** — table stakes for the current
   homebrew community (every active SNES toolchain outputs one of these; drmon today speaks only `.sld`/COFF/zardoz).
   Join `sld.cpp`/`coff.cpp` behind the existing symbol layer. See [competitive analysis](docs/investigations/2026-06-11-mesen2-bsnes-plus-vs-drmon.md).
-- [ ] **llvm-mos 65816 C compiler backend** — the optimizing open-source gap that Zardoz/WDC816CC filled
-  in the 1990s remains unfilled; llvm-mos has the assembler/linker but the C backend stalled in 2024
-  ([issue #32](https://github.com/llvm-mos/llvm-mos/issues/32), [issue #454](https://github.com/llvm-mos/llvm-mos/issues/454)).
-  Consider contributing or funding. See [Zardoz investigation](docs/investigations/2026-06-12-zardoz-65816-compiler.md).
+- [ ] **llvm-mos 65816 C compiler backend — contribution/funding decision.** Research done
+  ([investigation](docs/investigations/2026-06-13-llvm-mos-65816-backend.md)): llvm-mos ships a
+  production 65816 *assembler + linker* but no C codegen; the work is two open design-only issues
+  ([#320 24-bit address space](https://github.com/llvm-mos/llvm-mos/issues/320),
+  [#321 16-bit register mode](https://github.com/llvm-mos/llvm-mos/issues/321)) with **no active
+  implementer** since @asiekierka stepped away. Every barrier *around* codegen is now cleared
+  (assembler, linker, ELF, DWARF spec landed Dec 2025). Four paths laid out in the investigation,
+  cheapest first: (1) feed primary-source Zardoz ABI knowledge into the calling-convention design;
+  (2) land the SP=$01FF 8-bit-mode on-ramp; (3) fund @asiekierka/@mysterymath to resume; (4)
+  implement #320 → #321 directly. Decision is the user's. See also
+  [Zardoz investigation](docs/investigations/2026-06-12-zardoz-65816-compiler.md).
 
 
 ## VERIFY
