@@ -84,9 +84,14 @@ PASS. Unified on `DRMON_MAME_ADDR` :41816 (gdbstub/:23946 retired). `sliogdb.cpp
 but out of the build.
 
 **Desktop verification (run these — MAME's Lua won't run under the agent shell):**
-1. `task test-bridge SYS=snes` → must stay **19/19** (the core extraction is mechanical; this
-   is the SNES regression guard).
+1. `task test-bridge SYS=snes` → SNES regression guard (the core extraction is mechanical).
+   **PASS — 2026-06-14, 27/27** (desktop): 5a22 regs, R/W, PPU `RP`, SPC700 `GA/RA/PA`,
+   `WP±/BW±`, `B±`, `S` step (PC advanced), `C` + bp fire, RESET — no regression from the
+   core extraction.
 2. `task verify-genesis-bridge` (Aladdin) → V/REGS/G/R/H/C + RV/RC/RS/RZ all PASS.
+   **PASS — 2026-06-14, 15/15** (desktop). Proves the shared-module dofile (DRMON_BRIDGE_DIR),
+   the unified `ok drmon-bridge` handshake, the M68K CPU commands (REGS / `G → 19 regs` / R /
+   H / C), and VDP/CRAM/VSRAM/Z80 (RV/RC/RS/RZ) all on one :41816 socket, + BYE-reconnect.
 3. `task mame SYS=gen CART="roms/genesis/Aladdin (USA).md"` + `task run SYS=gen` → connect, F2,
    set a breakpoint, hit + halt, then **read VDP/CRAM/VSRAM/Z80 windows while halted** (the
    whole point — should be non-zero). Then **single-step (F1)**: PC should advance one
