@@ -40,13 +40,23 @@ regression baseline already in hand.
 
 Stand up the infrastructure every later milestone needs, using the *existing* 6502 backend.
 
-- Create the SNES SDK target in llvm-mos-sdk ([#415](https://github.com/llvm-mos/llvm-mos-sdk/issues/415)):
-  crt0, LoROM (and later HiROM) linker scripts, interrupt/reset vectors, memory map, ROM header.
-- crt0 initializes the native-mode stack pointer to `SP = $01FF` (vs the 6502's `$FF`).
-- Wire the 65816 subtarget triple so `clang` selects it; emit a `.sfc`/`.smc` ROM.
-- Emulator smoke loop: a bank-0 C "hello world" (e.g. write a tilemap / known value) **boots and
-  runs correctly in Mesen and bsnes**, driven from CI.
-- Seed a **regression corpus**: a handful of small C programs with known-correct output.
+- ~~Create the SNES SDK target in llvm-mos-sdk ([#415](https://github.com/llvm-mos/llvm-mos-sdk/issues/415)):
+  crt0, LoROM linker scripts, interrupt/reset vectors, memory map, ROM header.~~ **Done** —
+  `mos-platform/snes` authored (LoROM 32 KiB, `PARENT common`, `COMPLETE`): `crt0.c`, `header.s`,
+  `link.ld`, `snes.h`, `clang.cfg`. On the `snes-target` branch of the SDK clone.
+- ~~crt0 sets the stack + force-blanks the PPU.~~ **Done** — emulation-mode bring-up
+  (`sei`/`cld`, `TXS`→`$01FF`, `NMITIMEN=0`, `INIDISP=$8F`); the `SP=$01FF` nuance is automatic in
+  emulation mode (page-1 stack), so it's just `LDX #$FF`/`TXS`.
+- ~~Emit a `.sfc` ROM from C.~~ **Done** — `mos-snes-clang` builds `hello.c` → a valid 32 KiB
+  headerless `.sfc`. **Structural verification PASS**: reset `$FFFC`→`_start` (`$8000`); boot path
+  disassembles byte-exact to the crt0; `main()` compiled + placed (`$8036`); header well-formed;
+  checksum `0x3986 + 0xC679 = 0xFFFF`. (See verification step 1 evidence below.)
+- **TODO — emulator smoke loop:** a bank-0 C "hello world" **boots and runs in Mesen/bsnes**, driven
+  headless from CI. Needs an emulator added to the dev container (next sub-step).
+- **TODO — regression corpus:** a handful of small C programs with known-correct output.
+
+Build is fully containerized (host stays clean) — Dockerfile + `build.sh`/`compile.sh`/`validate.sh`
+in the `~/SRC/llvm-mos-snes` workspace.
 
 Deliverable: a merged (or PR-ready) `mos-platform/snes` target + CI smoke. Risk: low — no compiler
 changes, only SDK + build glue. This is the credibility artifact that pulls @asiekierka/@mysterymath
@@ -100,6 +110,27 @@ Acceptance test per milestone — each step is the bar that milestone must clear
 1. **M0 — target boots.** `mos-snes-clang hello.c -o hello.sfc` produces a valid ROM; the ROM boots
    in Mesen **and** bsnes and produces the known-correct output (value/tilemap). CI runs the smoke
    headless. (Evidence: build log + emulator dump.)
+
+   **Build + structural half: PASS** (2026-06-13). Emulator-run half: pending (needs an emulator in
+   the container). Raw evidence:
+
+   ```
+   $ mos-snes-clang -Os -o hello.sfc examples/hello.c   # in-container, snes-target SDK
+   $ stat -c%s hello.sfc
+   32768
+   $ # internal header @ $FFC0
+   00007fc0: 4c4c 564d 2d4d 4f53 2053 4e45 5320 2020  LLVM-MOS SNES
+   map mode : 0x20 (LoROM/slow)   country: 0x01   rom size: 0x05
+   checksum : 0x3986  complement: 0xC679  (sum=0xffff)
+   $ # vectors: emu RESET $FFFC -> $8000  (= _start);  NMI $FFFA->$8022  IRQ $FFFE->$8021
+   $ # reset bytes: 78 d8 a2 ff 9a a9 00 8d 00 42 a9 8f 8d 00 21
+   $ #   = SEI / CLD / LDX #$FF / TXS / LDA #$00 / STA $4200 / LDA #$8F / STA $2100  (== crt0)
+   $ # linker map: _start=$8000  __do_init_stack=$800F  main=$8036 (real C)  sentinel=$20
+   ```
+
+   So: a valid bootable 32 KiB LoROM `.sfc` is produced from C by the existing 6502 backend; the
+   reset path is exactly the crt0 and `main()` is compiled and placed. Only the live emulator run
+   remains to fully close step 1.
 
 2. **M0 — bench reproducible.** The regression corpus (≥5 programs) builds and runs green in CI from
    a clean checkout. (Evidence: CI run.)
