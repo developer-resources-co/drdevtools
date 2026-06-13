@@ -95,3 +95,19 @@ Ghidra GUI) is reduced to a single documented user step each.
 **Honest scope:** IDA Pro and Ghidra GUIs were not installed (commercial license / ~1 GB + JDK on a
 98%-full disk), so the GUI-in-the-loop attach wasn't exercised. What's verified is the on-the-wire
 contract those clients consume (target.xml + g + m/M + bp), plus the gdb gap that gates Ghidra.
+
+**Licensing & cost (why the GUI attach is license-gated, and what unblocks it):** two IDA features stack
+here, both **IDA Pro**-only — loading a **third-party 65816 processor module** (no 65xx CPU ships with
+IDA) and the **remote GDB debugger** backend that reads `target.xml`. IDA **Free** ($0) cannot load
+custom processor modules at all; IDA **Home** ($365/yr) is a curated, fixed-architecture set with no
+custom-module/SDK support — neither can disassemble 65816. The cheapest edition that can is **IDA Pro
+"Essential", $1,099/yr** (Hex-Rays went subscription-only on 2024-10-01; perpetual licenses are no
+longer sold). The higher Pro tiers (Expert 2/4/6 ≈ $2,999/$4,999/$6,899, Ultimate $8,599) only add
+**decompilers** — which 65816 has none of and this RSP workflow doesn't use — so Essential is the price
+of admission, *provided* it includes the SDK/custom-procmod loading + the gdb debugger backend (verify
+on the current [pricing/feature matrix](https://hex-rays.com/pricing) before quoting; checked 2026-06-13).
+The **free** route to the same end is Ghidra — but **stock Ghidra has no 65816 processor** (it ships
+6502, not 65816). Static RE for $0 means adding a *third-party* SLEIGH module
+([achan1989/ghidra-65816](https://github.com/achan1989/ghidra-65816)): disassembly mostly works, but
+its decompiler is "probably unusable" per the module's own README. Only the *live* attach needs the
+custom connector (TraceRMI / bespoke RSP agent → that SLEIGH) noted in the TODO.
