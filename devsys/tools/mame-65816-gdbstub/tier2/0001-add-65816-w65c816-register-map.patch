@@ -1,0 +1,48 @@
+--- a/src/osd/modules/debugger/debuggdbstub.cpp
++++ b/src/osd/modules/debugger/debuggdbstub.cpp
+@@ -650,6 +650,35 @@
+ };
+ 
+ //-------------------------------------------------------------------------
++// 65816 family: SNES 5a22, plus Apple IIgs / Foenix-class w65c816 and w65c802 (same g65816 core).
++// No official gdb arch name or org.gnu.gdb.* feature exists for the 65816 — binutils' w65 target
++// was assembler-only and removed in 2018 — so "w65c816"/"mame.w65c816" are proposed names (the
++// m6502 arch string above is an equally-unofficial MAME precedent). Widths: A/X/Y/S/D 16-bit,
++// P/DB/PB/E 8-bit; PC is the 24-bit linear value (bank in the high byte), pinned to 32 bits so it
++// frames cleanly for RSP clients that assume power-of-two pointer widths.
++static const gdb_register_map gdb_register_map_w65c816 =
++{
++	"w65c816",
++	{
++		{
++			"mame.w65c816",
++			{
++				{ "A",  "a",  false, TYPE_INT },
++				{ "X",  "x",  false, TYPE_INT },
++				{ "Y",  "y",  false, TYPE_INT },
++				{ "P",  "p",  false, TYPE_INT },
++				{ "E",  "e",  false, TYPE_INT },
++				{ "S",  "sp", true,  TYPE_DATA_POINTER },
++				{ "D",  "d",  false, TYPE_INT },
++				{ "DB", "db", false, TYPE_INT },
++				{ "PB", "pb", false, TYPE_INT },
++				{ "PC", "pc", true,  TYPE_CODE_POINTER, 32 }, // 24-bit, zero-extended to 32
++			}
++		}
++	}
++};
++
++//-------------------------------------------------------------------------
+ static const std::map<std::string, const gdb_register_map &> gdb_register_maps = {
+ 	{ "i486",       gdb_register_map_i486 },
+ 	{ "arm7_le",    gdb_register_map_arm7 },
+@@ -668,6 +697,9 @@
+ 	{ "rp2a03",     gdb_register_map_m6502 },
+ 	{ "w65c02",     gdb_register_map_m6502 },
+ 	{ "w65c02s",    gdb_register_map_m6502 },
++	{ "5a22",       gdb_register_map_w65c816 }, // SNES / NSS / sfcbox main CPU
++	{ "w65c816",    gdb_register_map_w65c816 }, // Apple IIgs, Foenix-class
++	{ "w65c802",    gdb_register_map_w65c816 },
+ 	{ "m6809",      gdb_register_map_m6809 },
+ 	{ "score7",     gdb_register_map_score7 },
+ 	{ "nios2",      gdb_register_map_nios2 },
