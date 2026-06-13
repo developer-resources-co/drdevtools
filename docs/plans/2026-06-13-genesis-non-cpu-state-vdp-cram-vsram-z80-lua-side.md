@@ -340,10 +340,19 @@ on port 23946; the companion Lua script handles VDP/Z80 on port 41817.
    never touches the bridge). Pass ⇒ gdbstub is fine co-loaded, the bug is genmon's bridge
    handling. Fail ⇒ the autoboot bridge breaks gdbstub at the MAME level.
 
-   **Candidate fix (if genmon-side):** in `sliogdb.cpp` — (a) reconnect gdb before the bridge,
-   and (b) only attempt the bridge handshake while the machine is *running* (`g_gdb_running`),
-   since the bridge can't answer while halted; optionally shorten `br_cmd`'s select timeout.
-   Then re-run step 4. **If MAME-side:** fold the M68K into the Lua bridge (SNES-style, one
+   **Candidate fix — IMPLEMENTED 2026-06-14 (awaiting live retest), `sliogdb.cpp`
+   `HandleSlaveInput()`:** reconnect the gdb link first, and only call `br_maybe_reconnect()`
+   while the machine is *running* (`g_gdb_running`) — the bridge's Lua pump is stopped with the
+   M68K, so a handshake while halted can only block on `br_cmd("V")`. Build + smoke (gen) PASS;
+   not yet retested against live MAME.
+
+   **Retest:** `task mame SYS=gen CART="roms/genesis/Aladdin (USA).md"` + `task run SYS=gen`.
+   Expect: genmon shows **`Stopped`** (not `Slave Dead`) on connect; press **F2** to run → the
+   bridge connects while the game executes → VDP/VDP Color/VDP VScroll/Z80 windows show
+   non-zero data. If it still fails, run the `test_gdb.py` discriminator above to decide
+   genmon-side vs MAME-side.
+
+   **If it turns out MAME-side:** fold the M68K into the Lua bridge (SNES-style, one
    `-debugger none` channel for CPU+VDP+Z80) and drop gdbstub for Genesis.
 
 ### Gap found while attempting steps 3–4 — RESOLVED

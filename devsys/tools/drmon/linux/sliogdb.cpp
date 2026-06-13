@@ -519,17 +519,25 @@ boolean CheckSlaveAlive(void) {
 
 // HandleSlaveInput: ~60 fps main-loop poll
 void HandleSlaveInput(void) {
-    br_maybe_reconnect();   // companion bridge; non-fatal if absent
-
+    // Maintain the M68K gdb link FIRST — it is the primary channel and must never be starved
+    // by the companion bridge. Previously br_maybe_reconnect() ran first and stalled up to 1s
+    // in br_cmd("V") on a bridge that cannot answer while the M68K is halted (its Lua pump only
+    // runs while the machine executes), so the gdb reconnect below was never reached on a frame
+    // where the bridge was reachable-but-silent → genmon read "Slave Dead" the whole time.
     if (g_fd < 0) {
         gdb_maybe_reconnect();
         if (g_fd < 0) { PrintMessageStatus(STATUS_SLAVE_DEAD); return; }
     }
 
     if (!g_gdb_running) {
+        // Halted: do NOT touch the bridge — its pump is stopped with the machine, so a connect
+        // attempt would only block on br_cmd("V"). Reconnect it once the user runs (F2).
         PrintMessageStatus(STATUS_STOPPED);
         return;
     }
+
+    // Running: the Lua pump is alive, so the companion VDP/Z80 bridge can answer. Non-fatal.
+    br_maybe_reconnect();
 
     // Non-blocking check for stop notification from MAME
     char stop[512];
