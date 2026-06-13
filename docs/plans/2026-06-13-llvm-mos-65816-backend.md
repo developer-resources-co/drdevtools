@@ -2,6 +2,11 @@
 
 ## Context
 
+> **Active work has moved to its own repo: [`wbniv/llvm-mos-65816`](https://github.com/wbniv/llvm-mos-65816)**
+> (private). The SNES platform (M0), the containerized dev harness, and the living roadmap now live
+> there; this drdevtools copy is the research origin / snapshot. M0 status as of 2026-06-13:
+> the `snes` platform builds a bootable `.sfc` from C on the existing 6502 backend (verified).
+
 This is a **roadmap for upstream contribution to [llvm-mos](https://github.com/llvm-mos/llvm-mos)**,
 not a change to drdevtools. The work lands in `llvm-mos/llvm-mos` (compiler) and
 `llvm-mos/llvm-mos-sdk` (platform target). drdevtools' stake: an optimizing open-source 65816 C
