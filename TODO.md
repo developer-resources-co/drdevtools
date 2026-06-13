@@ -63,16 +63,6 @@ _(none)_
   Consider contributing or funding. See [Zardoz investigation](docs/investigations/2026-06-12-zardoz-65816-compiler.md).
 
 
-## PACKAGING
-
-- [ ] **Vendor Calypsi binaries before the project disappears.** Calypsi is closed-source,
-  hobby-only, no commercial tier — classic abandonware risk. Download and archive all current
-  release binaries (65816, 68000, 6502 targets) and the open-source support packages
-  ([hth313/Calypsi-tool-chains](https://github.com/hth313/Calypsi-tool-chains)).
-  See [Zardoz investigation](docs/investigations/2026-06-12-zardoz-65816-compiler.md) and
-  [toolchain survey](docs/investigations/2026-06-11-snes-65816-toolchains.md).
-
-
 ## VERIFY
 ### implemented; run the plan's verification steps + record, then promote to DONE
 
@@ -81,6 +71,7 @@ _(none)_
 
 ## DONE
 
+- 2026-06-13 — [vendor-calypsi] Archived Calypsi 5.17 (65816/68000/6502/nut): all packages + PDFs + release notes in `vendor/calypsi/5.17/`; mirror clone at `vendor/calypsi/tool-chains.git`; `fetch.sh` + SHA256SUMS committed.
 - [x] 2026-06-13 — Fix DOS 8.3 filename/path buffer overflows: sized `patternString`/`fileReqFileName`/new `fileReqDirName`/`logFileName`/`szTempName` to `_MAX_PATH` + `snprintf`-bounded the requester/log copies; deleted dead `#define FILENAME_SIZE 9`. Reachable bug was `tmpnam(szTempName[13])` via Settings→Save; regression guard `task overflow` (real `profile.cpp` under ASan) FAILS pre-fix / PASSES post-fix; build + smoke snes/gen clean — [plan](docs/plans/2026-06-13-dos-83-buffer-overflow-fix.md)
 - [x] 2026-06-13 — Strip `far`/`near`/`huge`/`cdecl`/`pascal` keyword shims: removed the 16 bare `#define`s from `linux_compat.hpp` (kept `farmalloc`/`coreleft` function macros) + the keyword tokens from ~318 `far *` decls across 46 files (2 `*`-anchored sed regexes) + 7 surgical non-pointer sites; build self-checks (any miss = parse error) → 124/124 clean, smoke snes/gen PASS, `gcc -E` token stream byte-identical on 6 compiled TUs — [plan](docs/plans/2026-06-13-strip-far-cdecl-keyword-shims.md)
 - [x] 2026-06-13 — Drop dead DOS/compiler `#ifdef` arms (Borland/Watcom/OS2/DOSX286/MSDOS/SC/TurboC) + `MASTERSYSTEM`/`NES` stub hooks; kept `DEBUGZARDOZ`/`EMUL` + far/cdecl shims. Executed bundled in `0be2bcd`; verification recorded (build+smoke snes/gen PASS, `gcc -E` proves arm-removal behavior-neutral); deleted last dead-DOS artifacts `input` (TASM listing) + `drmon.mak` — [plan](docs/plans/2026-06-12-drop-dead-dos-compiler-ifdef-arms.md)
