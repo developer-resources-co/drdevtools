@@ -313,15 +313,20 @@ on port 23946; the companion Lua script handles VDP/Z80 on port 41817.
    live MAME (gdbstub :23946 + bridge :41817) with the Aladdin cart, on a desktop session
    where MAME's Lua autoboot engine runs. Not reachable from the headless agent shell.
 
-### Gap found while attempting steps 3–4
+### Gap found while attempting steps 3–4 — RESOLVED
 
-Neither task wires the Genesis VDP/Z80 bridge for verification:
-- `task mame SYS=gen` launches gdbstub only — no `-autoboot_script mame_genesis_bridge.lua`.
+The Genesis VDP/Z80 bridge wasn't wired into any task:
+- `task mame SYS=gen` launched gdbstub only — no `-autoboot_script mame_genesis_bridge.lua`.
 - `task test-bridge SYS=gen` runs `test_gdb.py` (M68K RSP path), not `test_genesis_bridge.py`.
 
-So `mame_genesis_bridge.lua` + `test_genesis_bridge.py` currently have **no one-command
-runner**. A `task verify-genesis-bridge CART=<rom>` mirroring the SNES branch of
-`test_bridge.sh` would close this.
+Closed:
+- **`task verify-genesis-bridge CART=<rom>`** (new `linux/verify_genesis_bridge.sh`) — the
+  one-command protocol runner used for step 3 above.
+- **`task mame SYS=gen`** now launches gdbstub **and** `mame_genesis_bridge.lua` (:41817)
+  together, so `task mame SYS=gen CART=<rom>` is the one-command launcher for step 4's
+  connected-genmon flow. (Also fixed a latent `set -u` unbound-var abort in its `PORT`
+  resolution when `DRMON_GDB_ADDR` is unset.)
+- `task test-bridge SYS=gen` is left as-is (it intentionally tests the M68K gdbstub path).
 
 5. **Build SNES** — `task build SYSTEM=SNES`; new `ReadSlaveZ80` stub in sliomame.cpp
    must not break the SNES build.

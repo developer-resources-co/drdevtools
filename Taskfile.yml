@@ -63,17 +63,20 @@ tasks:
       - docker run --rm -it --network=host -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -e DRMON_TERMINAL -v {{.ROOT_DIR}}:/src -v {{.BUILD}}:/build -w /build -e TERM=xterm-256color -e ASAN_OPTIONS={{.ASAN}} -e DRMON_MAME_ADDR={{.DRMON_MAME_ADDR}} -e DRMON_GDB_ADDR={{.DRMON_GDB_ADDR}} {{.IMAGE}} ./{{.BIN}}
 
   mame:
-    desc: "Launch MAME with the drmon bridge (SYS=snes|gen, CART=<rom path>). SNES uses Lua bridge on :41816; Genesis uses native gdbstub on :23946."
+    desc: "Launch MAME with the drmon bridge (SYS=snes|gen, CART=<rom path>). SNES: Lua bridge on :41816. Genesis: gdbstub on :23946 (M68K) + mame_genesis_bridge.lua on :41817 (VDP/CRAM/VSRAM/Z80)."
     cmds:
       - |
         set -euo pipefail
         LUA="{{.ROOT_DIR}}/{{.DRMON}}/linux/mame_bridge.lua"
+        GEN_LUA="{{.ROOT_DIR}}/{{.DRMON}}/linux/mame_genesis_bridge.lua"
         DRIVER="{{if eq .SYS "gen"}}genesis{{else}}snes{{end}}"
         CART="{{.CART}}"
         if [ -z "$CART" ]; then echo "Usage: task mame SYS=snes|gen CART=<rom>"; exit 1; fi
         if [ "{{.SYS}}" = "gen" ]; then
-          PORT="${DRMON_GDB_ADDR##*:}"; PORT="${PORT:-23946}"
-          mame "$DRIVER" -cart "$CART" -debug -debugger gdbstub -debugger_port "$PORT" -window
+          PORT="${DRMON_GDB_ADDR:-23946}"; PORT="${PORT##*:}"   # :- default avoids set -u unbound-var abort
+          # gdbstub serves the M68K CPU; the companion Lua bridge serves VDP/CRAM/VSRAM/Z80
+          # on :41817 (the two coexist — see the genesis non-CPU plan).
+          mame "$DRIVER" -cart "$CART" -debug -debugger gdbstub -debugger_port "$PORT" -autoboot_script "$GEN_LUA" -window
         else
           mame "$DRIVER" -cart "$CART" -debug -debugger none -autoboot_script "$LUA" -window
         fi
