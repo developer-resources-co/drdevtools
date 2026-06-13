@@ -218,12 +218,15 @@ years, given the head start, but specialist months.
 
 **What are the paths, in increasing effort:**
 
-1. **Engage the design with primary-source ABI knowledge.** Will Norris shipped commercial SNES
-   titles on Zardoz; the calling-convention question (PHD/TCD direct-page frame, A+X split return
-   values — see the [Zardoz ABI section](2026-06-12-zardoz-65816-compiler.md#the-wdc816cc-abi-high-confidence))
-   is live and undecided in #320/#321. First-hand "here's what the optimizing 1990s compilers
-   actually did and why" is exactly the input @asiekierka has been soliciting from former
-   gamedevs. Lowest effort, real value, immediate.
+1. **Bring documented ABI prior art to the design discussion.** The calling-convention question
+   (PHD/TCD direct-page frame, A+X split return values) is live and undecided in #320/#321. The
+   highest-value artifact is the *documented* 1990s prior art — the
+   [WDC816CC/ORCA-C ABI](2026-06-12-zardoz-65816-compiler.md#the-wdc816cc-abi-high-confidence) drawn
+   from the WDC compiler manual and ORCA/C source — already captured in the Zardoz investigation.
+   That is the durable reference to surface, not anyone's recollection: Zardoz users (Will Norris
+   among them) shipped commercial SNES titles on it, which confirms the *gap was filled and the
+   ABI worked in production*, but the compiler's internals were the compiler author's domain, not
+   the game developers'. Low effort, real value — but it's pointing at a manual, not a memory.
 2. **Land the cheap intermediate.** Patch llvm-mos-sdk crt0 to `SP = $01FF` and stand up a minimal
    SNES target running 8-bit-mode codegen. Unblocks 65816 *targets* now; small, self-contained PR.
    Note: **there is no SNES SDK target yet** — it's open issue
@@ -291,8 +294,8 @@ everything downstream of it (debugger, symbol formats) is what drdevtools alread
 
 1. **Calling convention.** Undecided in #320/#321. Does the team land on a PHD/TCD direct-page
    frame (Zardoz/WDC816CC/ORCA-C all did), a hardware-stack-relative frame (now viable per pillar
-   c), or llvm-mos's soft static stack carried over from the 6502? Will's Zardoz experience is
-   directly relevant input here.
+   c), or llvm-mos's soft static stack carried over from the 6502? The documented WDC816CC/ORCA-C
+   ABI (Zardoz investigation) is the prior-art reference here.
 2. **Will @asiekierka resume, or will someone else take #320/#321?** As of June 2026 there is no
    active implementer. This is the single gating fact.
 3. **Does the cheap 8-bit-mode path (SP=$01FF) get built first?** It would let llvm-mos-sdk ship a

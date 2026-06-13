@@ -84,9 +84,13 @@ Undecided in #320/#321 and gating. Three candidates:
 - **Hardware-stack-relative frame** — now viable on the 65816 (16-bit SP, S-indexed modes).
 - **llvm-mos soft static stack** — carried over from the 6502.
 
-Will Norris shipped commercial SNES titles on Zardoz; first-hand "what the optimizing 1990s
-compilers actually did and why" is exactly the input @asiekierka has solicited. **Lowest-effort,
-highest-immediate-value contribution: feed this into #320/#321 now**, independent of writing code.
+The prior-art reference for this decision is the **documented** WDC816CC/ORCA-C ABI (from the WDC
+compiler manual + ORCA/C source, captured in the
+[Zardoz investigation](../investigations/2026-06-12-zardoz-65816-compiler.md#the-wdc816cc-abi-high-confidence))
+— a manual, not anyone's memory. Zardoz shipped real commercial SNES titles (Will Norris among its
+users), which establishes the ABI *worked in production*; but the codegen internals were the
+compiler author's domain, not the game developers', so don't expect first-hand recall of the frame
+layout. **A low-effort, no-code contribution: surface that documented prior art in #320/#321.**
 
 ## Verification
 
