@@ -60,7 +60,7 @@ the version and run state (`Running` / `Stopped`).
 | **Step / Step Over / Run** | Single-step one instruction (**F7**), step over a call (**F8**), or run freely (**F2**) / stop (**F3**). Source- and assembly-level step variants exist (see key reference). *(needs a connected target)* |
 | **65816 disassembler** | Decodes SNES machine code to assembly; powers the Memory window's disassembly view. |
 | **SPC700 (SNES audio CPU)** | The SNES's second processor, which runs the sound engine. drmon exposes it through two SNES-only surfaces: the **SPC Register** window (`Alt+N`) for its registers, and the Memory window's **SPC RAM** view (`Ctrl+R`) for its 64 KB address space. Independent of the main 65816 — its own registers and memory. |
-| **Dev-link (SLIO)** | The command protocol that talks to the target (read/write memory+registers, set/clear breakpoints, step, run). The **Phase 2 MAME backend** implements it: `sliomame.cpp` drives `mame_bridge.lua` over TCP (SNES), `sliogdb.cpp` speaks GDB RSP to MAME's gdbstub (Genesis). `linux/slio_stub.cpp` is the no-op fallback when `DRMON_MAME_BACKEND=OFF`. |
+| **Dev-link (SLIO)** | The command protocol that talks to the target (read/write memory+registers, set/clear breakpoints, step, run). The **Phase 2 MAME backend** implements it: one `sliomame.cpp` client drives a per-platform Lua bridge over TCP — `mame_bridge.lua` (SNES) or `mame_genesis_bridge.lua` (Genesis), both built on the shared `mame_cpu_bridge.lua`, under `-debugger none`. `linux/slio_stub.cpp` is the no-op fallback when `DRMON_MAME_BACKEND=OFF`. |
 
 ---
 
@@ -276,9 +276,9 @@ Press **F10** for the menu bar (Ctrl+F10 for a window's local menu). The top-lev
 - **File** — Load binary / COFF, *Execute Script…*, Exit (Alt+X).
 - **Control** — Run (F2), Stop (F3), Run no Update (F4), Step (F7), Step Over (F8), Reset Slave,
   Reset to Monitor, Write-Protect ▸ On/Off, Break on ROM Write ▸ On/Off. *(need a connected
-  MAME target. On **snesmon**, Write-Protect / Break on ROM Write arm a MAME write-watchpoint
-  over the ROM window — both halt the CPU on a write, since MAME can't silently block one.
-  Still no-ops on **genmon** (GDB RSP has no watchpoint channel here).)*
+  MAME target. Write-Protect / Break on ROM Write arm a MAME write-watchpoint over the ROM
+  window — both halt the CPU on a write, since MAME can't silently block one. Now active on
+  **genmon** too (the Lua bridge watches M68K cartridge ROM `$000000-$3FFFFF`), not just snesmon.)*
 - **Windows** — open any window (mirrors the Alt-keys above).
 - **Macros** — Create Macro, Load / Save Macro File, Delete All Macros.
 - **Rate** — screen update speed: Full Speed, 18 FPS, 9 FPS, 4 FPS.
@@ -390,8 +390,10 @@ break-on-ROM-write all work. **When disconnected** (no MAME running, or the brid
 Wired in Phase 2 but still incomplete, even when connected:
 
 - **Console** receives nothing — the target's print channel isn't carried over the bridge yet.
-- **All Genesis non-CPU state** (VDP/CRAM/VSRAM, Z80) is still stubbed. (See the project TODO.)
-  The SNES PPU/VRAM, SPC700 registers, and SPC RAM windows *do* read live data when connected.
+
+When connected, live non-CPU state reads now work on **both** targets: the SNES PPU/VRAM, SPC700
+registers, and SPC RAM windows, and the Genesis **VDP / CRAM / VSRAM / Z80** windows — readable at
+a breakpoint (the M68K shares one `-debugger none` channel with its non-CPU state).
 
 See [BUGS.md](../../../../docs/BUGS.md) for fixed issues and the
 [port plan](../../../../docs/plans/2026-06-10-port-drmon-linux.md) for the phased roadmap.

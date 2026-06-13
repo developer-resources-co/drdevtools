@@ -12,14 +12,6 @@ Plan-first: non-trivial work gets a `docs/plans/YYYY-MM-DD-<topic>.md` and a TOD
 
 ## DRMON — DEBUGGER BACKEND
 
-- [verify] **Genesis: fold the M68K into the Lua bridge (drop gdbstub).** The gdbstub(:23946) +
-  companion(:41817) split can't read VDP/CRAM/VSRAM/Z80 at a breakpoint (the Lua pump only runs
-  while the M68K executes) — proven live in step 4. Replaced with one `-debugger none` bridge:
-  shared `mame_cpu_bridge.lua` core + thin SNES/Genesis wrappers, genmon via `sliomame.cpp`,
-  native 68000 single-step (`T`). **Built + smoke/lua/script-lint clean; awaiting desktop
-  verify** — SNES 19/19 regression, `task verify-genesis-bridge`, and live VDP-at-breakpoint +
-  single-step (falls back to a software next-PC decoder if native step doesn't hold). Supersedes
-  the connected-mode fix below. [plan](docs/plans/2026-06-14-genesis-backend-fold-the-m68k-into-the-lua-bridge.md)
 - [wip] **Phase 3 — DAP front end (Tiers 1–3 complete; live-MAME items remain).** `drmon-dap-snes` /
   `drmon-dap-gen` DAP adapters: attach/continue/pause/step/registers/readMemory/instruction
   breakpoints/disassembly/symbol-file loading (binary `.sld` + Sierra COFF). VS Code setup doc at
@@ -77,23 +69,12 @@ _(none)_
 ## VERIFY
 ### implemented; run the plan's verification steps + record, then promote to DONE
 
-- [wip] **Genesis non-CPU state (VDP/CRAM/VSRAM/Z80) — connected mode is broken.** Bridge
-  protocol (steps 1–3 + 5) PASS — `task verify-genesis-bridge` 10/10 on Aladdin (fixed an
-  autoboot init-order bug that kept the :41817 listener from opening). **But step 4 FAILED:**
-  with gdbstub + the autoboot bridge co-loaded, genmon reads `Slave Dead`. A/B proved gdbstub
-  *alone* works (M68K run/stop/start fine); adding `-autoboot_script mame_genesis_bridge.lua`
-  breaks the gdb link. Likely genmon-side: `br_maybe_reconnect()` runs before the gdb
-  reconnect and `br_cmd("V")` stalls ~1 s on a bridge that can't answer while the M68K is
-  halted. **Candidate fix applied** (`99ca973`: reconnect gdb first; only handshake the
-  bridge while `g_gdb_running`) — build + smoke PASS, **not yet retested on live MAME**.
-  **Next:** `task mame SYS=gen CART="roms/genesis/Aladdin (USA).md"` + `task run SYS=gen` →
-  expect `Stopped` on connect, F2 to run, VDP/Z80 windows fill. If still dead, run
-  `linux/test_gdb.py` to confirm genmon-side vs MAME-side.
-  [plan §Verification step 4](docs/plans/2026-06-13-genesis-non-cpu-state-vdp-cram-vsram-z80-lua-side.md)
+_(none)_
 
 
 ## DONE
 
+- 2026-06-14 — [genesis-lua-bridge] Folded the Genesis M68K into the Lua bridge (dropped gdbstub) so VDP/CRAM/VSRAM/Z80 read at a breakpoint: shared `mame_cpu_bridge.lua` core + thin SNES/Genesis wrappers, genmon unified on `sliomame.cpp`, native 68000 single-step. Verified: SNES 27/27 (no regression), Genesis 15/15 + non-zero VDP/Z80 data + native step holds. Branch `genesis-lua-bridge-m68k` pushed — [plan](docs/plans/2026-06-14-genesis-backend-fold-the-m68k-into-the-lua-bridge.md)
 - 2026-06-13 — [ca65-sym] ca65 `.dbg` + WLA-DX `.sym` importers: shared `symfmt.{hpp,cpp}` parser behind DAP `SymbolTable` + TUI `_symbolList`; `task test-symbols` 12+11 tests PASS — [plan](docs/plans/2026-06-11-ca65-dbg-wla-dx-sym-symbol-importers-for-drmon.md)
 - 2026-06-13 — [genesis-bridge] Genesis non-CPU state: `mame_genesis_bridge.lua` + second socket in `sliogdb.cpp`; `MTYPE_Z80` window; build + smoke PASS — [plan](docs/plans/2026-06-13-genesis-non-cpu-state-vdp-cram-vsram-z80-lua-side.md)
 - 2026-06-13 — [vendor-calypsi] Archived Calypsi 5.17 (65816/68000/6502/nut): all packages + PDFs + release notes in `vendor/calypsi/5.17/`; mirror clone at `vendor/calypsi/tool-chains.git`; `fetch.sh` + SHA256SUMS committed.

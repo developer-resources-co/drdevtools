@@ -92,14 +92,32 @@ but out of the build.
    **PASS — 2026-06-14, 15/15** (desktop). Proves the shared-module dofile (DRMON_BRIDGE_DIR),
    the unified `ok drmon-bridge` handshake, the M68K CPU commands (REGS / `G → 19 regs` / R /
    H / C), and VDP/CRAM/VSRAM/Z80 (RV/RC/RS/RZ) all on one :41816 socket, + BYE-reconnect.
-3. `task mame SYS=gen CART="roms/genesis/Aladdin (USA).md"` + `task run SYS=gen` → connect, F2,
-   set a breakpoint, hit + halt, then **read VDP/CRAM/VSRAM/Z80 windows while halted** (the
-   whole point — should be non-zero). Then **single-step (F1)**: PC should advance one
-   instruction. If the status flips to `step-timeout` / PC jumps far → native step doesn't hold
-   → ping me and I'll write the software next-PC decoder.
+3. **VDP/Z80 data + native single-step — the headline. PASS — 2026-06-14** (`verify-genesis-bridge`
+   data-sanity + `T` step check; the agent shell can now run the bridge intermittently).
+   - **VDP/Z80 read real data**: with the device-tag fix the bridge returns live Aladdin state —
+     VRAM 304/512, CRAM 86/128, Z80 446/512 non-zero bytes — readable **while halted** (`emu.pause`
+     keeps the Lua pump alive; the original gdbstub "VDP-only-while-running" defect is gone).
+   - **68000 native single-step holds** under `-debugger none`: `T` replied `stopped <pc> step`
+     (not `step-timeout`) and advanced exactly one instruction. **No software next-PC decoder
+     needed** — the 68000's hardware TRACE works where the 65816's didn't.
 
-## Risks / notes
-- **M68K next-PC decode** is the one hard piece (variable length, many addressing modes). Mitigation: cover common control-flow opcodes, fall back to `PC+len`, rely on the 500 ms step watchdog.
-- **Modifying the proven SNES bridge** — strictly additive + the 19/19 re-verify is the guard.
-- **MAME Lua can't run under the agent shell** (signal 16 / exit 144) — all bridge/live verification is on the user's desktop (as in steps 3-4); the C++ client is build-verified by me.
-- Plan persisted to `docs/plans/` on implementation per the project's plan-first convention.
+## Status: COMPLETE (2026-06-14) — pushed `genesis-lua-bridge-m68k`
+Commits: `82ea756` fold-in · `c77991c` 15/15 + 27/27 · `632a961` device-tag fix · `0966998`
+get_genpc + native-step verified. SNES 27/27, Genesis 15/15 + non-zero data + step all green.
+
+## Bugs found & fixed during verification
+- **Wrong device tags** (`632a961`): probed `:vdp` / `:z80`; MAME 0.277 genesis driver uses
+  `:gen_vdp` / `:genesis_snd_z80` (found via `mame -listxml genesis`). The length-only protocol
+  test masked it (nil handle still returns a sized run of `00`) — added a `DEV` diagnostic + a
+  non-zero data-sanity report so it's caught by value next time.
+- **m68000 stop-reply PC** (`0966998`): `get_genpc()` used `GENPC`, which on m68000 reads as the
+  *previous* PC (PPC) — every halt/step/bp reply was one instruction behind (would misfire bp-hit
+  detection). Use the `PC` register for m68000; SNES keeps `GENPC` (24-bit PB:PC composite).
+
+## Notes
+- **Modifying the proven SNES bridge** — strictly additive (core extraction is mechanical);
+  `test-bridge SYS=snes` 27/27 is the regression guard.
+- **MAME Lua under the agent shell** — was signal-16/exit-144 earlier; now runs *intermittently*
+  (~2 of 5), so live verification was done there + on the user's desktop. The C++ client is fully
+  build-verified.
+- M68K next-PC decoder was planned as the hard piece but **proved unnecessary** — native step holds.

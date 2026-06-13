@@ -1,5 +1,13 @@
 # Plan: Genesis non-CPU state — VDP/CRAM/VSRAM/Z80 Lua side-channel
 
+> **Superseded 2026-06-14.** This plan's design — VDP/Z80 over a *companion* Lua bridge (`:41817`)
+> alongside MAME gdbstub (`:23946`) for the M68K — was implemented and then proven unworkable in
+> connected mode: the companion bridge's Lua pump is dead while gdbstub holds the machine, so
+> VDP/Z80 can't be read at a breakpoint. The fix folded the M68K into the Lua bridge and dropped
+> gdbstub entirely — see **[docs/plans/2026-06-14-genesis-backend-fold-the-m68k-into-the-lua-bridge.md](2026-06-14-genesis-backend-fold-the-m68k-into-the-lua-bridge.md)**.
+> The device-read approach below (RV/RC/RS/RZ, save-state items) carried over — but note the
+> device tags were corrected to `:gen_vdp` / `:genesis_snd_z80`.
+
 ## Context
 
 `genmon` connects to MAME via GDB RSP (`-debugger gdbstub`, port 23946). GDB RSP exposes

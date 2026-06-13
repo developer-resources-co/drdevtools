@@ -20,9 +20,11 @@ Values are parsed as hex (`sscanf("%x")`), e.g. `export DR_SNESPORT=0x378`. The 
 
 > **No effect — superseded by the MAME bridge.** These are legacy hardware knobs for the original
 > parallel-port dev cartridge. The Phase 2 backend talks to MAME over TCP instead, so the live
-> endpoint is configured with **`DRMON_MAME_ADDR`** (SNES Lua bridge, default `127.0.0.1:41816`) or
-> **`DRMON_GDB_ADDR`** (Genesis GDB RSP, default `127.0.0.1:23946`) — not these. `DR_SNESPORT` /
-> `DR_SNESMEMBUFFER` change nothing today.
+> endpoint is configured with **`DRMON_MAME_ADDR`** (the Lua bridge, default `127.0.0.1:41816`) —
+> the same for SNES (`mame_bridge.lua`) and Genesis (`mame_genesis_bridge.lua`) under
+> `-debugger none`. (Genesis used MAME's GDB RSP on `:23946` through 2026-06-13; that was dropped
+> when the M68K was folded into the Lua bridge so VDP/Z80 are readable at a breakpoint.)
+> `DR_SNESPORT` / `DR_SNESMEMBUFFER` change nothing today.
 
 ## Startup scripts (`.scr`)
 
