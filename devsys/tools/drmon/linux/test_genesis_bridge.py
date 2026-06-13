@@ -77,6 +77,11 @@ check("V response starts with 'ok drmon-bridge'",
       lambda r: r.startswith("ok drmon-bridge"),
       "'ok drmon-bridge ...'")
 
+# ── DEV: device-probe diagnostic (which VDP/Z80 handles actually resolved) ──────
+print("\n=== DEV: device probe (informational) ===")
+send(s, "DEV")
+print("  " + recv_line(s))
+
 # ── CPU: REGS announce / G get-registers / R memory read ───────────────────────
 print("\n=== CPU: REGS / G / R (M68K) ===")
 send(s, "REGS D0,D1,D2,D3,D4,D5,D6,D7,A0,A1,A2,A3,A4,A5,A6,A7,USP,SR,PC")
@@ -163,6 +168,18 @@ check("RZ 1fff 1 → 2 hex chars",
       resp,
       lambda r: is_hex(r, 1),
       "2 hex chars")
+
+# ── data sanity: any non-zero data after the game has run? (informational) ─────
+print("\n=== data sanity (informational; needs the game to have rendered) ===")
+time.sleep(2)
+def _nz(hexstr):
+    return sum(1 for i in range(0, len(hexstr) - 1, 2) if hexstr[i:i+2] != "00")
+send(s, "RV 0 200"); _rv = recv_line(s)
+send(s, "RC");       _rc = recv_line(s)
+send(s, "RZ 0 200"); _rz = recv_line(s)
+print(f"  VRAM[0:512] non-zero bytes: {_nz(_rv)}")
+print(f"  CRAM[0:128] non-zero bytes: {_nz(_rc)}  (palette — loads early)")
+print(f"  Z80[0:512]  non-zero bytes: {_nz(_rz)}")
 
 # ── unknown command ───────────────────────────────────────────────────────────
 print("\n=== unknown command → err ===")

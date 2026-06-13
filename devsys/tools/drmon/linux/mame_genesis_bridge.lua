@@ -32,19 +32,28 @@ local vdp_cram  = nil   -- emu.item m_cram  (64 × u16)        — RC
 local vdp_vsram = nil   -- emu.item m_vsram (40 × u16)        — RS
 local z80_space = nil   -- :z80/:soundcpu program space (64K) — RZ
 
+-- MAME genesis driver device tags (from `mame -listxml genesis`):
+--   VDP = :gen_vdp (Sega 315-5313),  Z80 = :genesis_snd_z80.
+-- Try a couple of save-item key spellings since the exact prefix can't be confirmed headlessly.
+local function find_item(dev, ...)
+    if not (dev and dev.items) then return nil end
+    for _, name in ipairs({...}) do
+        if dev.items[name] then return emu.item(dev.items[name]) end
+    end
+    return nil
+end
+
 M.add_init(function()
     vdp_vram = nil; vdp_cram = nil; vdp_vsram = nil
     pcall(function()
-        local vdp = manager.machine.devices[":vdp"]
-        if vdp and vdp.items then
-            if vdp.items["0/m_vram"]  then vdp_vram  = emu.item(vdp.items["0/m_vram"])  end
-            if vdp.items["0/m_cram"]  then vdp_cram  = emu.item(vdp.items["0/m_cram"])  end
-            if vdp.items["0/m_vsram"] then vdp_vsram = emu.item(vdp.items["0/m_vsram"]) end
-        end
+        local vdp = manager.machine.devices[":gen_vdp"]
+        vdp_vram  = find_item(vdp, "0/m_vram",  "m_vram")
+        vdp_cram  = find_item(vdp, "0/m_cram",  "m_cram")
+        vdp_vsram = find_item(vdp, "0/m_vsram", "m_vsram")
     end)
     z80_space = nil
     pcall(function()
-        local z = manager.machine.devices[":z80"] or manager.machine.devices[":soundcpu"]
+        local z = manager.machine.devices[":genesis_snd_z80"]
         if z then z80_space = z.spaces["program"] end
     end)
 end)
@@ -104,6 +113,35 @@ M.add_command(function(line)
     if rz_addr then
         return space_bytes_hex(z80_space, tonumber(rz_addr, 16),
                                math.min(tonumber(rz_len, 16), 4096))
+    end
+
+    -- DEV — diagnostic: VDP/Z80 device tags + which handles actually resolved.  Lets us tell
+    -- "probe found nothing → zero-fill" from "probe ok but VRAM genuinely zero".
+    if line == "DEV" then
+        local tags = {}
+        pcall(function()
+            for tag in pairs(manager.machine.devices) do
+                if tag:find("vdp") or tag:find("315") or tag:find("z80")
+                   or tag:find("sound") or tag:find("maincpu") then
+                    tags[#tags + 1] = tag
+                end
+            end
+        end)
+        table.sort(tags)
+        local items = {}
+        pcall(function()
+            local vdp = manager.machine.devices[":gen_vdp"]
+            if vdp and vdp.items then
+                for k in pairs(vdp.items) do
+                    if k:find("ram") or k:find("RAM") then items[#items + 1] = k end
+                end
+            end
+        end)
+        table.sort(items)
+        return string.format("devs=[%s] vdp_ram_items=[%s] vram=%s cram=%s vsram=%s z80=%s",
+            table.concat(tags, ","), table.concat(items, ","),
+            vdp_vram and "y" or "n", vdp_cram and "y" or "n",
+            vdp_vsram and "y" or "n", z80_space and "y" or "n")
     end
 
     return nil   -- not a Genesis device command
