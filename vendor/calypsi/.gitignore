@@ -1,0 +1,8 @@
+# Calypsi proprietary binary packages — local archive only, not committed
+5.17/*.deb
+5.17/*.rpm
+5.17/*.zip
+5.17/*.pkg.tar.zst
+
+# Mirror clone of hth313/Calypsi-tool-chains (bare git repo — not tracked)
+tool-chains.git/
