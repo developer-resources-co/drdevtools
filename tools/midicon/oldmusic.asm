@@ -504,4 +504,3 @@ MusicEnd:
 	ld	(SongPointer),hl
 	ret
 
-
