@@ -27,10 +27,9 @@ vars:
   # SYS selects the target: snes (65816) or gen (68000).  Default: snes.
   SYS: '{{default "snes" .SYS}}'
   BIN: '{{if eq .SYS "gen"}}genmon{{else}}snesmon{{end}}'
-  # SNES bridge address (mame_bridge.lua TCP listener, port 41816).
+  # drmon Lua-bridge address — SNES (mame_bridge.lua) and Genesis (mame_genesis_bridge.lua)
+  # both listen here under -debugger none.  (Genesis gdbstub/:23946 retired 2026-06-14.)
   DRMON_MAME_ADDR: '{{default "127.0.0.1:41816" .DRMON_MAME_ADDR}}'
-  # Genesis GDB RSP address (MAME -debugger gdbstub, port 23946).
-  DRMON_GDB_ADDR: '{{default "127.0.0.1:23946" .DRMON_GDB_ADDR}}'
 
 tasks:
   default:
@@ -60,34 +59,30 @@ tasks:
       - "xhost +local: >/dev/null 2>&1 || true"
       # -e DISPLAY + the X11 socket carry the display into the container.
       # DRMON_TERMINAL (optional) overrides the spawned terminal; else x-terminal-emulator/xterm in the image.
-      - docker run --rm -it --network=host -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -e DRMON_TERMINAL -v {{.ROOT_DIR}}:/src -v {{.BUILD}}:/build -w /build -e TERM=xterm-256color -e ASAN_OPTIONS={{.ASAN}} -e DRMON_MAME_ADDR={{.DRMON_MAME_ADDR}} -e DRMON_GDB_ADDR={{.DRMON_GDB_ADDR}} {{.IMAGE}} ./{{.BIN}}
+      - docker run --rm -it --network=host -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -e DRMON_TERMINAL -v {{.ROOT_DIR}}:/src -v {{.BUILD}}:/build -w /build -e TERM=xterm-256color -e ASAN_OPTIONS={{.ASAN}} -e DRMON_MAME_ADDR={{.DRMON_MAME_ADDR}} {{.IMAGE}} ./{{.BIN}}
 
   mame:
-    desc: "Launch MAME with the drmon bridge (SYS=snes|gen, CART=<rom path>). SNES: Lua bridge on :41816. Genesis: gdbstub on :23946 (M68K) + mame_genesis_bridge.lua on :41817 (VDP/CRAM/VSRAM/Z80)."
+    desc: "Launch MAME with the drmon Lua bridge (SYS=snes|gen, CART=<rom>). -debugger none + one bridge on :41816 serving the CPU plus (SNES) PPU/SPC700 or (Genesis) VDP/CRAM/VSRAM/Z80 — readable at a breakpoint."
     cmds:
       - |
         set -euo pipefail
-        LUA="{{.ROOT_DIR}}/{{.DRMON}}/linux/mame_bridge.lua"
-        GEN_LUA="{{.ROOT_DIR}}/{{.DRMON}}/linux/mame_genesis_bridge.lua"
+        DIR="{{.ROOT_DIR}}/{{.DRMON}}/linux"
         DRIVER="{{if eq .SYS "gen"}}genesis{{else}}snes{{end}}"
+        BRIDGE="$DIR/{{if eq .SYS "gen"}}mame_genesis_bridge.lua{{else}}mame_bridge.lua{{end}}"
         CART="{{.CART}}"
         if [ -z "$CART" ]; then echo "Usage: task mame SYS=snes|gen CART=<rom>"; exit 1; fi
-        if [ "{{.SYS}}" = "gen" ]; then
-          PORT="${DRMON_GDB_ADDR:-23946}"; PORT="${PORT##*:}"   # :- default avoids set -u unbound-var abort
-          # gdbstub serves the M68K CPU; the companion Lua bridge serves VDP/CRAM/VSRAM/Z80
-          # on :41817 (the two coexist — see the genesis non-CPU plan).
-          mame "$DRIVER" -cart "$CART" -debug -debugger gdbstub -debugger_port "$PORT" -autoboot_script "$GEN_LUA" -window
-        else
-          mame "$DRIVER" -cart "$CART" -debug -debugger none -autoboot_script "$LUA" -window
-        fi
+        # -debugger none + the Lua bridge (which dofiles mame_cpu_bridge.lua).  DRMON_BRIDGE_DIR
+        # lets the wrapper find the core regardless of how MAME names the autoboot chunk.
+        export DRMON_BRIDGE_DIR="$DIR"
+        mame "$DRIVER" -cart "$CART" -debug -debugger none -autoboot_script "$BRIDGE" -window
 
   test-bridge:
-    desc: "Run the full bridge test suite (SYS=snes|gen). Launches MAME on the host, runs test_bridge.py, tears down on exit."
+    desc: "Run the full bridge protocol suite (SYS=snes|gen): launches headless MAME (-debugger none + the Lua bridge), runs test_bridge.py (SNES) / test_genesis_bridge.py (Genesis), tears down on exit."
     cmds:
       - 'bash {{.ROOT_DIR}}/{{.DRMON}}/linux/test_bridge.sh {{.SYS}}'
 
   verify-genesis-bridge:
-    desc: "Drive the Genesis VDP/CRAM/VSRAM/Z80 Lua bridge end-to-end (genesis non-CPU plan, step 3). CART=<rom .md|.zip> (default: first ROM in roms/genesis/). Needs a desktop session — MAME's Lua autoboot engine won't run headless under an agent shell."
+    desc: "Drive the Genesis Lua bridge (M68K CPU + VDP/CRAM/VSRAM/Z80) end-to-end. CART=<rom .md|.zip> (default: first ROM in roms/genesis/). Needs a desktop session — MAME's Lua autoboot engine won't run headless under an agent shell."
     cmds:
       - 'bash {{.ROOT_DIR}}/{{.DRMON}}/linux/verify_genesis_bridge.sh {{.CART}}'
 

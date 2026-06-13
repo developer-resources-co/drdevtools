@@ -2,8 +2,8 @@
 # test_bridge.sh — launch headless MAME, run the protocol test suite, clean up.
 # Usage: bash linux/test_bridge.sh [snes|gen]
 # Requires: mame on PATH; called by 'task test-bridge' inside the drmon build container.
-# SNES: mame_bridge.lua on 127.0.0.1:41816 (or $DRMON_MAME_ADDR).
-# GEN:  MAME -debugger gdbstub on 127.0.0.1:23946 (or $DRMON_GDB_ADDR).
+# Both platforms: -debugger none + a Lua bridge on 127.0.0.1:41816 (or $DRMON_MAME_ADDR).
+#   SNES → mame_bridge.lua + test_bridge.py;  GEN → mame_genesis_bridge.lua + test_genesis_bridge.py.
 set -euo pipefail
 
 usage() { echo "Usage: $0 [snes|gen]"; exit 0; }
@@ -11,22 +11,19 @@ usage() { echo "Usage: $0 [snes|gen]"; exit 0; }
 
 SYS="${1:-snes}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LUA="$SCRIPT_DIR/mame_bridge.lua"
 
 case "$SYS" in
-  snes) DRIVER="snes" ;;
-  gen)  DRIVER="genesis" ;;
+  snes) DRIVER="snes";    LUA="$SCRIPT_DIR/mame_bridge.lua" ;;
+  gen)  DRIVER="genesis"; LUA="$SCRIPT_DIR/mame_genesis_bridge.lua" ;;
   *)    echo "Unknown SYS '$SYS'; use snes or gen"; exit 1 ;;
 esac
 
-# Port used by this backend; kill any stale MAME that still holds it.
-if [ "$SYS" = "gen" ]; then
-    _addr="${DRMON_GDB_ADDR:-127.0.0.1:23946}"
-    PORT="${_addr##*:}"
-else
-    _addr="${DRMON_MAME_ADDR:-127.0.0.1:41816}"
-    PORT="${_addr##*:}"
-fi
+# Unified -debugger none bridge: both platforms listen on DRMON_MAME_ADDR (default :41816).
+# DRMON_BRIDGE_DIR lets the wrapper dofile mame_cpu_bridge.lua regardless of MAME's chunk name.
+_addr="${DRMON_MAME_ADDR:-127.0.0.1:41816}"
+PORT="${_addr##*:}"
+export DRMON_MAME_ADDR="127.0.0.1:$PORT"
+export DRMON_BRIDGE_DIR="$SCRIPT_DIR"
 
 # Kill any stale process holding the port so the test gets a clean socket.
 fuser -k "${PORT}/tcp" 2>/dev/null || true
@@ -62,25 +59,14 @@ echo "=== test_bridge.sh: SYS=$SYS driver=$DRIVER ROM=$(basename "$ROM") ==="
 # SDL_VIDEODRIVER=offscreen prevents MAME from creating a real SDL window even
 # with -video none (which suppresses game rendering but not the host window).
 # SDL_AUDIODRIVER=dummy avoids PulseAudio/ALSA errors on headless hosts.
-if [ "$SYS" = "gen" ]; then
-    env SDL_VIDEODRIVER=offscreen SDL_AUDIODRIVER=dummy \
-    mame "$DRIVER" \
-        -cart "$ROM" \
-        -debug -debugger gdbstub \
-        -debugger_port "$PORT" \
-        -video none \
-        -nothrottle \
-        &>/tmp/mame_bridge_test.log &
-else
-    env SDL_VIDEODRIVER=offscreen SDL_AUDIODRIVER=dummy \
-    mame "$DRIVER" \
-        -cart "$ROM" \
-        -debug -debugger none \
-        -autoboot_script "$LUA" \
-        -video none \
-        -nothrottle \
-        &>/tmp/mame_bridge_test.log &
-fi
+env SDL_VIDEODRIVER=offscreen SDL_AUDIODRIVER=dummy \
+mame "$DRIVER" \
+    -cart "$ROM" \
+    -debug -debugger none \
+    -autoboot_script "$LUA" \
+    -video none \
+    -nothrottle \
+    &>/tmp/mame_bridge_test.log &
 MAME_PID=$!
 
 cleanup() {
@@ -92,7 +78,7 @@ trap cleanup EXIT
 
 # Run the protocol test suite.
 if [ "$SYS" = "gen" ]; then
-    python3 "$SCRIPT_DIR/test_gdb.py"
+    python3 "$SCRIPT_DIR/test_genesis_bridge.py"
 else
     python3 "$SCRIPT_DIR/test_bridge.py" "$SYS"
 fi

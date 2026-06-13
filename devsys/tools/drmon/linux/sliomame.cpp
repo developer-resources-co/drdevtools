@@ -537,6 +537,13 @@ void SlaveStop(void) {
 boolean SingleStep(void) {
     if (g_fd < 0) return boolean::FALSE;
 
+    char cmd[48];
+#ifdef GENESIS
+    // 68000 native single-step via the bridge's T command (hardware TRACE) — no client-side
+    // next-PC prediction (unlike the 65816, which has no trace facility).  If MAME's native
+    // step turns out not to hold under -debugger none, we fall back to an S-command decoder.
+    snprintf(cmd, sizeof(cmd), "T");
+#else
     ulong PC = GetReg(REG_INSTRUCTIONPOINTER);
 
     unsigned char xb[4] = {0, 0, 0, 0};
@@ -614,11 +621,11 @@ boolean SingleStep(void) {
     default: break;
     }
 
-    char cmd[48];
     if (alt != 0)
         snprintf(cmd, sizeof(cmd), "S %lx %lx", (unsigned long)next, (unsigned long)alt);
     else
         snprintf(cmd, sizeof(cmd), "S %lx", (unsigned long)next);
+#endif  // !GENESIS
 
     char reply[64];
     if (mame_cmd(cmd, reply, sizeof(reply)) < 0) return boolean::FALSE;
@@ -772,15 +779,66 @@ void PutSpc700Regs(ULONG regs_in[]) {
 #endif
 
 #ifdef GENESIS
-void ReadSlaveVDP(unsigned long /*addr*/, char *data, unsigned int len) {
-    memset(data, 0, len);
+// Genesis non-CPU state via the bridge's RV/RC/RS/RZ commands (VDP VRAM, CRAM, VSRAM,
+// Z80 program space).  Unlike the old gdbstub+companion split, these are served on the
+// same -debugger none channel as the M68K, so they read correctly at a breakpoint.
+
+// Decode up to n bytes from a hex reply into dst; zero-fill any shortfall.
+static void gen_hex_decode(const char *reply, char *dst, unsigned int n) {
+    unsigned int off = 0;
+    const char *p = reply;
+    while (off < n && *p && *(p + 1)) {
+        char h[3] = { *p, *(p + 1), 0 };
+        dst[off++] = (char)strtoul(h, NULL, 16);
+        p += 2;
+    }
+    for (; off < n; off++) dst[off] = 0;
+}
+
+// Chunked device read via a 2-arg bridge command ("RV"/"RZ"): "<cmd> <addr> <len>".
+static void gen_read_chunked(const char *cmdname, unsigned long addr, char *data, unsigned int len) {
+    if (g_fd < 0) { memset(data, 0, len); return; }
+    unsigned int done = 0;
+    while (done < len) {
+        unsigned int chunk = len - done;
+        if (chunk > CACHE_BLOCK_SIZE) chunk = CACHE_BLOCK_SIZE;
+        char cmd[64];
+        snprintf(cmd, sizeof(cmd), "%s %lx %x", cmdname, (unsigned long)(addr + done), chunk);
+        char reply[CACHE_BLOCK_SIZE * 2 + 4];
+        if (mame_cmd(cmd, reply, sizeof(reply)) < 0) { memset(data + done, 0, len - done); return; }
+        gen_hex_decode(reply, data + done, chunk);
+        done += chunk;
+    }
+}
+
+// VDP VRAM (MTYPE_VDP) — addr is a 0..0xffff VRAM offset (masked by memory.cpp).
+void ReadSlaveVDP(unsigned long addr, char *data, unsigned int len) {
+    gen_read_chunked("RV", addr, data, len);
 }
 void WriteSlaveVDP(unsigned long /*addr*/, char */*data*/, unsigned int /*len*/) {}
-void ReadSlaveCRAM(char *data)  { memset(data, 0, 128); }
+
+// CRAM (MTYPE_VDPCO) — always 128 bytes (64 × u16, big-endian pairs).
+void ReadSlaveCRAM(char *data) {
+    if (g_fd < 0) { memset(data, 0, 128); return; }
+    char reply[256 + 4];
+    if (mame_cmd("RC", reply, sizeof(reply)) < 0) { memset(data, 0, 128); return; }
+    gen_hex_decode(reply, data, 128);
+}
 void WriteSlaveCRAM(char */*data*/) {}
-void ReadSlaveVSRAM(char *data) { memset(data, 0, 80); }
+
+// VSRAM (MTYPE_VDPVS) — always 80 bytes (40 × u16, big-endian pairs).
+void ReadSlaveVSRAM(char *data) {
+    if (g_fd < 0) { memset(data, 0, 80); return; }
+    char reply[160 + 4];
+    if (mame_cmd("RS", reply, sizeof(reply)) < 0) { memset(data, 0, 80); return; }
+    gen_hex_decode(reply, data, 80);
+}
 void WriteSlaveVSRAM(char */*data*/) {}
-void ReadSlaveZ80(unsigned long /*addr*/, char *data, unsigned int len) { memset(data, 0, len); }
+
+// Z80 program space (MTYPE_Z80) — addr masked to 0xffff by memory.cpp.
+void ReadSlaveZ80(unsigned long addr, char *data, unsigned int len) {
+    gen_read_chunked("RZ", addr, data, len);
+}
 #endif
 
 // --- Residual asm-export symbols (still needed by board.cpp) -----------------

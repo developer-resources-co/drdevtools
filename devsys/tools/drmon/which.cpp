@@ -15,11 +15,10 @@
 #include "slioemul.cpp"			// slave emulation code
 #else
 #ifdef MAMEBACKEND
-#  ifdef SNES
-#    include "linux/sliomame.cpp"   // Phase 2: SNES — TCP bridge to mame_bridge.lua
-#  else
-#    include "linux/sliogdb.cpp"    // Phase 2: Genesis — MAME native GDB RSP (-debugger gdbstub)
-#  endif
+// SNES (mame_bridge.lua) and Genesis (mame_genesis_bridge.lua) share one TCP-bridge
+// client; platform specifics are #ifdef SNES/GENESIS inside sliomame.cpp.  (Genesis
+// dropped MAME gdbstub — see docs/plans/2026-06-14-genesis-backend-fold-the-m68k-into-the-lua-bridge.md.)
+#  include "linux/sliomame.cpp"
 #else
 #ifdef SNES
 #include "sliosnes.cpp"

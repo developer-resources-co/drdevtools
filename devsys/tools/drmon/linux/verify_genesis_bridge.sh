@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# verify_genesis_bridge.sh — drive the Genesis VDP/CRAM/VSRAM/Z80 Lua bridge end-to-end.
+# verify_genesis_bridge.sh — drive the Genesis Lua bridge (M68K CPU + VDP/CRAM/VSRAM/Z80) end-to-end.
 #
-# Launches headless MAME (genesis) with mame_genesis_bridge.lua on :41817, waits for the
-# bridge to listen, runs the test_genesis_bridge.py protocol suite, then tears down.
-# This is step 3 of docs/plans/2026-06-13-genesis-non-cpu-state-vdp-cram-vsram-z80-lua-side.md.
+# Launches headless MAME (genesis) with mame_genesis_bridge.lua on :41816 (the unified
+# -debugger none bridge that replaced gdbstub), waits for the bridge to listen, runs the
+# test_genesis_bridge.py protocol suite, then tears down.
+# See docs/plans/2026-06-14-genesis-backend-fold-the-m68k-into-the-lua-bridge.md.
 #
 # Usage:
 #   bash linux/verify_genesis_bridge.sh [CART]
@@ -11,7 +12,7 @@
 #           Defaults to the first ROM/zip found in <repo>/roms/genesis/.
 #
 # Requires: mame on PATH (v0.277+), python3, unzip (only if CART is a .zip).
-# Env: DRMON_GEN_BRIDGE_ADDR=host:port overrides the bridge listen address (default :41817).
+# Env: DRMON_MAME_ADDR=host:port overrides the bridge listen address (default :41816).
 #
 # NOTE: MAME's Lua autoboot engine needs an interactive/desktop session — under a headless
 # agent shell it dies with exit 144 (signal 16) and no output. Run this on your desktop.
@@ -25,16 +26,18 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
 LUA="$SCRIPT_DIR/mame_genesis_bridge.lua"
 TEST="$SCRIPT_DIR/test_genesis_bridge.py"
 
-_addr="${DRMON_GEN_BRIDGE_ADDR:-127.0.0.1:41817}"
+_addr="${DRMON_MAME_ADDR:-127.0.0.1:41816}"
 PORT="${_addr##*:}"
-# Guard against a bogus DRMON_GEN_BRIDGE_ADDR (e.g. "host" with no port, or ":0"): an
-# empty/zero port makes MAME's bridge bind an ephemeral port, so the test can never find
-# it on :41817.  Fall back to the default and warn.
+# Guard against a bogus DRMON_MAME_ADDR (e.g. "host" with no port, or ":0"): an empty/zero
+# port makes MAME's bridge bind an ephemeral port, so the test can never find it.
 if ! [[ "$PORT" =~ ^[0-9]+$ ]] || [ "$PORT" -eq 0 ]; then
-    echo "WARNING: DRMON_GEN_BRIDGE_ADDR='${DRMON_GEN_BRIDGE_ADDR:-}' has no usable port; using 41817." >&2
-    PORT=41817
-    export DRMON_GEN_BRIDGE_ADDR="127.0.0.1:41817"
+    echo "WARNING: DRMON_MAME_ADDR='${DRMON_MAME_ADDR:-}' has no usable port; using 41816." >&2
+    PORT=41816
 fi
+# The bridge (mame_genesis_bridge.lua) reads DRMON_MAME_ADDR for its listen port and dofiles
+# mame_cpu_bridge.lua from DRMON_BRIDGE_DIR.  Export both so the MAME subprocess inherits them.
+export DRMON_MAME_ADDR="127.0.0.1:$PORT"
+export DRMON_BRIDGE_DIR="$SCRIPT_DIR"
 
 # ── locate a ROM ────────────────────────────────────────────────────────────────
 CART="${1:-}"

@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""test_genesis_bridge.py — protocol-level tests for mame_genesis_bridge.lua.
+"""test_genesis_bridge.py — protocol-level tests for the Genesis Lua bridge.
 
-Asserts the full command set against a running bridge server.
-Expects MAME to be running with -debugger gdbstub -autoboot_script mame_genesis_bridge.lua.
+Asserts the unified command set (M68K CPU + VDP/CRAM/VSRAM/Z80) against a running bridge.
+Expects MAME running with -debugger none -autoboot_script mame_genesis_bridge.lua.
 
 Usage:
     python3 linux/test_genesis_bridge.py [host:port]
 
 Environment:
-    DRMON_GEN_BRIDGE_ADDR   override host:port (default 127.0.0.1:41817)
+    DRMON_MAME_ADDR   override host:port (default 127.0.0.1:41816)
 """
 
 import os
@@ -16,7 +16,7 @@ import socket
 import sys
 import time
 
-addr_env = os.environ.get("DRMON_GEN_BRIDGE_ADDR", "127.0.0.1:41817")
+addr_env = os.environ.get("DRMON_MAME_ADDR", "127.0.0.1:41816")
 if len(sys.argv) > 1:
     addr_env = sys.argv[1]
 
@@ -72,10 +72,40 @@ print()
 print("=== V: version handshake ===")
 send(s, "V")
 resp = recv_line(s)
-check("V response starts with 'ok drmon-genesis-bridge'",
+check("V response starts with 'ok drmon-bridge'",
       resp,
-      lambda r: r.startswith("ok drmon-genesis-bridge"),
-      "'ok drmon-genesis-bridge ...'")
+      lambda r: r.startswith("ok drmon-bridge"),
+      "'ok drmon-bridge ...'")
+
+# ── CPU: REGS announce / G get-registers / R memory read ───────────────────────
+print("\n=== CPU: REGS / G / R (M68K) ===")
+send(s, "REGS D0,D1,D2,D3,D4,D5,D6,D7,A0,A1,A2,A3,A4,A5,A6,A7,USP,SR,PC")
+resp = recv_line(s)
+check("REGS → ok", resp, lambda r: r == "ok", "'ok'")
+
+send(s, "G")
+resp = recv_line(s)
+check("G → 19 space-separated hex register values",
+      resp,
+      lambda r: len(r.split()) == 19 and all(
+          v and all(c in "0123456789abcdefABCDEF" for c in v) for v in r.split()),
+      "19 hex values")
+
+send(s, "R 0 10")   # 16 bytes from M68K address 0 (reset SSP/PC vectors)
+resp = recv_line(s)
+check("R 0 10 → 32 hex chars (M68K program space)",
+      resp, lambda r: is_hex(r, 16), "32 hex chars")
+
+# ── CPU: H (halt) / C (continue) ───────────────────────────────────────────────
+print("\n=== CPU: H (halt) / C (continue) ===")
+send(s, "H")
+resp = recv_line(s)
+check("H → 'stopped <pc> halt'",
+      resp, lambda r: r.startswith("stopped") and r.endswith("halt"),
+      "'stopped <pc> halt'")
+send(s, "C")
+resp = recv_line(s)
+check("C → ok", resp, lambda r: r == "ok", "'ok'")
 
 # ── RV: VDP VRAM read ─────────────────────────────────────────────────────────
 print("\n=== RV: VDP VRAM read ===")
@@ -154,7 +184,7 @@ try:
     s2 = connect()
     send(s2, "V")
     resp = recv_line(s2)
-    bye_ok = resp.startswith("ok drmon-genesis-bridge")
+    bye_ok = resp.startswith("ok drmon-bridge")
     s2.close()
 except Exception as e:
     bye_err = str(e)
