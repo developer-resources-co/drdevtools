@@ -74,6 +74,11 @@ ReadSlaveData(unsigned long addr,char *data,unsigned int len)
  void ReadSlaveVSRAM (char *data)
 {
 }
+
+void ReadSlaveZ80(unsigned long /*addr*/, char *data, unsigned int len)
+{
+	memset(data, 0, len);
+}
 #endif
 
 #ifdef SNES

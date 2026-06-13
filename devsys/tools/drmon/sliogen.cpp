@@ -762,5 +762,10 @@ void ReadSlaveVSRAM (char *data)
         ResumeSlave ();
 }
 
+void ReadSlaveZ80(unsigned long /*addr*/, char *data, unsigned int len)
+{
+        memset(data, 0, len);
+}
+
 //============================================================================
 

@@ -3,13 +3,17 @@
 // Included by which.cpp under the MAMEBACKEND + GENESIS arm.
 //
 // Architecture: drmon (this file) ↔ TCP 127.0.0.1:23946 ↔
-//               MAME -debugger gdbstub (no Lua bridge needed for Genesis).
+//               MAME -debugger gdbstub        (M68K CPU, step, breakpoints)
+//             + TCP 127.0.0.1:41817 ↔
+//               mame_genesis_bridge.lua        (VDP VRAM/CRAM/VSRAM, Z80)
 //
 // GDB RSP register layout confirmed by spike (MAME 0.277, m68k gdbstub):
 //   D0-D7 (4B BE) + A0-A7 (4B BE) + SR (2B BE) + PC (4B BE) = 70 bytes
 //   Stop reply: T05 0e:<A6>; 0f:<A7>; 11:<PC>;
 //
-// MAME address override: DRMON_GDB_ADDR=host:port env variable (default 23946).
+// MAME address overrides:
+//   DRMON_GDB_ADDR=host:port      (default 23946, GDB RSP)
+//   DRMON_GEN_BRIDGE_ADDR=host:port (default 41817, Lua companion bridge)
 // Read cache: 8 × 1 KB aligned blocks; invalidated on any mutating operation.
 //=============================================================================
 
@@ -71,6 +75,12 @@ static int   g_dead         = 1;
 static int   g_gdb_running  = 0;   // 1 when c/s sent, waiting for stop
 
 static struct timespec g_last_connect = {0, 0};
+
+// Companion Lua bridge (VDP VRAM/CRAM/VSRAM + Z80): second independent socket.
+static int   g_br_fd              = -1;
+static char  g_br_host[64]        = "127.0.0.1";
+static int   g_br_port            = 41817;
+static struct timespec g_br_last_connect = {0, 0};
 
 // Receive ring buffer for RSP packet assembly
 static char  g_rx[8192];
@@ -226,6 +236,103 @@ static void parse_env_addr_gdb(void) {
         g_port = atoi(colon + 1);
     } else {
         strncpy(g_host, env, sizeof(g_host) - 1);
+    }
+}
+
+static void parse_env_addr_br(void) {
+    const char *env = getenv("DRMON_GEN_BRIDGE_ADDR");
+    if (!env) return;
+    const char *colon = strrchr(env, ':');
+    if (colon) {
+        int plen = (int)(colon - env);
+        if (plen > 0 && plen < (int)sizeof(g_br_host) - 1) {
+            strncpy(g_br_host, env, plen);
+            g_br_host[plen] = 0;
+        }
+        g_br_port = atoi(colon + 1);
+    } else {
+        strncpy(g_br_host, env, sizeof(g_br_host) - 1);
+    }
+}
+
+//=============================================================================
+// Companion bridge (mame_genesis_bridge.lua) — text-protocol socket
+//=============================================================================
+
+static void br_close(void) {
+    if (g_br_fd >= 0) { close(g_br_fd); g_br_fd = -1; }
+}
+
+// Blocking send + newline-delimited recv with 1 s timeout.
+// Returns 0 on success, -1 on error.
+static int br_cmd(const char *cmd, char *reply, int reply_sz) {
+    if (g_br_fd < 0) return -1;
+    char sbuf[256];
+    int len = snprintf(sbuf, sizeof(sbuf), "%s\n", cmd);
+    if (len <= 0 || len >= (int)sizeof(sbuf)) return -1;
+    if (send(g_br_fd, sbuf, len, MSG_NOSIGNAL) != len) { br_close(); return -1; }
+    struct timeval tv = {1, 0};
+    int rpos = 0;
+    for (;;) {
+        fd_set fds; FD_ZERO(&fds); FD_SET(g_br_fd, &fds);
+        int rc = select(g_br_fd + 1, &fds, 0, 0, &tv);
+        if (rc <= 0) { br_close(); return -1; }
+        char c;
+        if (recv(g_br_fd, &c, 1, 0) <= 0) { br_close(); return -1; }
+        if (c == '\n') break;
+        if (reply && rpos < reply_sz - 1) reply[rpos] = c;
+        rpos++;
+    }
+    if (reply) reply[(rpos < reply_sz - 1) ? rpos : (reply_sz - 1)] = 0;
+    return 0;
+}
+
+static int br_try_connect(void) {
+    int fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (fd < 0) return -1;
+    struct sockaddr_in sa;
+    memset(&sa, 0, sizeof(sa));
+    sa.sin_family = AF_INET;
+    sa.sin_port   = htons((unsigned short)g_br_port);
+    if (inet_pton(AF_INET, g_br_host, &sa.sin_addr) <= 0) { close(fd); return -1; }
+    int flags = fcntl(fd, F_GETFL, 0);
+    fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+    int rc = connect(fd, (struct sockaddr*)&sa, sizeof(sa));
+    if (rc < 0 && errno != EINPROGRESS) { close(fd); return -1; }
+    fd_set wfds; FD_ZERO(&wfds); FD_SET(fd, &wfds);
+    struct timeval tv = {0, 200000};
+    rc = select(fd + 1, 0, &wfds, 0, &tv);
+    if (rc <= 0) { close(fd); return -1; }
+    int err = 0; socklen_t elen = sizeof(err);
+    getsockopt(fd, SOL_SOCKET, SO_ERROR, &err, &elen);
+    if (err) { close(fd); return -1; }
+    fcntl(fd, F_SETFL, flags & ~O_NONBLOCK);
+    struct timeval rtv = {1, 0};
+    setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &rtv, sizeof(rtv));
+    g_br_fd = fd;
+    return 0;
+}
+
+static void br_maybe_reconnect(void) {
+    if (g_br_fd >= 0) return;
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    long ms = (long)((now.tv_sec  - g_br_last_connect.tv_sec)  * 1000L +
+                     (now.tv_nsec - g_br_last_connect.tv_nsec) / 1000000L);
+    if (ms < 2000) return;
+    g_br_last_connect = now;
+    if (br_try_connect() < 0) return;
+    char reply[64];
+    if (br_cmd("V", reply, sizeof(reply)) < 0) return;
+    if (strncmp(reply, "ok drmon-genesis-bridge", 23) != 0) { br_close(); return; }
+}
+
+// Decode a hex reply of 2×n chars into n raw bytes.
+static void hex_decode(const char *src, char *dst, unsigned int n) {
+    for (unsigned int i = 0; i < n; i++, src += 2) {
+        if (!src[0] || !src[1]) { memset(dst + i, 0, n - i); return; }
+        char h[3] = { src[0], src[1], 0 };
+        dst[i] = (char)strtoul(h, NULL, 16);
     }
 }
 
@@ -386,9 +493,12 @@ static const unsigned char *gcache_fetch(unsigned long addr) {
 
 boolean InitSlaveIO(int /*portBase*/, unsigned short /*slaveBufferSeg*/) {
     parse_env_addr_gdb();
+    parse_env_addr_br();
     gcache_init();
     memset(&g_last_connect, 0, sizeof(g_last_connect));
+    memset(&g_br_last_connect, 0, sizeof(g_br_last_connect));
     gdb_maybe_reconnect();
+    br_maybe_reconnect();
     return boolean::TRUE;
 }
 
@@ -409,6 +519,8 @@ boolean CheckSlaveAlive(void) {
 
 // HandleSlaveInput: ~60 fps main-loop poll
 void HandleSlaveInput(void) {
+    br_maybe_reconnect();   // companion bridge; non-fatal if absent
+
     if (g_fd < 0) {
         gdb_maybe_reconnect();
         if (g_fd < 0) { PrintMessageStatus(STATUS_SLAVE_DEAD); return; }
@@ -626,16 +738,67 @@ void SlaveClearWriteProtect(void) {}
 void SlaveSetBRKOnWrite(void)     {}
 void SlaveClearBRKOnWrite(void)   {}
 
-// --- Platform-specific stubs -------------------------------------------------
+// --- Companion bridge: VDP VRAM/CRAM/VSRAM + Z80 via mame_genesis_bridge.lua --
 
-void ReadSlaveVDP(unsigned long /*addr*/, char *data, unsigned int len) {
-    memset(data, 0, len);
+// VDP VRAM (up to 64 KB): chunked RV commands, same pattern as ReadSlavePPU.
+void ReadSlaveVDP(unsigned long addr, char *data, unsigned int len) {
+    if (g_br_fd < 0) { memset(data, 0, len); return; }
+    unsigned int done = 0;
+    while (done < len) {
+        unsigned int chunk = len - done;
+        if (chunk > CACHE_BLOCK_SIZE) chunk = CACHE_BLOCK_SIZE;
+        char cmd[64];
+        snprintf(cmd, sizeof(cmd), "RV %lx %x", (unsigned long)(addr + done), chunk);
+        char reply[CACHE_BLOCK_SIZE * 2 + 4];
+        if (br_cmd(cmd, reply, sizeof(reply)) < 0) {
+            memset(data + done, 0, len - done);
+            return;
+        }
+        hex_decode(reply, data + done, chunk);
+        done += chunk;
+    }
 }
+
 void WriteSlaveVDP(unsigned long /*addr*/, char */*data*/, unsigned int /*len*/) {}
-void ReadSlaveCRAM(char *data)  { memset(data, 0, 128); }
+
+// CRAM (128 bytes = 64 × u16, always full): single RC command.
+void ReadSlaveCRAM(char *data) {
+    if (g_br_fd < 0) { memset(data, 0, 128); return; }
+    char reply[256 + 4];
+    if (br_cmd("RC", reply, sizeof(reply)) < 0) { memset(data, 0, 128); return; }
+    hex_decode(reply, data, 128);
+}
+
 void WriteSlaveCRAM(char */*data*/) {}
-void ReadSlaveVSRAM(char *data) { memset(data, 0, 80); }
+
+// VSRAM (80 bytes = 40 × u16, always full): single RS command.
+void ReadSlaveVSRAM(char *data) {
+    if (g_br_fd < 0) { memset(data, 0, 80); return; }
+    char reply[160 + 4];
+    if (br_cmd("RS", reply, sizeof(reply)) < 0) { memset(data, 0, 80); return; }
+    hex_decode(reply, data, 80);
+}
+
 void WriteSlaveVSRAM(char */*data*/) {}
+
+// Z80 program space (up to 64 KB): chunked RZ commands.
+void ReadSlaveZ80(unsigned long addr, char *data, unsigned int len) {
+    if (g_br_fd < 0) { memset(data, 0, len); return; }
+    unsigned int done = 0;
+    while (done < len) {
+        unsigned int chunk = len - done;
+        if (chunk > CACHE_BLOCK_SIZE) chunk = CACHE_BLOCK_SIZE;
+        char cmd[64];
+        snprintf(cmd, sizeof(cmd), "RZ %lx %x", (unsigned long)(addr + done), chunk);
+        char reply[CACHE_BLOCK_SIZE * 2 + 4];
+        if (br_cmd(cmd, reply, sizeof(reply)) < 0) {
+            memset(data + done, 0, len - done);
+            return;
+        }
+        hex_decode(reply, data + done, chunk);
+        done += chunk;
+    }
+}
 
 // --- Residual asm-export symbols --------------------------------------------
 

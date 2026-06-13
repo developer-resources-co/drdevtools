@@ -780,6 +780,7 @@ void ReadSlaveCRAM(char *data)  { memset(data, 0, 128); }
 void WriteSlaveCRAM(char */*data*/) {}
 void ReadSlaveVSRAM(char *data) { memset(data, 0, 80); }
 void WriteSlaveVSRAM(char */*data*/) {}
+void ReadSlaveZ80(unsigned long /*addr*/, char *data, unsigned int len) { memset(data, 0, len); }
 #endif
 
 // --- Residual asm-export symbols (still needed by board.cpp) -----------------

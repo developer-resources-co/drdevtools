@@ -128,6 +128,8 @@ extern "C" {
 	void ReadSlaveVSRAM (char *data);
 
 	void WriteSlaveVSRAM (char *data);
+
+	void ReadSlaveZ80(unsigned long addr, char *data, unsigned int len);
 #endif
 
 #ifdef SNES

@@ -89,8 +89,8 @@ tasks:
     cmds:
       - docker run --rm --network=host -v {{.ROOT_DIR}}:/src -v {{.BUILD}}:/build -w /build -e ASAN_OPTIONS={{.ASAN}} -e DRMON_MAME_ADDR={{.DRMON_MAME_ADDR}} {{.IMAGE}} gdb -q -batch -ex run -ex bt ./{{.BIN}}
 
-  shot:
-    desc: "Headless screenshot — launch drmon in tmux and dump TUI as text (SYS=snes|gen)"
+  tui-shot:
+    desc: "Headless TUI text-dump — launch drmon in tmux and capture pane (SYS=snes|gen)"
     deps: [build]
     cmds:
       - >-
@@ -165,6 +165,12 @@ tasks:
     deps: [image]
     cmds:
       - '{{.DOCKER}} bash linux/overflow-test.sh'
+
+  test-symbols:
+    desc: "DAP symbol-loader tests — ca65 .dbg / WLA-DX .sym / binary .sld / Sierra COFF (no MAME/TTY needed)"
+    deps: [build]
+    cmds:
+      - '{{.DOCKER}} bash -euc "DRMON_DAP_SNES=/build/drmon-dap-snes python3 linux/dap/test_symbols.py"'
 
   clean:
     desc: Remove the build tree

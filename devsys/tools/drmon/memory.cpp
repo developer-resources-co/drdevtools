@@ -42,7 +42,7 @@ int memorySize[] =
 {
 	OPCODE_SIZE,1,2,4,1,                        // dis, byte, word, long, ascii
 #ifdef GENESIS
-	2,2,2,                                                        // 3 vdp modes
+	2,2,2,1,                                                      // vdp×3 + z80
 #endif
 #ifdef SNES
 	2,                                                                // 1 ppu mode
@@ -57,7 +57,7 @@ int dWidthTbl[] =
 {
 	2,3,5,9,1,                                                        // dis, byte, word, long, ascii
 #ifdef GENESIS
-	5,5,5,                                                            // 3 vdp modes
+	5,5,5,3,                                                          // vdp×3 + z80
 #endif
 #ifdef SNES
 	5,                                                                // ppu (word)
@@ -85,6 +85,7 @@ enum
 	MTYPE_VDP,
 	MTYPE_VDPCO,
 	MTYPE_VDPVS,
+	MTYPE_Z80,
 #endif
 #ifdef SNES
 	MTYPE_PPU,
@@ -108,6 +109,7 @@ char *mTypeText[] =
 	"VDP\xC4",
 	"VDP Color\xC4",
 	"VDP VScroll\xC4",
+	"Z80\xC4",
 #endif
 #ifdef SNES
 	"PPU ",
@@ -317,6 +319,7 @@ menuItems memoryTypeMenu[] =
 	{"VDP        ",MemoryType,0},
 	{"VDP Color  ",MemoryType,0},
 	{"VDP VScroll",MemoryType,0},
+	{"Z80 RAM    ",MemoryType,0},
 #endif
 #ifdef SNES
 	{"PPU        ",MemoryType,0},
@@ -997,6 +1000,7 @@ MemoryGetLineAddr(_object *oPtr,int line)
 	        case MTYPE_VDP:
 	        case MTYPE_VDPCO:
 	        case MTYPE_VDPVS:
+	        case MTYPE_Z80:
 #endif
 #ifdef SNES
 	        case MTYPE_PPU:
@@ -1026,6 +1030,9 @@ MemoryGetLineAddr(_object *oPtr,int line)
 	                                break;
 	                        case MTYPE_VDPVS:
 	                                addr = 0;
+	                                break;
+	                        case MTYPE_Z80:
+	                                addr &= 0xffff;
 	                                break;
 #endif
 #ifdef SNES
@@ -1221,6 +1228,7 @@ MemoryRoutine(_object *oPtr)
 	        case MTYPE_VDP:
 	        case MTYPE_VDPCO:
 	        case MTYPE_VDPVS:
+	        case MTYPE_Z80:
 #endif
 #ifdef SNES
 	        case MTYPE_PPU:
@@ -1256,6 +1264,10 @@ MemoryRoutine(_object *oPtr)
 	                        case MTYPE_VDPVS:
 	                                addr = 0;
 	                                ReadSlaveVSRAM(xferBuffer);
+	                                break;
+	                        case MTYPE_Z80:
+	                                addr &= 0xffff;
+	                                ReadSlaveZ80(addr,xferBuffer,bytesNeeded);
 	                                break;
 #endif
 #ifdef SNES
@@ -1308,6 +1320,9 @@ MemoryRoutine(_object *oPtr)
 	                                                case MTYPE_BYTE:
 #ifdef SPC700
 	                                                case MTYPE_SPC:		// SPC RAM: byte memory, byte dump
+#endif
+#ifdef GENESIS
+	                                                case MTYPE_Z80:		// Z80 RAM: byte memory, byte dump
 #endif
 	                                                    buffer = Print8Bits(buffer,*buff++);
 	                                                        break;
@@ -1365,6 +1380,10 @@ MemoryRoutine(_object *oPtr)
 	                                                        break;
 	                                                case MTYPE_VDPVS:
 	                                                        if(addr >= 80)
+	                                                                abort = boolean::TRUE;
+	                                                        break;
+	                                                case MTYPE_Z80:
+	                                                        if(addr > 0xffff)
 	                                                                abort = boolean::TRUE;
 	                                                        break;
 #endif
