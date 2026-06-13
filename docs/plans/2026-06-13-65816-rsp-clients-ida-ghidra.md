@@ -11,6 +11,24 @@
 
 ---
 
+> **Reframe — what this actually buys drmon (2026-06-13).** Re‑evaluated after confirming drmon
+> **already ships a 65816 disassembler** (`devsys/tools/drmon/dis816.cpp` + `tab816.cpp`, ~1,100
+> lines, gated `#ifdef SNES` in `which.cpp`). With that in hand, the IDA/Ghidra static‑RE angle
+> delivers little net value to drmon:
+> - **Disassembly** — drmon already does it. A Ghidra third‑party SLEIGH module or IDA's 65816
+>   procmod adds nothing drmon lacks.
+> - **Decompilation** — the one capability drmon *doesn't* have, and it **doesn't exist for the
+>   65816** in either tool: Ghidra's community module decompiler is "probably unusable" and IDA has
+>   no 65816 decompiler at all. No tool closes this gap.
+> - **Live attach** — drmon's MAME bridge already provides live 65816 debugging
+>   (registers / step / breakpoints / memory).
+>
+> Net: the only remaining draw is **interop for people who already live in IDA/Ghidra** (bringing a
+> live MAME 65816 target into *their* existing workflow) — useful to outside REs, not a capability
+> gain for drmon. So treat the rest of this plan as a **wire‑protocol / `target.xml` validation**
+> exercise (still worthwhile — it hardens the gdbstub contract from the sibling map plan), not as a
+> path to new drmon analysis features.
+
 ## Goal
 
 Replace the investigation's open questions with **real, evidenced answers**:
