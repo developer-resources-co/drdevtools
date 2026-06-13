@@ -226,6 +226,11 @@ years, given the head start, but specialist months.
    gamedevs. Lowest effort, real value, immediate.
 2. **Land the cheap intermediate.** Patch llvm-mos-sdk crt0 to `SP = $01FF` and stand up a minimal
    SNES target running 8-bit-mode codegen. Unblocks 65816 *targets* now; small, self-contained PR.
+   Note: **there is no SNES SDK target yet** — it's open issue
+   [llvm-mos-sdk#415 "[SNES] Add target"](https://github.com/llvm-mos/llvm-mos-sdk/issues/415);
+   the SDK ships 46 platforms (8 NES variants, C64, …) but no SNES. So this path *is* building
+   that target (crt0, LoROM/HiROM linker scripts, vectors, memory map) — which the real codegen
+   path needs anyway (see sequencing below).
 3. **Fund the people who already did the design.** A sponsorship targeting @asiekierka or
    @mysterymath to resume #320 → #321 is the highest-leverage spend — the design is done, the
    implementer is identified, the blocker is time, not knowledge.
@@ -237,9 +242,35 @@ years, given the head start, but specialist months.
    Coordinate on the llvm-mos Discord first — the culture is code-first and ABI-decisions-follow-
    implementation, so a working branch carries far more weight than a spec proposal.
 
+**Recommended sequencing — paths 2 and 4 are one track, not two phases.** "Land the cheap
+intermediate then implement codegen" is a false dichotomy: the bulk of the cheap intermediate is
+the SNES SDK target ([#415](https://github.com/llvm-mos/llvm-mos-sdk/issues/415)) and an
+emulator/CI test loop — both **mandatory infrastructure for testing any codegen at all**, since you
+can't validate a single far-pointer lowering rule until a target exists to emit into and run. The
+only throwaway part is the *generated 8-bit code*, and that's free (the existing 6502 backend
+writes it). The assembler subtarget already exists (`FeatureW65816` in `MOSDevices.td`). Concretely,
+one track, three milestones:
+
+- **M0 — toy + test bench (no new codegen).** Build the SNES SDK target (#415) + `SP = $01FF` crt0;
+  boot a bank-0 C program in Mesen/bsnes on the existing 6502 backend. Proves boot/stack/SDK, stands
+  up CI, and earns maintainer credibility (a running target beats a spec proposal). Days, not weeks.
+- **M1 — the cheap intermediate, useful form.** M0 + **[#320](https://github.com/llvm-mos/llvm-mos/issues/320)**
+  (24-bit far pointers, registers still 8-bit). Now it's a *working, multi-bank, unoptimized* 65816 C
+  compiler — and your regression corpus. First real codegen, but the lower-risk foundational layer.
+- **M2 — the optimizing payoff.** M1 + **[#321](https://github.com/llvm-mos/llvm-mos/issues/321) stage 1**
+  (16-bit A via a late REP/SEP pass; X/Y fixed at 16-bit). Where the "optimizing" value lands. Later:
+  hardware-stack ABI and #321 stage 2 (xy8).
+
+#320 is shared by both framings and unavoidable, so it's the first real thing to build after the
+bench. Jumping "straight to codegen" doesn't skip M0 — it just does M0's work blind, with no
+regression baseline, so your first codegen test is also your first whole-toolchain integration test
+(too many unknowns at once). Build the bench, ship M0/M1 validated against the 6502 backend, then
+layer M2.
+
 **Where to engage:** GitHub issues [#32](https://github.com/llvm-mos/llvm-mos/issues/32) (umbrella),
 [#320](https://github.com/llvm-mos/llvm-mos/issues/320) / [#321](https://github.com/llvm-mos/llvm-mos/issues/321)
-(the work), and the llvm-mos Discord (where the substantive design discussion actually happens —
+(the codegen work), [llvm-mos-sdk#415](https://github.com/llvm-mos/llvm-mos-sdk/issues/415) (the SNES
+target / M0), and the llvm-mos Discord (where the substantive design discussion actually happens —
 the Feb 2024 codegen breakdown originated there).
 
 ---
