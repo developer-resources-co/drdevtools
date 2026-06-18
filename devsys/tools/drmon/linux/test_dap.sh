@@ -26,7 +26,8 @@ LUA="$SCRIPT_DIR/mame_bridge.lua"
 # ELF come from make-fixture.sh (same object, same link layout) so addresses agree.
 if [ "$MODE" = "phasec" ]; then
     ROM="$SCRIPT_DIR/test-roms/a16local.sfc"
-    SYMBOLS_CONTAINER="/src/devsys/tools/drmon/linux/test-roms/a16local-debug.elf"
+    # The DWARF companion ld.lld auto-emits beside the ROM (same link → same addrs).
+    SYMBOLS_CONTAINER="/src/devsys/tools/drmon/linux/test-roms/a16local.sfc.elf"
 else
     ROM="$SCRIPT_DIR/test-roms/drmon-test.sfc"
     SYMBOLS_CONTAINER=""

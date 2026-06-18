@@ -183,7 +183,7 @@ def run_phasec(elf):
     loop, where the CPU spins forever). The breakpoint must resolve via DWARF to the
     line's address, fire, and stop the CPU at that PC — proving compile→DWARF→drmon→
     live-MAME source debugging on fully-open tooling."""
-    SRC, LINE, WANT = "a16local.c", 17, 0x804a   # line 17 → $804a per the ELF line table
+    SRC, LINE, WANT = "a16local.c", 17, 0x8074   # line 17 → $8074 per the ELF line table
     dap = Dap(["--host", HOST, "--port", str(PORT), "--symbols", elf])
     dap_pc = None
     try:

@@ -335,10 +335,11 @@ def main():
         # ------------------------------------------------------------------
         # Verification 6: ELF/DWARF loader (libdwarf) — line table → source
         # breakpoint, and DW_TAG_subprogram → function symbol. Uses the committed
-        # llvm-mos `-g` fixture (test-roms/a16local-debug.elf); see make-fixture.sh.
-        # Real linked LoROM addrs: main @ $802f, line 13 (t = a16v + b16v) @ $8031.
+        # llvm-mos `-g` DWARF companion (test-roms/a16local.sfc.elf, auto-emitted
+        # by ld.lld alongside the ROM); see make-fixture.sh. Real linked LoROM
+        # addrs: main @ $8059, line 13 (t = a16v + b16v) @ $805b.
         # ------------------------------------------------------------------
-        elf_path = os.path.join(os.path.dirname(__file__), "..", "test-roms", "a16local-debug.elf")
+        elf_path = os.path.join(os.path.dirname(__file__), "..", "test-roms", "a16local.sfc.elf")
         if os.path.exists(elf_path):
             def check_elf_srcbp(req, init_resp):
                 resp = req("setBreakpoints", {
@@ -348,17 +349,17 @@ def main():
                 assert resp["success"], f"setBreakpoints failed: {resp}"
                 b = resp["body"]["breakpoints"][0]
                 assert b["verified"] is True, f"bpt not verified: {b}"
-                assert b.get("instructionReference") == "0x8031", \
-                    f"expected 0x8031, got {b.get('instructionReference')!r}"
+                assert b.get("instructionReference") == "0x805b", \
+                    f"expected 0x805b, got {b.get('instructionReference')!r}"
 
             def check_elf_func(req, init_resp):
                 resp = req("evaluate", {"expression": "main", "context": "repl"})
                 assert resp["success"], f"evaluate failed: {resp}"
-                assert resp["body"]["result"] == "0x802f", \
-                    f"expected main=0x802f, got {resp['body']['result']!r}"
+                assert resp["body"]["result"] == "0x8059", \
+                    f"expected main=0x8059, got {resp['body']['result']!r}"
 
             def check_elf_gap_fallback(req, init_resp):
-                # Line 12 is `int main(void) {` — the prologue maps line 12 → $802f;
+                # Line 12 is `int main(void) {` — the prologue maps line 12 → $8059;
                 # line 13 has its own row. A blank/declaration gap resolves to the
                 # next mapped line via addrForSrc's nearest-following fallback.
                 resp = req("setBreakpoints", {

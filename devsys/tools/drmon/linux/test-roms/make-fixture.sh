@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
-# make-fixture.sh — (re)generate a16local-debug.elf: a real llvm-mos SNES `-g`
-# ELF with DWARF, used as the committed fixture for the drmon ELF/DWARF loader
-# (dap/test_symbols.py) and the Phase-C end-to-end test.
+# make-fixture.sh — (re)generate the Phase-B/C DWARF fixtures:
+#   a16local.sfc       — the SNES ROM (what MAME runs)
+#   a16local.sfc.elf   — the DWARF companion (what drmon loads for symbols)
 #
-# WHY a hand-rolled link: the SNES platform's link.ld ends with llvm-mos's custom
-# `OUTPUT_FORMAT { FULL(rom) }`, which makes ld.lld emit only the flat .sfc ROM —
-# the DWARF is computed but never written to disk. We recover a DWARF-bearing ELF
-# by compiling NON-LTO (`-c -g`, so the object carries real machine code + DWARF)
-# and linking with that OUTPUT_FORMAT block stripped. Real $8000 LoROM addresses;
-# `main` at $802f, line 13 (`t = a16v + b16v`) at $8031.
+# KEY FACT: llvm-mos's ld.lld, when the platform link.ld ends with the custom
+# `OUTPUT_FORMAT { FULL(rom) }`, writes BOTH the flat ROM (-o foo.sfc) AND a full
+# ELF-with-DWARF companion at `<output>.elf` (foo.sfc.elf). So a normal `-g` build
+# already emits the debug ELF — nothing special is needed. The .sfc and .sfc.elf
+# come from the SAME link, so their addresses are identical by construction (this
+# is the address-consistency the Phase-C end-to-end test relies on).
 #
-# The resulting .elf is COMMITTED so the loader test runs without the llvm-mos
-# tree. Set MOS_ROOT to point at a different llvm-mos-65816 checkout if needed.
+# Both outputs are COMMITTED so the loader/e2e tests run without the llvm-mos tree.
+# Set MOS_ROOT to point at a different llvm-mos-65816 checkout if needed.
 set -euo pipefail
 
-usage() { echo "Usage: $0   # regenerate test-roms/a16local-debug.elf (needs a built llvm-mos-65816)"; exit 0; }
+usage() { echo "Usage: $0   # regenerate a16local.sfc + a16local.sfc.elf (needs a built llvm-mos-65816)"; exit 0; }
 [ "${1-}" = "-h" ] || [ "${1-}" = "--help" ] && usage
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -22,51 +22,23 @@ DRDEV_ROOT="$(cd "$HERE/../../../../.." && pwd)"
 # llvm-mos-65816 is assumed a sibling of the drdevtools repo; override with MOS_ROOT.
 MOS_ROOT="${MOS_ROOT:-$DRDEV_ROOT/../llvm-mos-65816}"
 TOOL="$MOS_ROOT/build/llvm-mos-install/bin"
-SNESLIB="$MOS_ROOT/build/install/mos-platform/snes/lib"
-COMMONLIB="$MOS_ROOT/build/install/mos-platform/common/lib"
+CFG="$MOS_ROOT/build/install/bin/mos-snes.cfg"
 
-for p in "$TOOL/mos-clang" "$TOOL/ld.lld" "$SNESLIB/link.ld"; do
+for p in "$TOOL/mos-clang" "$CFG"; do
     [ -e "$p" ] || { echo "FATAL: missing $p — build llvm-mos-65816 first (dev/run.sh toolchain + build), or set MOS_ROOT"; exit 1; }
 done
 
-SRC="$HERE/a16local.c"
-OBJ="$(mktemp /tmp/a16local-XXXX.o)"
-ELFLD="$(mktemp /tmp/link-elf-XXXX.ld)"
-OUT="$HERE/a16local-debug.elf"
-trap 'rm -f "$OBJ" "$ELFLD"' EXIT
-
-echo "==> compile (non-LTO, -g) $SRC"
-# -fdebug-compilation-dir=. keeps the committed ELF's DWARF paths relative (no homedir leak).
-( cd "$HERE" && "$TOOL/mos-clang" --target=mos -mcpu=mosw65816 \
+# Build IN the fixture dir with relative source + -fdebug-compilation-dir=. so the
+# committed ELF's DWARF paths are clean (DW_AT_comp_dir=".", name="a16local.c") — no
+# homedir leak, byte-reproducible across checkouts.
+echo "==> build a16local.sfc (+ .sfc.elf DWARF companion) — LTO, -g"
+( cd "$HERE" && "$TOOL/mos-clang" --config "$CFG" -mcpu=mosw65816 \
     -Xclang -target-feature -Xclang +mos-a16 -g -Os \
-    -fdebug-compilation-dir=. -c a16local.c -o "$OBJ" )
+    -fdebug-compilation-dir=. -ffile-prefix-map="$HERE"=. \
+    -o a16local.sfc a16local.c )
 
-echo "==> strip OUTPUT_FORMAT{FULL(rom)} from link.ld → ELF output"
-awk 'BEGIN{p=1} /^OUTPUT_FORMAT \{/{p=0} p{print}' "$SNESLIB/link.ld" > "$ELFLD"
-
-echo "==> link → $OUT"
-"$TOOL/ld.lld" --gc-sections --sort-section=alignment \
-    -L"$SNESLIB" -L"$COMMONLIB" \
-    -l:crt0.o "$OBJ" -lcrt0 -lcrt -lc \
-    -T "$ELFLD" -o "$OUT"
-
-echo "==> verify DWARF"
-"$TOOL/llvm-dwarfdump" --verify "$OUT" >/dev/null && echo "    --verify OK"
-"$TOOL/llvm-nm" "$OUT" | grep -iE ' main$| _start$' || true
-echo "Wrote $OUT ($(stat -c%s "$OUT") bytes)"
-
-# Also emit the MATCHING ROM: link the SAME object with the *unmodified* link.ld
-# (FULL(rom) → flat .sfc). Same object + same SECTIONS/MEMORY ⇒ identical addresses
-# to the debug ELF (only the output format differs), so a breakpoint resolved from
-# the ELF's DWARF lands at the right PC in MAME running this .sfc. This is the
-# Phase-C end-to-end pair (debug ELF for symbols, .sfc for the emulator).
-SFC="$HERE/a16local.sfc"
-echo "==> link matching ROM → $SFC"
-"$TOOL/ld.lld" --gc-sections --sort-section=alignment \
-    -L"$SNESLIB" -L"$COMMONLIB" \
-    -l:crt0.o "$OBJ" -lcrt0 -lcrt -lc \
-    -T "$SNESLIB/link.ld" -o "$SFC"
-if [ -f "$MOS_ROOT/tools/snes-checksum.py" ]; then
-    python3 "$MOS_ROOT/tools/snes-checksum.py" "$SFC" >/dev/null && echo "    checksum fixed"
-fi
-echo "Wrote $SFC ($(stat -c%s "$SFC") bytes)"
+echo "==> verify DWARF companion"
+"$TOOL/llvm-dwarfdump" --verify "$HERE/a16local.sfc.elf" >/dev/null && echo "    --verify OK"
+"$TOOL/llvm-nm" "$HERE/a16local.sfc.elf" | grep -iE ' main$| _start$' || true
+echo "Wrote $HERE/a16local.sfc ($(stat -c%s "$HERE/a16local.sfc") bytes) + a16local.sfc.elf ($(stat -c%s "$HERE/a16local.sfc.elf") bytes)"
+echo "    (addresses: main \$8059, line 13 \$805b, line 17 \$8074 — used by test_symbols.py / test_dap.py)"
