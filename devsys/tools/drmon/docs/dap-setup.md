@@ -36,39 +36,42 @@ the two are independent.
 
 ## VS Code
 
-No extension is required for basic use. Add a launch configuration to
-`.vscode/launch.json`:
+VS Code registers a debug `"type"` only through an extension's `contributes.debuggers`
+(there is **no** `settings.json` key that points a debug type at an arbitrary executable —
+unlike nvim-dap / dap-mode below, which do accept a bare `command`). A tiny, no-build
+extension is shipped in the repo for exactly this: **`devsys/tools/drmon/vscode-drmon/`**
+(`package.json` + `extension.js`, plain JS — it registers `"type": "drmon"` and launches the
+adapter, passing `host`/`port`/`symbols` as CLI args).
+
+Install it by symlinking the folder into your extensions dir, then reload VS Code:
+
+```bash
+ln -sfn "$PWD/devsys/tools/drmon/vscode-drmon" ~/.vscode/extensions/drmon-dap
+# Command Palette → "Developer: Reload Window"
+```
+
+(Or, for a throwaway session, `code --extensionDevelopmentPath=devsys/tools/drmon/vscode-drmon`.)
+
+Then add a launch configuration to `.vscode/launch.json` (one is committed at the repo root):
 
 ```json
 {
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Attach to MAME (SNES)",
+      "name": "Attach drmon (SNES + DWARF)",
       "type": "drmon",
-      "request": "attach"
+      "request": "attach",
+      "symbols": "${workspaceFolder}/devsys/tools/drmon/linux/test-roms/a16local.sfc.elf"
     }
   ]
 }
 ```
 
-Then register the adapter type in `.vscode/settings.json` (or a workspace extension):
-
-```json
-{
-  "debug.extensionHost": {
-    "drmon": {
-      "type": "executable",
-      "command": "/tmp/drmon-build/drmon-dap-snes"
-    }
-  }
-}
-```
-
-> A minimal VS Code extension (~3 files: `package.json`, `extension.ts`, binary)
-> that registers `"type": "drmon"` as a first-class debug type would remove the
-> `debug.extensionHost` workaround. The workaround above works today without
-> installing anything from the marketplace.
+The `symbols` path accepts an ELF+DWARF (e.g. an llvm-mos `<rom>.sfc.elf` companion), a
+Developer Resources `.sld`, Sierra COFF, ca65 `.dbg`, or WLA `.sym`; omit it to attach
+without symbols. `binary` (default `/tmp/drmon-build/drmon-dap-snes`) selects the adapter —
+point it at `drmon-dap-gen` for Genesis. Press **F5**, then continue/step/break as usual.
 
 Once attached, open the **Memory Inspector** (Debug toolbar → hex icon) and type a
 hex address such as `0x7e0000` to view SNES work-RAM. Registers in the Variables

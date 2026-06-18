@@ -1,0 +1,45 @@
+{
+  "name": "drmon-dap",
+  "displayName": "drmon (SNES/Genesis DAP)",
+  "description": "Registers the 'drmon' debug type so VS Code can attach drmon-dap-snes / drmon-dap-gen to MAME.",
+  "publisher": "developer-resources",
+  "version": "0.0.1",
+  "engines": { "vscode": "^1.70.0" },
+  "categories": ["Debuggers"],
+  "activationEvents": ["onDebugResolve:drmon"],
+  "main": "./extension.js",
+  "contributes": {
+    "debuggers": [
+      {
+        "type": "drmon",
+        "label": "drmon (MAME attach)",
+        "languages": ["c", "cpp", "asm"],
+        "configurationAttributes": {
+          "attach": {
+            "properties": {
+              "binary": {
+                "type": "string",
+                "description": "Path to the drmon DAP adapter binary.",
+                "default": "/tmp/drmon-build/drmon-dap-snes"
+              },
+              "symbols": {
+                "type": "string",
+                "description": "Symbol file for source/label resolution (ELF+DWARF, .sld, COFF, ca65 .dbg, WLA .sym)."
+              },
+              "host": { "type": "string", "default": "127.0.0.1" },
+              "port": { "type": "number", "default": 41816 }
+            }
+          }
+        },
+        "initialConfigurations": [
+          {
+            "name": "Attach drmon (SNES + DWARF)",
+            "type": "drmon",
+            "request": "attach",
+            "symbols": "${workspaceFolder}/devsys/tools/drmon/linux/test-roms/a16local.sfc.elf"
+          }
+        ]
+      }
+    ]
+  }
+}

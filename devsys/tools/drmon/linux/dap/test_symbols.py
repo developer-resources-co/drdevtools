@@ -370,10 +370,24 @@ def main():
                 assert b["verified"] and int(b.get("instructionReference", "0"), 0) >= 0x8000, \
                     f"line-12 breakpoint did not resolve into ROM: {b}"
 
+            def check_elf_abspath(req, init_resp):
+                # A DAP client (VS Code) sends the ABSOLUTE path of the open file;
+                # the DWARF keys are "./a16local.c" / "a16local.c". addrForSrc's
+                # basename fallback must still resolve it. line 17 → $8074.
+                resp = req("setBreakpoints", {
+                    "source": {"path": "/any/where/on/disk/a16local.c"},
+                    "breakpoints": [{"line": 17}],
+                })
+                b = resp["body"]["breakpoints"][0]
+                assert b["verified"] is True, f"absolute-path bpt not verified: {b}"
+                assert b.get("instructionReference") == "0x8074", \
+                    f"expected 0x8074, got {b.get('instructionReference')!r}"
+
             for desc, chk in (
                 ("ELF/DWARF source breakpoint (libdwarf)", check_elf_srcbp),
                 ("ELF/DWARF function symbol (libdwarf)",   check_elf_func),
                 ("ELF/DWARF nearest-line fallback",        check_elf_gap_fallback),
+                ("ELF/DWARF absolute-path (basename match)", check_elf_abspath),
             ):
                 try:
                     run_test(desc, ["--symbols", elf_path], chk)

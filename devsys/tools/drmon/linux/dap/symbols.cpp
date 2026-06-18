@@ -58,12 +58,37 @@ const Symbol* SymbolTable::findByName(const std::string& name) const {
     return &it2->second;
 }
 
+// Basename of a '/'- or '\\'-separated path (the whole string if no separator).
+static std::string path_basename(const std::string& p) {
+    size_t s = p.find_last_of("/\\");
+    return s == std::string::npos ? p : p.substr(s + 1);
+}
+
 uint32_t SymbolTable::addrForSrc(const std::string& file, int line) const {
+    // Resolve the file's line vector. A DAP client (VS Code, …) sends the ABSOLUTE
+    // path of the open file, but the symbol file may have recorded a relative or
+    // basename path (DWARF here stores "./a16local.c" / "a16local.c"), or vice
+    // versa. Try the exact key first (unchanged behaviour), then fall back to
+    // basename matching so either path form resolves.
+    const std::vector<std::pair<int, uint32_t>>* vec = nullptr;
     auto it = srcMap_.find(file);
-    if (it == srcMap_.end()) return 0;
-    const auto& vec = it->second;
+    if (it != srcMap_.end()) {
+        vec = &it->second;
+    } else {
+        const std::string base = path_basename(file);
+        if (!base.empty()) {
+            auto bit = srcMap_.find(base);          // stored as a bare basename?
+            if (bit != srcMap_.end()) {
+                vec = &bit->second;
+            } else {                                // else any stored key with this basename
+                for (const auto& kv : srcMap_)
+                    if (path_basename(kv.first) == base) { vec = &kv.second; break; }
+            }
+        }
+    }
+    if (!vec) return 0;
     // Exact line first.
-    for (const auto& p : vec)
+    for (const auto& p : *vec)
         if (p.first == line) return p.second;
     // Fallback: nearest *following* mapped line within a small window. Optimized
     // builds (-Os) drop line-table rows for blank/brace/comment lines, so a
@@ -71,7 +96,7 @@ uint32_t SymbolTable::addrForSrc(const std::string& file, int line) const {
     // smallest line >= target; among ties, the lowest address (that line's first
     // instruction).
     int bestLine = INT_MAX; uint32_t bestAddr = 0;
-    for (const auto& p : vec) {
+    for (const auto& p : *vec) {
         if (p.first >= line &&
             (p.first < bestLine || (p.first == bestLine && p.second < bestAddr))) {
             bestLine = p.first; bestAddr = p.second;
