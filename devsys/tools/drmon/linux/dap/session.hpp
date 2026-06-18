@@ -3,6 +3,8 @@
 #include <mutex>
 #include <condition_variable>
 #include <vector>
+#include <map>
+#include <string>
 #include <cstdint>
 #include "backend.hpp"
 #include "breakpoints.hpp"
@@ -25,6 +27,9 @@ private:
     std::mutex      bptMu_;
     SymbolTable     symtab_;
     std::vector<uint32_t> srcBptAddrs_;  // source-breakpoint addrs (for replacement)
+    // basename → the exact source path the editor used (absolute, from setBreakpoints),
+    // so stackTrace can hand that path back and the editor highlights the right file.
+    std::map<std::string, std::string> srcPathHint_;
 
     std::unique_ptr<dap::Session> session_;
 

@@ -92,6 +92,12 @@ void DapSession::registerHandlers() {
             ev.allThreadsStopped = true;
             session_->send(ev);
         });
+        // Engage the bridge's run/breakpoint machinery. On `attach`, VS Code never
+        // issues a continue (it assumes the target is already running), so without
+        // this the bridge is never told to "go" — breakpoints don't fire and pauses
+        // don't surface (the poll never sees a running→stopped transition). Sending
+        // a continue here mirrors the standalone test flow that works.
+        backend_.run();
         return dap::ConfigurationDoneResponse{};
     });
 
@@ -114,6 +120,13 @@ void DapSession::registerHandlers() {
         std::string file;
         if (req.source.path.has_value())       file = req.source.path.value();
         else if (req.source.name.has_value())  file = req.source.name.value();
+
+        // Remember the exact path the editor used (keyed by basename) so stackTrace
+        // can return the same path and the editor highlights the right file.
+        if (!file.empty()) {
+            size_t s = file.find_last_of("/\\");
+            srcPathHint_[s == std::string::npos ? file : file.substr(s + 1)] = file;
+        }
 
         for (const auto& sb : req.breakpoints.value()) {
             dap::Breakpoint b;
@@ -229,6 +242,20 @@ void DapSession::registerHandlers() {
         f.name                        = "maincpu";
         f.instructionPointerReference = hexAddr(pcl);
         f.line = 0; f.column = 0;
+        // Map the stopped PC back to a source file:line so the editor highlights the
+        // line. Prefer the exact path the editor used (recorded in setBreakpoints) so
+        // it matches the open document; fall back to the symbol file's own path.
+        std::string srcFile; int srcLine = 0;
+        if (symtab_.srcForAddr(pcl, srcFile, srcLine)) {
+            size_t s = srcFile.find_last_of("/\\");
+            std::string base = (s == std::string::npos) ? srcFile : srcFile.substr(s + 1);
+            auto it = srcPathHint_.find(base);
+            dap::Source src;
+            src.name = base;
+            src.path = (it != srcPathHint_.end()) ? it->second : srcFile;
+            f.source = src;
+            f.line   = srcLine;
+        }
         resp.stackFrames.push_back(f);
         resp.totalFrames = 1;
         return resp;

@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Attach drmon (SNES + DWARF)",
+      "type": "drmon",
+      "request": "attach",
+      "symbols": "${workspaceFolder}/tools/drmon/linux/test-roms/a16local.sfc.elf"
+    },
+    {
+      "name": "Attach drmon (SNES, no symbols)",
+      "type": "drmon",
+      "request": "attach"
+    }
+  ]
+}

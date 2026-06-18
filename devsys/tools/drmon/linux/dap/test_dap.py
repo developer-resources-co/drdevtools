@@ -183,7 +183,12 @@ def run_phasec(elf):
     loop, where the CPU spins forever). The breakpoint must resolve via DWARF to the
     line's address, fire, and stop the CPU at that PC — proving compile→DWARF→drmon→
     live-MAME source debugging on fully-open tooling."""
-    SRC, LINE, WANT = "a16local.c", 17, 0x8074   # line 17 → $8074 per the ELF line table
+    # Use an ABSOLUTE path like a real editor sends, and mimic VS Code's live-attach
+    # order exactly: attach -> configurationDone -> set the breakpoint, with NO
+    # explicit continue. This exercises the two adapter fixes the GUI run surfaced:
+    #   - configurationDone issues the bridge "go" (else nothing fires on attach);
+    #   - stackTrace maps the stopped PC back to source file:line for the highlight.
+    SRC, LINE, WANT = "/anywhere/on/disk/a16local.c", 17, 0x8074
     dap = Dap(["--host", HOST, "--port", str(PORT), "--symbols", elf])
     dap_pc = None
     try:
@@ -192,28 +197,37 @@ def run_phasec(elf):
         check("attach succeeds", dap.request("attach", {}).get("success"))
         dap.request("configurationDone", {})
 
-        # Source breakpoint resolved from the loaded DWARF line table.
+        # Source breakpoint resolved from the loaded DWARF line table (absolute path
+        # → basename match), set live AFTER configurationDone — the user's flow.
         sb = dap.request("setBreakpoints",
                          {"source": {"path": SRC}, "breakpoints": [{"line": LINE}]})
         b = sb["body"]["breakpoints"][0]
         ref = b.get("instructionReference", "")
-        check(f"PhaseC source bp {SRC}:{LINE} resolves via DWARF to {hex(WANT)}",
+        check(f"PhaseC source bp (abs path):{LINE} resolves via DWARF to {hex(WANT)}",
               b.get("verified") and ref and int(ref, 0) == WANT, f"bp={b}")
 
-        # It must fire live in MAME (CPU loops at this line forever).
-        dap.send("continue", {"threadId": 1})
+        # It must fire live in MAME with NO explicit continue (the #5 fix): the
+        # configurationDone "go" keeps the CPU running into the just-armed breakpoint.
         try:
             dap.wait(lambda m: m.get("type") == "event" and m.get("event") == "stopped"
                      and m.get("body", {}).get("reason") == "breakpoint", timeout=15.0)
-            check("PhaseC source breakpoint fires in MAME", True)
+            check("PhaseC breakpoint fires (no explicit continue — attach flow)", True)
         except TimeoutError as e:
-            check("PhaseC source breakpoint fires in MAME", False, str(e))
+            check("PhaseC breakpoint fires (no explicit continue — attach flow)", False, str(e))
 
         st = dap.request("stackTrace", {"threadId": 1})
-        ip = st["body"]["stackFrames"][0].get("instructionPointerReference", "")
+        fr = st["body"]["stackFrames"][0]
+        ip = fr.get("instructionPointerReference", "")
         dap_pc = int(ip, 0) if ip else -1
         check(f"PhaseC PC at/just past {hex(WANT)} (DWARF-mapped source line)",
               WANT <= dap_pc <= WANT + 16, f"ip={ip!r}")
+        # #6: stackTrace carries source + line so the editor highlights it, and the
+        # path is the exact one the editor used (so it matches the open document).
+        src = fr.get("source") or {}
+        check("PhaseC stackTrace maps PC -> source line 17",
+              fr.get("line") == LINE, f"line={fr.get('line')} source={src}")
+        check("PhaseC stackTrace source.path == the editor's path",
+              src.get("path") == SRC, f"source={src}")
     finally:
         dap.close()
 
@@ -279,15 +293,19 @@ def main():
             ev = None
 
         # PC at the stop, via stackTrace.instructionPointerReference.
-        # The Tier-1 Lua bridge (-debugger none) pseudo-holds a NOP or two PAST the
-        # breakpoint (its stop is marker-detected on the next periodic tick, by which
-        # point the CPU has stepped on); the Tier-2 C++ gdbstub freezes exactly. So
-        # assert the PC landed AT or just past the bp, still inside the sled.
+        # The Tier-1 Lua bridge (-debugger none) pseudo-holds some NOPs PAST the
+        # breakpoint: its stop is marker-detected on a later periodic tick, by which
+        # point the free-running CPU has stepped on. Since configurationDone now arms
+        # the bridge "go" before the bp (so attach-flow breakpoints fire at all), the
+        # sled CPU is already running when the bp arms, widening the hold to ~a couple
+        # dozen NOPs (the tight for(;;) loop in phasec still lands within a few). The
+        # Tier-2 C++ gdbstub freezes exactly. So assert AT-or-past, still in the sled.
+        SLED_HOLD = 64
         st = dap.request("stackTrace", {"threadId": 1})
         ipref = st["body"]["stackFrames"][0].get("instructionPointerReference", "")
         pc = int(ipref, 0) if ipref else -1
-        check(f"V4 PC at/just past breakpoint {hex(BP_ADDR)} (Tier-1 bridge holds a few insns past)",
-              BP_ADDR <= pc <= BP_ADDR + 16, f"ipref={ipref!r}")
+        check(f"V4 PC at/just past breakpoint {hex(BP_ADDR)} (Tier-1 bridge holds some NOPs past)",
+              BP_ADDR <= pc <= BP_ADDR + SLED_HOLD, f"ipref={ipref!r}")
 
         # ---- V5: registers -------------------------------------------------
         regs = regs_from_variables(dap)
@@ -296,7 +314,7 @@ def main():
               want.issubset(set(regs.keys())), f"got {sorted(regs.keys())}")
         dap_pcl = regs.get("PCL")
         check(f"V5 PCL at/just past breakpoint {hex(BP_ADDR)} (matches stackTrace PC)",
-              isinstance(dap_pcl, int) and BP_ADDR <= dap_pcl <= BP_ADDR + 16,
+              isinstance(dap_pcl, int) and BP_ADDR <= dap_pcl <= BP_ADDR + SLED_HOLD,
               f"PCL={dap_pcl}")
 
         # ---- V6: memory ----------------------------------------------------

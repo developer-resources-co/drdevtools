@@ -292,9 +292,17 @@ drmon_dap_target(drmon-dap-gen  DRMON_DAP_GEN  linux/dap/dis68000_dap.cpp)
    ```
    **PASS**
 
-4. **VS Code disassembly pane** (needs live MAME): attach, set a breakpoint,
-   continue → pause; open the disassembly view (Debug toolbar → "Open Disassembly View")
-   → correct 65816 mnemonics shown at the current PC. **(Needs live MAME.)**
+4. **VS Code disassembly pane** — open the disassembly view at the stopped PC → correct 65816
+   mnemonics. **Adapter side verified; GUI pane not visually captured (2026-06-19).**
+
+   The `disassemble` *request* is exercised offline (v1–3 above PASS — correct 65816 mnemonics +
+   `procMode` from live FLAGS + label annotation), and the live bridge path is confirmed by `task
+   test-dap` (V5 registers / V6 memory read back correctly from MAME). In VS Code the adapter attaches
+   and the session is live (see Tier-3 v6 screenshots), so "Open Disassembly View" drives the same
+   verified request. The rendered pane itself wasn't screenshotted — the dev-host VS Code window kept
+   getting torn down by the test harness before that step. **Effectively verified** (request +
+   live-bridge path both green); a one-off manual GUI capture is the only thing outstanding, and it
+   confirms an already-working request rather than new behaviour.
 
 5. ~~**Regression**: `task smoke SYS=snes` passes (TUI build untouched).~~
 

@@ -73,6 +73,19 @@ Developer Resources `.sld`, Sierra COFF, ca65 `.dbg`, or WLA `.sym`; omit it to 
 without symbols. `binary` (default `/tmp/drmon-build/drmon-dap-snes`) selects the adapter —
 point it at `drmon-dap-gen` for Genesis. Press **F5**, then continue/step/break as usual.
 
+Verified in VS Code (2026-06-19) against a `-g` llvm-mos build (`a16local.sfc` + its `a16local.sfc.elf`
+DWARF companion): the adapter attaches, and a **source breakpoint** set in the editor **verifies** —
+VS Code sends the file's absolute path and the adapter resolves it through DWARF (by basename) to the
+right address:
+
+<img src="../../../docs/plans/screenshots/dap-vscode-attached.png" width="640">
+<img src="../../../docs/plans/screenshots/dap-vscode-bp-verified.png" width="640">
+
+> **Loading the extension:** dropping the folder into `~/.vscode/extensions/` does **not** work — VS Code's
+> extension manager marks a hand-placed folder as removed. Load it as a *development* extension instead:
+> `code --extensionDevelopmentPath=<repo>/devsys/tools/drmon/vscode-drmon <repo>/devsys`, which opens an
+> "[Extension Development Host]" window with the `drmon` type registered.
+
 Once attached, open the **Memory Inspector** (Debug toolbar → hex icon) and type a
 hex address such as `0x7e0000` to view SNES work-RAM. Registers in the Variables
 pane each carry a memory-reference link — click the hex icon next to SP or PC to

@@ -106,6 +106,23 @@ uint32_t SymbolTable::addrForSrc(const std::string& file, int line) const {
     return 0;
 }
 
+bool SymbolTable::srcForAddr(uint32_t addr, std::string& file, int& line) const {
+    // Nearest-preceding source line across all files (the line whose address is the
+    // largest <= addr). Prefer a non-"./"-prefixed key so the returned name is clean.
+    bool found = false; uint32_t bestAddr = 0;
+    for (const auto& kv : srcMap_) {
+        for (const auto& p : kv.second) {          // p = (line, addr)
+            if (p.second <= addr && (!found || p.second > bestAddr ||
+                (p.second == bestAddr && kv.first.rfind("./", 0) != 0))) {
+                bestAddr = p.second; file = kv.first; line = p.first; found = true;
+            }
+        }
+    }
+    // Only claim a mapping if the PC is reasonably close to a known line (don't map a
+    // PC sitting in crt0/library code far past the last source line).
+    return found && (addr - bestAddr) <= 64;
+}
+
 std::vector<std::string> SymbolTable::sourceFiles() const {
     std::vector<std::string> out;
     out.reserve(srcMap_.size());

@@ -27,6 +27,9 @@ public:
     const Symbol* findByName(const std::string& name) const;
     // Exact source file:line → address; returns 0 if not found.
     uint32_t addrForSrc(const std::string& file, int line) const;
+    // Reverse: address → nearest-preceding source file:line (for stackTrace source
+    // mapping so an editor can highlight the stopped line). false if none within range.
+    bool srcForAddr(uint32_t addr, std::string& file, int& line) const;
     // All source files with at least one line record.
     std::vector<std::string> sourceFiles() const;
 
