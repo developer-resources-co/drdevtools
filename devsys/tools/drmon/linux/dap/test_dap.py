@@ -177,9 +177,70 @@ def regs_from_variables(dap):
             out[v["name"]] = v.get("value")
     return out
 
+def run_phasec(elf):
+    """Phase C — end-to-end DWARF round-trip: MAME runs a16local.sfc; the DAP loads
+    the matching debug ELF and sets a SOURCE breakpoint on a16local.c:17 (the for(;;)
+    loop, where the CPU spins forever). The breakpoint must resolve via DWARF to the
+    line's address, fire, and stop the CPU at that PC — proving compile→DWARF→drmon→
+    live-MAME source debugging on fully-open tooling."""
+    SRC, LINE, WANT = "a16local.c", 17, 0x804a   # line 17 → $804a per the ELF line table
+    dap = Dap(["--host", HOST, "--port", str(PORT), "--symbols", elf])
+    dap_pc = None
+    try:
+        check("initialize succeeds", dap.request("initialize",
+              {"clientID": "test", "adapterID": "drmon"}).get("success"))
+        check("attach succeeds", dap.request("attach", {}).get("success"))
+        dap.request("configurationDone", {})
+
+        # Source breakpoint resolved from the loaded DWARF line table.
+        sb = dap.request("setBreakpoints",
+                         {"source": {"path": SRC}, "breakpoints": [{"line": LINE}]})
+        b = sb["body"]["breakpoints"][0]
+        ref = b.get("instructionReference", "")
+        check(f"PhaseC source bp {SRC}:{LINE} resolves via DWARF to {hex(WANT)}",
+              b.get("verified") and ref and int(ref, 0) == WANT, f"bp={b}")
+
+        # It must fire live in MAME (CPU loops at this line forever).
+        dap.send("continue", {"threadId": 1})
+        try:
+            dap.wait(lambda m: m.get("type") == "event" and m.get("event") == "stopped"
+                     and m.get("body", {}).get("reason") == "breakpoint", timeout=15.0)
+            check("PhaseC source breakpoint fires in MAME", True)
+        except TimeoutError as e:
+            check("PhaseC source breakpoint fires in MAME", False, str(e))
+
+        st = dap.request("stackTrace", {"threadId": 1})
+        ip = st["body"]["stackFrames"][0].get("instructionPointerReference", "")
+        dap_pc = int(ip, 0) if ip else -1
+        check(f"PhaseC PC at/just past {hex(WANT)} (DWARF-mapped source line)",
+              WANT <= dap_pc <= WANT + 16, f"ip={ip!r}")
+    finally:
+        dap.close()
+
+    # Independent confirmation: a direct bridge read reports the same stopped PC.
+    try:
+        br = Bridge(); br.connect()
+        br.cmd("REGS A,X,Y,FLAGS,EMUL,D,DB,PB,SP,PC,PCL")
+        g = br.cmd("G").split()
+        bpcl = int(g[10], 16) if len(g) == 11 else None
+        check("PhaseC cross-check: bridge PCL == drmon PC",
+              bpcl is not None and bpcl == dap_pc, f"bridge={bpcl} drmon={dap_pc}")
+        br.close()
+    except Exception as e:
+        check("PhaseC bridge cross-check", False, f"bridge error: {e}")
+
+    print(f"\nResults: {PASS} passed, {FAIL} failed")
+    sys.exit(0 if FAIL == 0 else 1)
+
 def main():
     if not os.path.exists(BINARY):
         print(f"FAIL  {BINARY} not found (run: task build)"); sys.exit(1)
+
+    # Phase C mode: DRMON_DAP_SYMBOLS points at the debug ELF (set by test_dap.sh phasec).
+    elf = os.environ.get("DRMON_DAP_SYMBOLS", "")
+    if elf:
+        run_phasec(elf)
+        return
 
     dap = Dap(["--host", HOST, "--port", str(PORT)])
     dap_pcl = None

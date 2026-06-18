@@ -82,10 +82,11 @@ tasks:
       - 'bash {{.ROOT_DIR}}/{{.DRMON}}/linux/test_bridge.sh {{.SYS}}'
 
   test-dap:
-    desc: "Live-MAME DAP verifications (Phase 3 V3-V6): headless MAME + bridge on the host, drmon-dap-snes in the container (--network=host) driven over DAP stdio — attach, breakpoint fires, registers + memory cross-checked vs the bridge. Tears down on exit."
+    desc: "Live-MAME DAP verifications (Phase 3 V3-V6): headless MAME + bridge on the host, drmon-dap-snes in the container (--network=host) driven over DAP stdio — attach, breakpoint fires, registers + memory cross-checked vs the bridge. Tears down on exit. End-to-end DWARF round-trip (a16local.sfc + DWARF, source breakpoint fires): `bash linux/test_dap.sh phasec`."
     deps: [build]
     cmds:
       - 'bash {{.ROOT_DIR}}/{{.DRMON}}/linux/test_dap.sh'
+      - 'bash {{.ROOT_DIR}}/{{.DRMON}}/linux/test_dap.sh phasec'
 
   verify-genesis-bridge:
     desc: "Drive the Genesis Lua bridge (M68K CPU + VDP/CRAM/VSRAM/Z80) end-to-end. CART=<rom .md|.zip> (default: first ROM in roms/genesis/). Needs a desktop session — MAME's Lua autoboot engine won't run headless under an agent shell."

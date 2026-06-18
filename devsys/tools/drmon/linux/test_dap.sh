@@ -11,15 +11,26 @@
 #   or:  task test-dap
 set -euo pipefail
 
-usage() { echo "Usage: $0   # live-MAME DAP V3-V6 against test-roms/drmon-test.sfc"; exit 0; }
+usage() { echo "Usage: $0 [phasec]   # default: V3-V6 vs drmon-test.sfc; phasec: end-to-end source breakpoint vs a16local.sfc + DWARF"; exit 0; }
 [ "${1-}" = "-h" ] || [ "${1-}" = "--help" ] && usage
 
+MODE="${1:-v3v6}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
 IMAGE="drmon-build"
 BUILD="/tmp/drmon-build"
 LUA="$SCRIPT_DIR/mame_bridge.lua"
-ROM="$SCRIPT_DIR/test-roms/drmon-test.sfc"
+
+# Phase C (end-to-end DWARF round-trip): MAME runs a16local.sfc; the DAP loads the
+# matching debug ELF (a16local-debug.elf) and sets a SOURCE breakpoint. Both ROM and
+# ELF come from make-fixture.sh (same object, same link layout) so addresses agree.
+if [ "$MODE" = "phasec" ]; then
+    ROM="$SCRIPT_DIR/test-roms/a16local.sfc"
+    SYMBOLS_CONTAINER="/src/devsys/tools/drmon/linux/test-roms/a16local-debug.elf"
+else
+    ROM="$SCRIPT_DIR/test-roms/drmon-test.sfc"
+    SYMBOLS_CONTAINER=""
+fi
 
 _addr="${DRMON_MAME_ADDR:-127.0.0.1:41816}"
 PORT="${_addr##*:}"
@@ -72,10 +83,11 @@ if ! kill -0 "$MAME_PID" 2>/dev/null; then
     echo "FATAL: MAME exited during boot; log:"; tail -20 /tmp/mame_dap_test.log; exit 1
 fi
 
-echo "=== running dap/test_dap.py in container (--network=host) ==="
+echo "=== running dap/test_dap.py ($MODE) in container (--network=host) ==="
 docker run --rm --network=host \
     -v "$REPO_ROOT:/src" -v "$BUILD:/build" \
     -w /src/devsys/tools/drmon \
     -e DRMON_DAP_SNES=/build/drmon-dap-snes \
     -e DRMON_MAME_ADDR="$DRMON_MAME_ADDR" \
+    -e DRMON_DAP_SYMBOLS="$SYMBOLS_CONTAINER" \
     "$IMAGE" python3 linux/dap/test_dap.py

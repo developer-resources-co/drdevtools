@@ -54,3 +54,19 @@ echo "==> verify DWARF"
 "$TOOL/llvm-dwarfdump" --verify "$OUT" >/dev/null && echo "    --verify OK"
 "$TOOL/llvm-nm" "$OUT" | grep -iE ' main$| _start$' || true
 echo "Wrote $OUT ($(stat -c%s "$OUT") bytes)"
+
+# Also emit the MATCHING ROM: link the SAME object with the *unmodified* link.ld
+# (FULL(rom) → flat .sfc). Same object + same SECTIONS/MEMORY ⇒ identical addresses
+# to the debug ELF (only the output format differs), so a breakpoint resolved from
+# the ELF's DWARF lands at the right PC in MAME running this .sfc. This is the
+# Phase-C end-to-end pair (debug ELF for symbols, .sfc for the emulator).
+SFC="$HERE/a16local.sfc"
+echo "==> link matching ROM → $SFC"
+"$TOOL/ld.lld" --gc-sections --sort-section=alignment \
+    -L"$SNESLIB" -L"$COMMONLIB" \
+    -l:crt0.o "$OBJ" -lcrt0 -lcrt -lc \
+    -T "$SNESLIB/link.ld" -o "$SFC"
+if [ -f "$MOS_ROOT/tools/snes-checksum.py" ]; then
+    python3 "$MOS_ROOT/tools/snes-checksum.py" "$SFC" >/dev/null && echo "    checksum fixed"
+fi
+echo "Wrote $SFC ($(stat -c%s "$SFC") bytes)"
