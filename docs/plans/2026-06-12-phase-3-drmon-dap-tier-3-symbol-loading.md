@@ -138,23 +138,26 @@ updated constructor signature to take `const char* symbolPath = nullptr`
    **PASS** — `evaluate "PC"` → non-empty; `evaluate "UNKNOWN_SYM"` → `"<unknown expression>"`;
    `setBreakpoints` → `{"verified":false,"message":"No symbol file loaded (use --symbols)"}`
 
-6. **VS Code source view** — set breakpoint in source view; execution halts; VS Code highlights
-   the line. **PARTIAL in GUI + FULLY verified headlessly (2026-06-19).**
+6. **VS Code source view** — set breakpoint in source view; execution halts at the correct address;
+   VS Code highlights the source line. **✅ PASS — confirmed live in VS Code (2026-06-19).**
 
-   *In VS Code* (extension `vscode-drmon/` loaded via `--extensionDevelopmentPath`; ELF+DWARF
-   fixture `a16local.sfc.elf` as `--symbols`): the adapter **attaches** and a **source breakpoint on
-   `a16local.c:17` verifies** — VS Code sends the file's *absolute* path and the loader resolves it via
-   DWARF (basename match) to `$8074`. Screenshots:
-   <img src="screenshots/dap-vscode-attached.png" width="700">
-   <img src="screenshots/dap-vscode-bp-verified.png" width="700">
+   Setup: extension `vscode-drmon/` loaded via `--extensionDevelopmentPath`; the `-g` ELF+DWARF companion
+   `a16local.sfc.elf` passed as `--symbols`; MAME running `a16local.sfc`. A source breakpoint on
+   **`a16local.c:17`** (the `for(;;)` loop) **fired**, the CPU **halted**, and VS Code **highlighted line
+   17** with the **CALL STACK frame mapped to `a16local.c:17`** and **PC = PCL = `0x8074`** (line 17's
+   DWARF address); the Registers scope shows the live `A = 0x1122` (the 16-bit add result):
 
-   The GUI exercise surfaced **two real adapter bugs**, both fixed: (#5) `configurationDone` now issues
-   the bridge "go" — on `attach` VS Code never sends a continue, so without it breakpoints never fired
-   and pauses never surfaced; (#6) `stackTrace` now maps the stopped PC back to `source` + `line` (it
-   returned `line:0` with no source, so the editor had nothing to highlight). With both fixed, the
-   **full halt → PC-maps-to-`a16local.c:17` → editor-path-returned** sequence is verified by
-   `task test-dap` → `phasec`, which mimics the exact VS Code DAP order (attach → configurationDone →
-   set bp, no explicit continue) — **8/8**:
+   <img src="screenshots/dap-vscode-halt-line17.png" width="760">
+
+   (Earlier states — attach + the verified breakpoint dot — are
+   `screenshots/dap-vscode-attached.png` / `dap-vscode-bp-verified.png`.)
+
+   Two real adapter bugs were found here and **fixed** (drdevtools `545723a`): (#5) `configurationDone`
+   now issues the bridge "go" — on `attach` VS Code never sends a continue, so without it breakpoints
+   never fired and pauses never surfaced; (#6) `stackTrace` now reverse-maps the stopped PC →
+   `source`+`line` (it returned `line:0`/no source, so the editor had nothing to highlight), handing back
+   the exact path the editor used. The same sequence is also a headless regression — `task test-dap` →
+   `phasec` (attach → configurationDone → set bp, **no** explicit continue) — **8/8**:
    ```
      PASS PhaseC source bp (abs path):17 resolves via DWARF to 0x8074
      PASS PhaseC breakpoint fires (no explicit continue — attach flow)
@@ -162,9 +165,6 @@ updated constructor signature to take `const char* symbolPath = nullptr`
      PASS PhaseC stackTrace maps PC -> source line 17
      PASS PhaseC stackTrace source.path == the editor's path
    ```
-   The live screenshot of the rendered highlight wasn't captured (the dev-host VS Code window kept
-   getting torn down by the harness mid-session); the headless run proves the adapter hands VS Code
-   exactly the data it needs to highlight line 17. **PASS** (GUI attach+verify + headless full sequence).
 
 7. ~~**Regression**: `task smoke SYS=snes` passes.~~
 

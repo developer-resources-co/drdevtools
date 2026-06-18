@@ -73,13 +73,14 @@ Developer Resources `.sld`, Sierra COFF, ca65 `.dbg`, or WLA `.sym`; omit it to 
 without symbols. `binary` (default `/tmp/drmon-build/drmon-dap-snes`) selects the adapter —
 point it at `drmon-dap-gen` for Genesis. Press **F5**, then continue/step/break as usual.
 
-Verified in VS Code (2026-06-19) against a `-g` llvm-mos build (`a16local.sfc` + its `a16local.sfc.elf`
-DWARF companion): the adapter attaches, and a **source breakpoint** set in the editor **verifies** —
-VS Code sends the file's absolute path and the adapter resolves it through DWARF (by basename) to the
-right address:
+Verified end-to-end in VS Code (2026-06-19) against a `-g` llvm-mos build (`a16local.sfc` + its
+`a16local.sfc.elf` DWARF companion): the adapter attaches, a **source breakpoint** set in the editor
+**fires**, the CPU **halts**, and VS Code **highlights the line** — the CALL STACK frame is mapped to
+`a16local.c:17`, PC = `0x8074` (the line's DWARF address), and the Registers scope shows live state
+(`A = 0x1122`). VS Code sends the file's absolute path and the adapter resolves it through DWARF (by
+basename):
 
-<img src="../../../docs/plans/screenshots/dap-vscode-attached.png" width="640">
-<img src="../../../docs/plans/screenshots/dap-vscode-bp-verified.png" width="640">
+<img src="../../../docs/plans/screenshots/dap-vscode-halt-line17.png" width="720">
 
 > **Loading the extension:** dropping the folder into `~/.vscode/extensions/` does **not** work — VS Code's
 > extension manager marks a hand-placed folder as removed. Load it as a *development* extension instead:

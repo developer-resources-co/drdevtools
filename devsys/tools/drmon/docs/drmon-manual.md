@@ -53,8 +53,8 @@ the version and run state (`Running` / `Stopped`).
 
 | Concept | What it is |
 |---------|-----------|
-| **Symbols** | Named values/addresses (e.g. `Main = $8000`). Created by hand, or loaded from a `.sld` (Source-Level Debug) or COFF object file. They drive source-level debugging: set a breakpoint on `Main`, watch `score`, jump to a label. |
-| **Source-level debug info** | A `.sld` or COFF file maps source file + line ↔ address, so the Source window can show the line your PC is on and you can break by line. |
+| **Symbols** | Named values/addresses (e.g. `Main = $8000`). Created by hand, or loaded from a `.sld` (Source-Level Debug), COFF, ca65 `.dbg`, WLA-DX `.sym`, or **ELF/DWARF** (e.g. an llvm-mos `-g` build's `<rom>.elf` companion) object file. They drive source-level debugging: set a breakpoint on `Main`, watch `score`, jump to a label. |
+| **Source-level debug info** | A `.sld`, COFF, ca65 `.dbg`, WLA `.sym`, or **ELF/DWARF** file maps source file + line ↔ address, so the Source window can show the line your PC is on and you can break by line. For **editor** debugging (VS Code / Emacs / Neovim) over the DAP adapter, see [`dap-setup.md`](dap-setup.md). |
 | **Breakpoints** | Stop execution at an address. Variants: plain, **once** (clears after firing), **count** (fires N times then clears), and **conditional** (an expression must be true). *(needs a connected target to actually fire)* |
 | **Watchpoints** | Expressions re-evaluated every frame and displayed as `value : expression`. Pure monitor-side — handy for tracking a variable or a computed value. |
 | **Step / Step Over / Run** | Single-step one instruction (**F7**), step over a call (**F8**), or run freely (**F2**) / stop (**F3**). Source- and assembly-level step variants exist (see key reference). *(needs a connected target)* |
