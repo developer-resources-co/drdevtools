@@ -94,6 +94,11 @@ find_package(cppdap CONFIG REQUIRED)
 
 find_package(Threads REQUIRED)
 
+# libdwarf (BSD-licensed) for the ELF/DWARF symbol loader (SymbolTable::loadElf).
+# Ubuntu 26.04 ships 1:0.11.1 with the modern dwarf_init_path/dwarf_finish API.
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBDWARF REQUIRED libdwarf)
+
 # Common DAP sources (shared by both SNES and GEN targets)
 set(DRMON_DAP_SRC_COMMON
     linux/dap/main.cpp
@@ -110,7 +115,7 @@ function(drmon_dap_target TARGET SYSTEM_DEFINE DISASM_WRAPPER)
     # Legacy disassembler source: suppress modern-warning noise, allow C-style casts.
     set_source_files_properties(${DISASM_WRAPPER}
         PROPERTIES COMPILE_OPTIONS "-w;-fpermissive")
-    target_link_libraries(${TARGET} PRIVATE cppdap::cppdap Threads::Threads)
+    target_link_libraries(${TARGET} PRIVATE cppdap::cppdap Threads::Threads ${LIBDWARF_LIBRARIES})
     target_compile_definitions(${TARGET} PRIVATE ${SYSTEM_DEFINE})
     target_compile_options(${TARGET} PRIVATE
         -include ${CMAKE_CURRENT_SOURCE_DIR}/linux/linux_compat.hpp
@@ -120,6 +125,7 @@ function(drmon_dap_target TARGET SYSTEM_DEFINE DISASM_WRAPPER)
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/linux/include
         ${CMAKE_CURRENT_SOURCE_DIR}/../../../libs
+        ${LIBDWARF_INCLUDE_DIRS}
     )
 endfunction()
 

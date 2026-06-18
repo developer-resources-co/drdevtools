@@ -16,6 +16,7 @@ public:
     bool loadCoff(const char* path);     // Sierra COFF (magic 0x0150)
     bool loadCa65Dbg(const char* path);  // cc65/ca65 .dbg (text)
     bool loadWlaSym(const char* path);   // WLA-DX .sym (text)
+    bool loadElf(const char* path);      // ELF/DWARF (llvm-mos -g output) via libdwarf
 
     void add(uint32_t addr, const std::string& name);
     void addSrc(const SrcLine& sl);
@@ -33,6 +34,9 @@ public:
 
 private:
     void importSymData(const SymData& d);  // labels + lines from a parsed file
+    // Recursive DIE-tree walk for loadElf (records subprogram entry points).
+    // void* params keep the libdwarf types out of this header.
+    void walkDwarfDies(void* dbg, void* die);
 
     std::map<uint32_t, Symbol>                byAddr_;  // sorted; lower_bound lookup
     std::unordered_map<std::string, uint32_t> byName_;  // lowercase name → addr

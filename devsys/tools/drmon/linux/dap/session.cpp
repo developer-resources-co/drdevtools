@@ -24,7 +24,8 @@ DapSession::DapSession(std::string host, int port, const RegTable& regs,
 {
     if (symbolPath && *symbolPath)
         symtab_.loadSld(symbolPath)  || symtab_.loadCoff(symbolPath) ||
-        symtab_.loadCa65Dbg(symbolPath) || symtab_.loadWlaSym(symbolPath);
+        symtab_.loadCa65Dbg(symbolPath) || symtab_.loadWlaSym(symbolPath) ||
+        symtab_.loadElf(symbolPath);
     registerHandlers();
 }
 

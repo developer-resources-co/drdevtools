@@ -23,6 +23,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libjsoncpp-dev \
         libcppdap-dev \
         libncurses-dev \
+        libdwarf-dev \
+        libelf-dev \
+        pkg-config \
         ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 

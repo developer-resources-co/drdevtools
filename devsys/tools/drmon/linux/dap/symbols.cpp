@@ -8,7 +8,15 @@
 #include <cstdio>
 #include <cstring>
 #include <cctype>
+#include <climits>
 #include <algorithm>
+
+// BSD-licensed libdwarf; modern dwarf_init_path/dwarf_finish API (>=0.3).
+// NB: Ubuntu 26.04's libdwarf-dev pkg-config advertises -I/usr/include/libdwarf-1
+// but actually ships the headers in /usr/include/libdwarf/, so include via that
+// prefix (resolved through the default /usr/include path).
+#include <libdwarf/libdwarf.h>
+#include <libdwarf/dwarf.h>
 
 //-----------------------------------------------------------------------------
 // Table maintenance
@@ -54,8 +62,22 @@ uint32_t SymbolTable::addrForSrc(const std::string& file, int line) const {
     auto it = srcMap_.find(file);
     if (it == srcMap_.end()) return 0;
     const auto& vec = it->second;
+    // Exact line first.
     for (const auto& p : vec)
         if (p.first == line) return p.second;
+    // Fallback: nearest *following* mapped line within a small window. Optimized
+    // builds (-Os) drop line-table rows for blank/brace/comment lines, so a
+    // breakpoint set on a gap should advance to the next real line. Pick the
+    // smallest line >= target; among ties, the lowest address (that line's first
+    // instruction).
+    int bestLine = INT_MAX; uint32_t bestAddr = 0;
+    for (const auto& p : vec) {
+        if (p.first >= line &&
+            (p.first < bestLine || (p.first == bestLine && p.second < bestAddr))) {
+            bestLine = p.first; bestAddr = p.second;
+        }
+    }
+    if (bestLine != INT_MAX && bestLine <= line + 10) return bestAddr;
     return 0;
 }
 
@@ -256,4 +278,135 @@ bool SymbolTable::loadWlaSym(const char* path) {
     if (!parseWlaSym(path, d)) return false;
     importSymData(d);
     return true;
+}
+
+//-----------------------------------------------------------------------------
+// ELF/DWARF loader (llvm-mos `-g` output) via libdwarf.
+//
+// Two passes per compile unit:
+//   1. .debug_line  → srcMap_   (file:line → address) for source breakpoints
+//   2. DIE tree     → byAddr_/byName_ for DW_TAG_subprogram entries (DW_AT_low_pc)
+// Variable DW_AT_location decoding (DW_OP_regx/DW_OP_fbreg → value) is deliberately
+// NOT done here — it is not needed for the source-line-breakpoint gate, and is a
+// documented future follow-on.
+//
+// SNES note: llvm-mos ELFs are 32-bit (CodePointerSize=4); a 24-bit banked SNES
+// address sits in the low bits of the 32-bit value, which is exactly what byAddr_/
+// srcMap_ (uint32_t) and MAME's bridge expect — no conversion needed.
+//-----------------------------------------------------------------------------
+
+static std::string elf_basename(const char* p) {
+    if (!p) return std::string();
+    const char* slash = strrchr(p, '/');
+    return slash ? std::string(slash + 1) : std::string(p);
+}
+
+// Recursively walk a DIE subtree, recording subprogram entry points.
+void SymbolTable::walkDwarfDies(void* dbg_v, void* die_v) {
+    Dwarf_Debug dbg = (Dwarf_Debug)dbg_v;
+    Dwarf_Die   die = (Dwarf_Die)die_v;
+    Dwarf_Error err = nullptr;
+
+    Dwarf_Half tag = 0;
+    if (dwarf_tag(die, &tag, &err) == DW_DLV_OK && tag == DW_TAG_subprogram) {
+        Dwarf_Addr low = 0;
+        if (dwarf_lowpc(die, &low, &err) == DW_DLV_OK) {
+            char* name = nullptr;
+            if (dwarf_diename(die, &name, &err) == DW_DLV_OK && name) {
+                add((uint32_t)low, name);
+                dwarf_dealloc(dbg, name, DW_DLA_STRING);
+            }
+        }
+    }
+
+    // Recurse into children, then iterate their siblings.
+    Dwarf_Die child = nullptr;
+    if (dwarf_child(die, &child, &err) == DW_DLV_OK) {
+        Dwarf_Die cur = child;
+        for (;;) {
+            walkDwarfDies(dbg, cur);
+            Dwarf_Die sib = nullptr;
+            int r = dwarf_siblingof_b(dbg, cur, /*is_info=*/true, &sib, &err);
+            dwarf_dealloc_die(cur);
+            if (r != DW_DLV_OK) break;
+            cur = sib;
+        }
+    }
+}
+
+bool SymbolTable::loadElf(const char* path) {
+    // Cheap magic check so the loadSld||...||loadElf dispatch chain falls through
+    // for non-ELF inputs without invoking libdwarf at all.
+    {
+        FILE* f = fopen(path, "rb");
+        if (!f) return false;
+        unsigned char m[4] = {0};
+        size_t n = fread(m, 1, 4, f);
+        fclose(f);
+        if (n != 4 || memcmp(m, "\x7f""ELF", 4) != 0) return false;
+    }
+
+    Dwarf_Debug dbg = nullptr;
+    Dwarf_Error err = nullptr;
+    if (dwarf_init_path(path, nullptr, 0, DW_GROUPNUMBER_ANY,
+                        nullptr, nullptr, &dbg, &err) != DW_DLV_OK) {
+        if (err) dwarf_dealloc_error(dbg, err);
+        return false;  // ELF without usable DWARF — let the caller treat as no symbols
+    }
+
+    bool anyCU = false;
+    for (;;) {
+        Dwarf_Unsigned cu_len = 0, abbrev_off = 0, next_cu = 0, typeoff = 0;
+        Dwarf_Half version = 0, addr_size = 0, offset_size = 0, ext_size = 0, htype = 0;
+        Dwarf_Sig8 sig; memset(&sig, 0, sizeof(sig));
+        int r = dwarf_next_cu_header_d(dbg, /*is_info=*/true, &cu_len, &version,
+                                       &abbrev_off, &addr_size, &offset_size, &ext_size,
+                                       &sig, &typeoff, &next_cu, &htype, &err);
+        if (r == DW_DLV_NO_ENTRY) break;
+        if (r != DW_DLV_OK) break;
+
+        Dwarf_Die cu_die = nullptr;
+        if (dwarf_siblingof_b(dbg, nullptr, /*is_info=*/true, &cu_die, &err) != DW_DLV_OK)
+            continue;
+        anyCU = true;
+
+        // Pass 1 — line table → srcMap_.
+        Dwarf_Unsigned lineversion = 0;
+        Dwarf_Small    table_count = 0;
+        Dwarf_Line_Context linectx = nullptr;
+        if (dwarf_srclines_b(cu_die, &lineversion, &table_count, &linectx, &err) == DW_DLV_OK) {
+            Dwarf_Line* lines = nullptr;
+            Dwarf_Signed nlines = 0;
+            if (dwarf_srclines_from_linecontext(linectx, &lines, &nlines, &err) == DW_DLV_OK) {
+                for (Dwarf_Signed i = 0; i < nlines; ++i) {
+                    Dwarf_Bool endseq = 0;
+                    if (dwarf_lineendsequence(lines[i], &endseq, &err) == DW_DLV_OK && endseq)
+                        continue;
+                    Dwarf_Addr addr = 0;
+                    Dwarf_Unsigned lno = 0;
+                    char* src = nullptr;
+                    if (dwarf_lineaddr(lines[i], &addr, &err) != DW_DLV_OK) continue;
+                    if (dwarf_lineno(lines[i], &lno, &err) != DW_DLV_OK)   continue;
+                    if (lno == 0) continue;  // line-0 markers (e.g. loclist boundaries)
+                    if (dwarf_linesrc(lines[i], &src, &err) == DW_DLV_OK && src) {
+                        // Index under both the basename and the full path so a DAP
+                        // client matches whether it sends "a16local.c" or an abs path.
+                        std::string full = src;
+                        std::string base = elf_basename(src);
+                        addSrc({(uint32_t)addr, base, (int)lno});
+                        if (full != base) addSrc({(uint32_t)addr, full, (int)lno});
+                        dwarf_dealloc(dbg, src, DW_DLA_STRING);
+                    }
+                }
+            }
+            dwarf_srclines_dealloc_b(linectx);
+        }
+
+        // Pass 2 — subprogram entry points → byAddr_/byName_.
+        walkDwarfDies(dbg, cu_die);
+        dwarf_dealloc_die(cu_die);
+    }
+
+    dwarf_finish(dbg);
+    return anyCU;
 }
