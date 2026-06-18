@@ -12,11 +12,14 @@ Plan-first: non-trivial work gets a `docs/plans/YYYY-MM-DD-<topic>.md` and a TOD
 
 ## DRMON — DEBUGGER BACKEND
 
-- [wip] **Phase 3 — DAP front end (Tiers 1–3 complete; live-MAME items remain).** `drmon-dap-snes` /
-  `drmon-dap-gen` DAP adapters: attach/continue/pause/step/registers/readMemory/instruction
+- [wip] **Phase 3 — DAP front end (Tiers 1–3 complete; live-MAME V3–V6 PASS; only VS Code GUI panes remain).**
+  `drmon-dap-snes` / `drmon-dap-gen` DAP adapters: attach/continue/pause/step/registers/readMemory/instruction
   breakpoints/disassembly/symbol-file loading (binary `.sld` + Sierra COFF). VS Code setup doc at
-  `docs/dap-setup.md`. Verification items needing live MAME still open (connected session, breakpoint
-  fires, registers/memory match, VS Code pane/source view).
+  `docs/dap-setup.md`. **Live-MAME V3–V6 now automated + PASS (2026-06-18, `task test-dap` →
+  `linux/test_dap.sh` + `dap/test_dap.py`): connected session, breakpoint fires, registers + memory,
+  each cross-checked against a direct bridge read; 3/3 runs 11/11.** Remaining: the two VS Code *GUI pane*
+  confirmations only (Tier 2 disassembly pane, Tier 3 source highlight) — manual, GUI views of
+  already-verified protocol features.
   [Tier 1 plan](docs/plans/2026-06-12-phase-3-dap.md) ·
   [Tier 2 plan](docs/plans/2026-06-12-phase-3-drmon-dap-tier-2-disassembly-view.md) ·
   [Tier 3 plan](docs/plans/2026-06-12-phase-3-drmon-dap-tier-3-symbol-loading.md).
