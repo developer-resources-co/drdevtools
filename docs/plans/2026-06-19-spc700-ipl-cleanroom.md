@@ -343,7 +343,8 @@ Same root constraint (vectors-at-top) + the same design house (Sony/Ricoh) apply
 the same constraint-fenced 6502 conventions → the same magic boundary in two
 otherwise-unrelated address spaces. **Convergent, not coincidental — a fractal of the
 merger thesis (§3.4):** when the constraints are shared, the outputs collide even
-across independent designs. (This is exactly why the *bytes* converge too.)
+across independent designs. (This is exactly why the *bytes* converge too — now being
+**measured empirically** in the `~/SRC/spc700-ipl-divergence` spike; see §4.3.)
 
 ---
 
@@ -409,6 +410,48 @@ analysis (and directly the reason an LLM trained on the IPL is risky).
 - **"Phoenix / AMI BIOS"** → **Phoenix** is the canonical documented two-team clean
   room (a separate engineer "not exposed to IBM BIOS source code," from a different
   architecture). **AMI** — no specific clean-room lawsuit located; Phoenix is the one.
+
+### 4.3 — "How different = a new copyright we could PD?" — the question dissolves
+
+A natural engineer's question (2026-06-19): *what % of the bytes must differ before our
+version is a **new copyrightable work** we'd own and could dedicate to the public domain
+(CC0)?* Honest answer: **there is no percentage**, and the framing collapses three ways:
+
+1. **No magic number.** Originality is *qualitative* (creative expression), not
+   *quantitative* (byte-%). A tiny *creative* change can add protectable expression; a huge
+   *forced* change adds none.
+2. **Merger cuts BOTH ways (the catch).** The same merger that frees us from Nintendo's
+   copyright (forced bytes aren't protectable) also denies *us* a copyright in *our* forced
+   bytes. You can't argue "dictated by function" (to dodge Nintendo) **and** "ours is
+   original" (to own it). On a forced 64-byte ROM there is ~no protectable expression — for
+   anyone.
+3. **Own ≠ free; the derivative trap.** *Are we infringing Nintendo's?* and *do we own
+   ours?* are different questions. **Mutating** the reference yields a **derivative work** —
+   distributing it needs Nintendo's permission *unless* the underlying is unprotectable
+   (merger) or fair use; and our copyright would reach only our *original additions*
+   (§103(b)), not the underlying.
+
+**So the divergence measurement (the `~/SRC/spc700-ipl-divergence` spike) picks the
+*strategy*, not a copyright %:**
+- **Divergence ceiling tiny (forced — v01 already moved only 4/64 by reordering):** strong
+  merger → the bytes are **unprotectable by anyone → effectively public domain already.**
+  Publish; the convergence evidence is the shield. A **CC0** dedication is then a
+  *clarifying* signal (you can't dedicate what you don't own — but there's nothing to own
+  *because* it's already free).
+- **Genuine *creative* divergence exists (unlikely in 64 B):** merger is weaker, so (i) a
+  *mutation*-derived variant is an infringing derivative — **not** PD-able by us; but (ii) an
+  **independently created** (clean-room) divergent version earns *our own thin copyright in
+  its original expression*, which we **can** CC0. **The path to *owning* (vs merely
+  *freeing*) the bytes is independent creation, never mutation.**
+
+**Footnote — AI authorship.** Bytes an AI agent authored may be **uncopyrightable**
+(*Thaler*; CO 2023) → not ours to dedicate anyway (simply free). Moot for a forced ROM; for
+an ownable divergent version, the *human's* creative choices carry the thin copyright we'd
+CC0.
+
+**Net:** we never *need* a new copyright. Forced → it's free, publish (merger). Creatively
+divergent → clean-room an original and CC0 it. Either lane gives the public a free IPL; the
+spike's divergence ceiling says which lane we're in.
 
 ---
 
@@ -689,7 +732,8 @@ PASS = real software boots and runs through *our* ROM. No byte-diffing.
 
 ### Phase 6 — Public release  *(GATED on counsel + user go-ahead)*
 
-Stand up the public repo (§9), license it (permissive code license + an explicit
+Stand up the public repo (§9), license it (**CC0 / public-domain dedication** for the
+bytes — see §4.3 on what's actually ownable — + an explicit
 "independent reimplementation, see PROVENANCE.md" statement). **Do not push until §4
 review happens and the user explicitly approves** — publishing is irreversible and is
 the whole risk surface.
@@ -740,7 +784,7 @@ A **separate, single-purpose public repo** (clean provenance), e.g.
 
 ```
 README.md             # what it is / is NOT (no Nintendo marks); how to use w/ MAME
-LICENSE               # permissive code license
+LICENSE               # CC0 / public-domain dedication (see §4.3)
 PROVENANCE.md         # the wall, roles, timeline — the legal narrative
 ATTESTATION.md        # Person B's signed non-exposure statement
 spec/ipl-behaviour.md # Phase-1 behavioural spec (interface-derived)
