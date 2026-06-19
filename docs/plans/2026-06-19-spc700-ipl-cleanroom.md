@@ -62,12 +62,25 @@ reproducibility win, and it fits `~/SRC/CLAUDE.md` "everything must be reproduci
 public CI) and being our own tool weakens the independence story. It remains a
 possible *extra* cross-check, but is **off the critical path**.
 
-**Independent cross-check (Phase 5): `bass`** (byuu's table-driven assembler, also
-SPC700-capable). Two unrelated assemblers (`wla-spc700` + `bass`) agreeing on the
-64 bytes documents that the output is determined by the source, not the toolchain.
+**Independent cross-check (Phase 5): a second SPC700 assembler.** Two unrelated
+assemblers agreeing on the 64 bytes documents that the output is determined by the
+source, not the toolchain.
 
-> Neither `wla-spc700` nor `bass` is installed on this host yet (`command -v` →
-> absent as of 2026-06-19). Phase 0 installs + smoke-tests them.
+> **Phase-0 finding (2026-06-19) — bass uses a non-canonical dialect.** byuu's
+> `bass` (ARM9 fork, v18) is SPC700-capable, but its `spc700.arch` table uses
+> **6502-style mnemonics** (`clc`/`sec`/`rts`/`lda #`/`ldx #`/`mul`), **not** the
+> canonical Sony SPC700 mnemonics (`clrc`/`setc`/`ret`/`mov a,#`/`mul ya`) that
+> `wla-spc700` uses. Consequence: a bass cross-check **cannot reuse the wla source**
+> — it needs a hand-translated parallel source and compares only at the byte level
+> (still valid evidence, just not "one source, two tools"). **Recommendation:** for
+> the strongest same-source cross-check, prefer **`spcasm`** (a modern Rust SPC700
+> assembler, [github.com/kleinesfilmroellchen/spcasm]; `cargo` is available on this
+> host) which uses canonical mnemonics — evaluate it in Phase 5; keep bass as a
+> byte-level fallback.
+
+> **Phase-0 status — DONE (2026-06-19):** `wla-spc700` v10.6 (apt, foundry pkg) and
+> `bass` v18 (built from source) both smoke-tested and **agree byte-for-byte** on
+> the same logical program. See §11 step 1.
 
 ---
 
@@ -275,12 +288,22 @@ label the clean-room "best-effort" — weaker; flag to counsel.
 
 ## 7. Phases
 
-### Phase 0 — Stand up WLA-DX (+ bass)  *(now trivial)*
+### Phase 0 — Stand up WLA-DX (+ bass)  ✅ DONE (2026-06-19)
 
-`apt install wla-dx` (or CMake build from `github.com/vhelin/wla-dx`); confirm
-`wla-spc700` + `wlalink` run. Install `bass` for the Phase-5 cross-check. **Exit:**
-`wla-spc700` assembles a trivial SPC700 `.s` (a `MOV`/`TCALL`/`DBNZ` smoke file) to
-the expected opcodes (verification step 1).
+Reproducible recipe used:
+- **wla-spc700 v10.6** — `apt install wla-dx` (foundry pkg `10.6-1foundry1`;
+  `/usr/bin/wla-spc700` + `/usr/bin/wlalink`). Source-build alt: CMake from
+  `github.com/vhelin/wla-dx` (commit `024f391`) → `build/binaries/`.
+- **bass v18** — NOT apt-installable; built from source (ARM9/bass, commit
+  `c3962ec`) with a one-line modern-GCC patch (`#include <stdexcept>` in
+  `nall/arithmetic/natural.hpp`). Arch loaded via `arch spc700`, with
+  `spc700.arch`+`defaults.arch` staged in `<bass-bin-dir>/architectures/`.
+- **Flow:** `wla-spc700 -o x.o x.s` → `wlalink x.link x.bin` (raw 64-byte ROM via a
+  `[objects]`/`x.o` link file). bass: `bass x.asm` with `output "x.bin", create`.
+
+**Result:** both assemble a 6-instruction SPC700 smoke program to the **identical**
+bytes `00 cd 12 e8 34 60 cf 6f` (`nop / mov x,#$12 / mov a,#$34 / clrc / mul ya /
+ret`). Verification step 1 = **PASS**.
 
 ### Phase 1 — Behavioural specification (Person A, untainted)
 
@@ -393,7 +416,17 @@ provenance publicly. The build needs **only FOSS tools** — that is the point o
 > each; mark PASS/FAIL; write results back here.
 
 1. **Assembler runs.** `wla-spc700` (+`wlalink`) assembles a trivial SPC700 `.s`
-   smoke file to expected opcodes. *(Output: TBD)*
+   smoke file to expected opcodes.
+
+   ```
+   $ wla-spc700 -o smoke.o smoke.s && wlalink smoke.link smoke.bin
+   $ wc -c < smoke.bin                # 64
+   $ xxd smoke.bin | head -1
+   00000000: 00cd 12e8 3460 cf6f 0000 0000 0000 0000  ....4`.o........
+   # nop=00  mov x,#$12=CD 12  mov a,#$34=E8 34  clrc=60  mul ya=CF  ret=6F
+   got: 00cd12e83460cf6f   exp: 00cd12e83460cf6f   -> MATCH
+   ```
+   **PASS** (wla-spc700 v10.6, 2026-06-19).
 2. **Image shape.** `wla-spc700 src/ipl.s` → **exactly 64 bytes**; reset vector at
    `$FFFE/$FFFF`. *(Output: TBD)*
 3. **Wall integrity.** `PROVENANCE.md` + `ATTESTATION.md` exist; Person A ≠ B; no
@@ -401,8 +434,12 @@ provenance publicly. The build needs **only FOSS tools** — that is the point o
 4. **Behavioural boot.** MAME using our `ipl.bin` (§8): a real cart's audio upload
    completes, SPC700 jumps into uploaded code, audio runs — confirmed via the drmon
    bridge (APU-RAM + SPC700 regs). *(Output: TBD)*
-5. **Independent reproduction.** `bass` assembles the same source to **identical
-   bytes**. *(Output: TBD)*
+5. **Independent reproduction.** A second SPC700 assembler reproduces **identical
+   bytes**. *Mechanism validated in Phase 0:* bass v18 assembled the byte-equivalent
+   program (6502-dialect: `nop/ldx #$12/lda #$34/clc/mul/rts`) to the same
+   `00 cd 12 e8 34 60 cf 6f` as wla-spc700 → both agree. *Caveat:* bass needs a
+   hand-translated source (non-canonical dialect, §2); for one-source-two-tools,
+   evaluate `spcasm` instead. *(Re-run on the real `ipl.s` at Phase 5: TBD)*
 6. **MAME region facts.** Exact override path for `spc700.rom`/`sound_ipl` in the
    driven MAME build documented (no guesses). *(Output: TBD)*
 

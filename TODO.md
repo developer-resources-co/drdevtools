@@ -80,7 +80,9 @@ _(none)_
   do no check) — boot needs behavioural equivalence; byte-identity is forced only by **MAME's
   romset hash** (CRC 44bb3a40), and convergence is *merger* evidence (NEC v. Intel). **Gated:**
   Person B must be untainted (the LLM and likely the original author are not; an untainted human is
-  the gold standard); no public push without IP-counsel review.
+  the gold standard); no public push without IP-counsel review. **Phase 0 ✅**
+  (2026-06-19): wla-spc700 v10.6 (primary) + bass v18 smoke-tested, agree byte-for-byte;
+  bass uses a 6502-style dialect (consider `spcasm` for a same-source cross-check).
   [Plan](docs/plans/2026-06-19-spc700-ipl-cleanroom.md).
 
 
