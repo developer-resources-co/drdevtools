@@ -90,6 +90,14 @@ _(none)_
   (provably-clean *open* model + two-model wall; closed frontier models incl. Claude
   disqualified) — §5B/§5B.1; the precedent track runs parallel to the build.
   [Plan](docs/plans/2026-06-19-spc700-ipl-cleanroom.md).
+- [ ] **Port audio algorithms to SNES/SPC700 in C** — *gated on `../llvm-mos-65816` landing*
+  (SPC700 ≈ 6502, so an llvm-mos SPC700 backend is a **port**, not from-scratch). Candidates:
+  BRR encode/decode, ADSR/envelopes, echo/reverb (the S-DSP FIR), mixing, tracker/sequence
+  replay, softsynth — i.e. write SNES audio in C instead of hand SPC700 asm.
+- [ ] **Spike: free SPC700/SNES sound demos** — find/collect freely-licensed homebrew music
+  ROMs/demos as (a) real audio test content to *hear* the IPL working in MAME (play through the
+  variant IPL → `-wavwrite`), and (b) reference material for the C-port above.
+  See `~/SRC/spc700-ipl-divergence`.
 
 
 ## VERIFY
