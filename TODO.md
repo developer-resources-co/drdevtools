@@ -127,3 +127,12 @@ _(none)_
 - 2026-06-10 — [sourceforge] Post SourceForge "moved to GitHub" notice — [text](docs/sourceforge-notice.md)
 - 2026-06-10 — [migrate] Migrate drdevtools CVS → [github.com/developer-resources-co/drdevtools](https://github.com/developer-resources-co/drdevtools) (cvs-fast-export, history preserved) — [plan](docs/plans/2026-06-10-migrate-cvs-to-github.md)
 - 2026-06-10 — [hosting] Investigate hosting: SourceForge-only, no prior GitHub migration — [investigation](docs/investigations/2026-06-10-hosting-sourceforge-vs-github.md)
+
+
+## Inbox — auto-captured plan deferrals
+
+_Auto-added from plan "Out of scope"/"Deferred" sections at commit time. Triage each into M1/M2/etc. and delete it here — it will not come back._
+
+<!-- BEGIN auto-captured-deferrals (managed by audit-plan-deferrals.sh — triage these into the curated sections above; the fingerprint ledger means a deleted item is NOT re-added) -->
+- [verify] **2026-06-19-spc700-ipl-counsel-email** — Verification section present but no PASS recorded — run + record the steps. _from [2026-06-19-spc700-ipl-counsel-email.md](docs/plans/2026-06-19-spc700-ipl-counsel-email.md)_  <!-- fp:73bd340fc329f9b0 -->
+<!-- END auto-captured-deferrals -->

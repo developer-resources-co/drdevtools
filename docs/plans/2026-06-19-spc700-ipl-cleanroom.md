@@ -35,7 +35,9 @@ line of spec. Recommended avenue: **the FSF's counsel** — the Free Software
 Foundation's licensing & compliance lab (<licensing@fsf.org>) and/or the
 [Software Freedom Law Center](https://www.softwarefreedom.org/) (founded by Eben
 Moglen, the FSF's longtime general counsel). That is exactly the right kind of lawyer
-for a free-software copyright / reverse-engineering question.
+for a free-software copyright / reverse-engineering question. **A ready-to-send draft
+cover email is at [`2026-06-19-spc700-ipl-counsel-email.md`](2026-06-19-spc700-ipl-counsel-email.md)**
+— fill the placeholders and attach this plan (§0.A is the briefing packet).
 
 **Why counsel first (the re-sequencing).** The whole project reduces to one unsettled
 question — *is a 64-byte, interface-forced boot ROM copyrightable at all?* — and the
