@@ -298,9 +298,20 @@ Both the main CPU (Ricoh 5A22, a 65816 core) and the audio CPU (SPC700) follow t
 (6502 `$FFFA–$FFFF`; the 65816 extends it to `$FFE0–$FFFF`; the SPC700 reset vector
 sits at `$FFFE/$FFFF`). So *both* chips carve their special region out of the **top 64
 bytes** — `$FFC0 = $10000 − $40` — the 65816 placing the cart header just below its
-forced vectors, the SPC700 making those top 64 bytes its overlay-able IPL ROM. Same
-root constraint (vectors-at-top) + the same design house (Sony/Ricoh) applying the
-same 6502 conventions (themselves constraint-driven) → the same magic boundary in two
+forced vectors, the SPC700 making those top 64 bytes its overlay-able IPL ROM.
+
+**And the *conventions* are themselves constraint-driven** (the subtle part — and the
+crux of the question). The *choice* to drop the header just below the vectors, or to
+make the IPL exactly the top 64 bytes, is nominally a free design convention — but it
+is **anchored** to the hard constraint (the vectors are forced to the very top) and
+**fenced** by two more: the region must *contain* the reset vector (so it has to sit
+at the top), and it must be small enough to **overlay cleanly** — the SPC700's `$F1`
+bit 7 swaps the 64-byte IPL out for the underlying RAM ([nesdev S-SMP]), so the block
+is a small, top-aligned `$40` window: big enough for the boot handshake, small enough
+to map out. A "free" choice fenced on every side by constraint converges anyway.
+
+Same root constraint (vectors-at-top) + the same design house (Sony/Ricoh) applying
+the same constraint-fenced 6502 conventions → the same magic boundary in two
 otherwise-unrelated address spaces. **Convergent, not coincidental — a fractal of the
 merger thesis (§3.4):** when the constraints are shared, the outputs collide even
 across independent designs. (This is exactly why the *bytes* converge too.)
