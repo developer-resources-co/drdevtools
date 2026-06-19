@@ -73,11 +73,15 @@ _(none)_
 - [ ] **Clean-room a 64-byte SPC700 IPL boot ROM for legal MAME use + public release.**
   Independently re-create the SNES APU boot ROM (Chinese-wall: interface-derived spec →
   untainted implementer → behavioural verification in MAME) so the bytes + source can be
-  committed to a public repo and dropped into MAME. **Assembler verified present** — `tools/spasm`
-  SPC700 backend (`opcode70.asm`/`cam700.asm`, built via `m7.bat` → `spasm700.exe`; we own it,
-  `spasm.cpp:311`). **Phase 0 blocker:** spasm is a 16-bit DOS tool, no DOSBox/Watcom/TASM on this
-  host yet. **Gated:** Person B must be untainted (the LLM and likely the original author are not);
-  no public push without IP-counsel review. [Plan](docs/plans/2026-06-19-spc700-ipl-cleanroom.md).
+  committed to a public repo and dropped into MAME. **Assembler = WLA-DX `wla-spc700`** (FOSS,
+  Linux-native, publicly reproducible; `bass` cross-check). `tools/spasm`'s SPC700 backend was
+  *verified to exist* (`opcode70.asm`/`cam700.asm`, we own it) but is **not used** — 16-bit DOS,
+  weakens independence. Research-grounded: **no hardware checksum on the IPL** (snes9x/bsnes/ares
+  do no check) — boot needs behavioural equivalence; byte-identity is forced only by **MAME's
+  romset hash** (CRC 44bb3a40), and convergence is *merger* evidence (NEC v. Intel). **Gated:**
+  Person B must be untainted (the LLM and likely the original author are not; an untainted human is
+  the gold standard); no public push without IP-counsel review.
+  [Plan](docs/plans/2026-06-19-spc700-ipl-cleanroom.md).
 
 
 ## VERIFY

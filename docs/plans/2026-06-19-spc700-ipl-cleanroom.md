@@ -2,6 +2,8 @@
 title: SPC700 IPL boot ROM — clean-room reimplementation for legal MAME use + public release
 date: 2026-06-19
 status: draft / decisions-pending
+toolchain: WLA-DX (wla-spc700) — primary; bass — independent cross-check
+revised: 2026-06-19 (research-grounded; switched assembler spasm → WLA-DX)
 ---
 
 # SPC700 IPL boot ROM — clean-room reimplementation
@@ -12,334 +14,446 @@ status: draft / decisions-pending
 > run the SNES driver legally, not just owners of real hardware — and (2) **both
 > the source and the assembled bytes can be committed to a public repository.**
 >
-> The assembler is [`tools/spasm`](../../tools/spasm) (the in-house multi-CPU macro
-> assembler; we own it). Verification rides the existing drmon MAME Lua bridge.
+> **Assembler: WLA-DX (`wla-spc700`)** — FOSS, Linux-native, reproducible by anyone
+> (chosen over the in-house `spasm`; see §2). Verification rides the existing drmon
+> MAME Lua bridge.
 
 > [!IMPORTANT]
 > **This document is engineering planning, not legal advice.** The "public
-> distribution" goal is where the risk concentrates, and Nintendo is an
-> aggressive litigant. **Have qualified IP counsel review §3 + the provenance
-> bundle before anything is pushed public.** Nothing below is a guarantee of
-> non-infringement.
+> distribution" goal is where the risk concentrates, and Nintendo is an aggressive
+> litigant. **Have qualified IP counsel review §4 + the provenance bundle before
+> anything is pushed public.** Citations below are to real sources (§Sources) but
+> are summarised by a non-lawyer; nothing here is a guarantee of non-infringement.
 
 ---
 
 ## 1. Scope & terminology
 
 - **The "SPC700 BIOS" = the 64-byte IPL boot ROM** mapped at `$FFC0–$FFFF` in the
-  SNES APU (S-SMP) address space, with the reset vector at `$FFFE/$FFFF`. It is a
-  tiny bootloader: at reset it signals readiness on the CPU↔APU mailbox ports and
-  runs an upload handshake that lets the main 65816 stream code/data into the
-  64 KB of APU RAM, then transfers control to the uploaded program. **That is the
-  whole artifact** — 64 bytes.
-- **Out of scope:** the S-DSP, BRR audio, and any game's audio engine. Those are
-  uploaded by cartridges at runtime; they are not the boot ROM and not Nintendo's
-  to begin with.
-- **Naming hygiene:** the deliverable is an *"independent SPC700 IPL-compatible
-  boot ROM."* Do **not** market it as "Nintendo's", "SNES BIOS", or with any
-  Nintendo trademark. Trademark ≠ copyright; keep both clean.
+  SNES APU (S-SMP) address space, reset vector at `$FFFE/$FFFF`. A tiny bootloader:
+  at reset it sets `SP=$EF`, zeroes `$00–$EF`, signals readiness on the CPU↔APU
+  mailbox, runs an upload handshake that streams code into the 64 KB of APU RAM,
+  then jumps to it. **That is the whole artifact** — 64 bytes.
+- **Out of scope:** the S-DSP, BRR audio, and any game's audio engine (uploaded by
+  cartridges at runtime; not the boot ROM, not Nintendo's to begin with).
+- **Naming hygiene:** the deliverable is an *"independent SPC700 IPL-compatible boot
+  ROM."* Use **no** Nintendo trademark. Trademark ≠ copyright; keep both clean.
 
 ---
 
-## 2. Tooling verification — REQUIRED FIRST CHECK ✅ DONE
+## 2. Toolchain — WLA-DX (decided)
 
-The user asked to **first verify an SPC700 assembler exists in `../drdevtools/`.**
-It does. Evidence gathered 2026-06-19:
+**Primary assembler: WLA-DX's `wla-spc700` + `wlalink`.** Rationale (this is the
+reproducibility win, and it fits `~/SRC/CLAUDE.md` "everything must be reproducible"):
 
-| Question | Finding | Evidence |
-|---|---|---|
-| Is there an SPC700 assembler? | **Yes** — `tools/spasm`, a multi-CPU macro assembler with a dedicated SPC700 backend. | `tools/spasm/opcode70.asm`, `tools/spasm/cam700.asm` |
-| Is the backend really SPC700 (not 6502)? | **Yes** — implements SPC700-unique mnemonics `TCALL XCN CBNE DBNZ BBS/BBC MUL DIV DAA DAS CLRC SETC MOV`. | `opcode70.asm:13–87` |
-| Other targets in the same tool | 65816 (`opcode81`/`cam816`), 68000 (`opcode68`/`cam68`). | makefile, `spaz.asm:3` |
-| How is the SPC700 target selected? | **Compile-time** of the assembler: `#ifdef SPC700` / `-DSPC700`. There is no runtime `processor` directive — you build a *separate* SPC700 binary. | `spasm.cpp:71,218,468`, `spaz.asm:91,123` |
-| Canonical SPC700 build recipe | `m7.bat` → `nmake "SYSTEM=SPC700" "EXT=700" spasm700.exe`. The SPC700 binary is **`spasm700.exe`**. | `tools/spasm/m7.bat` |
-| Who owns it? | **We do.** © "Developer Resources" (Anderson, Seghetti, **Norris IV**); `spasm.cpp:311` credits *"SPC700 additions by William B. Norris IV."* GitHub org `developer-resources-co`. | `makefile`, `spasm.cpp:311` |
+- **FOSS + Linux-native** (GPL; `apt`/Homebrew or a CMake build) — *anyone* can
+  rebuild the bytes from source with stock tooling. A public clean-room artifact
+  whose build needs a private 1994 DOS toolchain fails the "reproducible by the
+  world" goal.
+- **Independent of us.** A neutral, widely-used third-party assembler strengthens
+  the "the bytes are a function of the source, not our hand" story.
+- **Kills the old Phase-0 blocker** — no DOSBox/TASM/Borland needed.
 
-**The catch (→ Phase 0):** `spasm` is a 1994 **16-bit DOS** program (TASM + Borland
-C `bcc`/`tlink`, `nmake`/`wmake`). This Linux host currently has **no** DOSBox /
-dosemu / OpenWatcom / TASM. So a *runnable* SPC700 assembler is not yet in hand —
-standing one up is the first phase, not a freebie.
+**`spasm` (drdevtools) — verified to exist, deliberately NOT used.** The required
+"first, verify an SPC700 assembler exists in drdevtools" check (2026-06-19) found
+`tools/spasm`'s SPC700 backend (`opcode70.asm`/`cam700.asm`, SPC700-unique
+`TCALL/XCN/CBNE/DBNZ/BBS`, built via `m7.bat` → `spasm700.exe`; we own it,
+`spasm.cpp:311`). We're **not** using it: it's a 16-bit DOS binary (impractical for
+public CI) and being our own tool weakens the independence story. It remains a
+possible *extra* cross-check, but is **off the critical path**.
 
----
+**Independent cross-check (Phase 5): `bass`** (byuu's table-driven assembler, also
+SPC700-capable). Two unrelated assemblers (`wla-spc700` + `bass`) agreeing on the
+64 bytes documents that the output is determined by the source, not the toolchain.
 
-## 3. Legal strategy — why this can be public
-
-Four independent doctrines stack in our favour. We rely on **all** of them, not any
-single one.
-
-1. **Independent creation is a complete defense to copyright.** Copyright forbids
-   *copying*, not arriving at the same result on your own. If two authors
-   independently write identical works, neither infringes. The clean room exists
-   to produce **documentary proof** we created our bytes without copying Nintendo's.
-
-2. **Merger doctrine / idea–expression merger.** Where a function admits only one
-   or a few expressions, expression "merges" with the idea and is unprotectable (or
-   protection is "thin"). A **64-byte** boot ROM is the textbook case: every byte is
-   forced by (a) the SPC700 instruction set, (b) the **fixed** mailbox port map, (c)
-   the upload protocol cartridges depend on, and (d) the 64-byte ceiling. There is
-   essentially one sensible way to write it.
-
-3. **Scènes à faire / Altai abstraction-filtration-comparison.** Elements dictated
-   by external constraints, efficiency, and standard technique are filtered out
-   before any infringement comparison. For this ROM, *almost everything* filters
-   out — the fixed addresses, the handshake, the reset vector are all external
-   constraints, not creative choices.
-
-4. **Thin copyright on a 64-byte functional artifact.** The originality threshold
-   for 64 bytes of maximally-constrained boot code is at or below the floor of
-   protectability.
-
-### The "the bytes will probably be identical" reality — read this twice
-
-Because the constraints leave near-zero freedom, a *correct* clean-room
-implementation is **very likely to be byte-for-byte identical** to Nintendo's ROM.
-Two consequences, pulling in opposite directions:
-
-- **Legally, identical output is fine** — *if* independently created (doctrine 1)
-  and *because* the constraints force it (doctrines 2–4). Identity is actually
-  **evidence** that expression merged with function.
-- **Practically, a bit-identical file invites hash-matching takedowns.** GitHub's
-  DMCA process does not adjudicate merger; a claimant can match a CRC/SHA and file,
-  and the file comes down pending a counter-notice. **Our provenance bundle (the
-  spec, the role attestations, the build logs, the two-toolchain reproduction) is
-  exactly the counter-notice ammunition.** Plan for the takedown even though we
-  believe we're right.
-
-### Hard rules that protect the position
-
-- **Never look at Nintendo's ROM image or any disassembly of it during spec or
-  implementation.** Not to "check," not "just the tricky part." That is the line
-  between independent creation and copying.
-- **Never commit Nintendo's ROM bytes or a disassembly of them to any repo** —
-  including as a test fixture or in this plan. Correctness is judged
-  *behaviourally* (Phase 4), never by diffing toward Nintendo's bytes.
-- **Do not feed any byte-level comparison back into the implementation.** Observing,
-  after the fact, that our bytes coincide is fine as forensic notes by the
-  verification lead; *editing our code to match Nintendo's* converts independent
-  creation into copying. We don't do it.
+> Neither `wla-spc700` nor `bass` is installed on this host yet (`command -v` →
+> absent as of 2026-06-19). Phase 0 installs + smoke-tests them.
 
 ---
 
-## 4. Roles & the taint problem (including the LLM)
+## 3. Does it have to be byte-identical to Nintendo's? (the checksum question)
 
-A clean room is a **Chinese wall**: the people who may study behaviour are walled
-off from the people who write code, and the two sides communicate only through an
-approved specification.
+**Short answer: no hardware checksum forces it — but the constraints make a correct
+independent implementation *converge* on the same bytes, and MAME separately
+*requires* the exact bytes. The convergence is legally helpful, not harmful.**
+
+### 3.1 There is NO integrity check on the IPL bytes (real hardware)
+
+No SNES component (SPC700, S-SMP, S-DSP, or the 65816) computes a checksum/CRC over
+the 64 IPL bytes. The S-SMP just executes them. Confirmed by faithful emulators:
+
+- **snes9x** compiles the IPL in as `const uint8 iplrom[64]` and indexes it raw —
+  no check ([snes9x `iplrom.cpp`]).
+- **bsnes** / **ares** load `ipl.rom` from disk and take the reset vector straight
+  from bytes 62/63 — **no CRC/SHA** ([bsnes `smp.cpp`], [ares `smp.cpp`]). If the
+  hardware self-checked, accurate emulators would model it; none do.
+
+So **boot requires behavioural/protocol equivalence, not byte-identity.**
+
+### 3.2 What IS forced: behaviour + size (the protocol contract)
+
+Within a **64-byte** budget, with a reset vector at `$FFFE/$FFFF`, the ROM must drive
+the documented mailbox handshake on the **fixed** ports (`$2140–$2143` ↔ `$F4–$F7`)
+using the exact magic values every commercial loader hard-codes: `$AA`/`$BB` ready,
+`$CC` kickoff, the zero-first counter/index echo pacing, address via ports 2/3, and
+the write-0-to-port-1 jump trigger ([nesdev "Booting the SPC700"], [SnesLab IPL],
+[Wikibooks SPC700 loading]). Any 64-byte program reproducing that observable
+behaviour boots; the *bytes* are not hardware-pinned — but the freedom inside 64
+bytes is tiny, so a correct implementation is **effectively canonical**.
+
+### 3.3 The ONLY hard byte-identity requirement: MAME's romset hash
+
+MAME pins its IPL: `ROM_LOAD("spc700.rom", 0, 0x40, CRC(44bb3a40)
+SHA1(97e352553e94242ae823547cd853eecda55c20f0))`, region `"sound_ipl"`
+([mamedev `s_smp.cpp`]). A byte-different (even behaviourally perfect) IPL **fails
+this audit** → not a drop-in. This is **distribution/romset management inside MAME,
+not a hardware mechanism.** bsnes/ares load `ipl.rom` with no hash check; snes9x
+compiles it in. **Consequence for our goal:** the "drop into MAME" deliverable
+*does* need the exact bytes; "runs on real hardware / bsnes / ares" needs only
+behavioural equivalence.
+
+### 3.4 Convergence is EVIDENCE FOR us, not against (merger / *NEC v. Intel*)
+
+Because the constraints force the result, a clean implementation will very likely be
+byte-identical. That is the **merger-doctrine** posture in its strongest form: in
+*NEC v. Intel* the clean-room engineer's independently-written microcode came out
+"similar in many regards" to Intel's, and the court inferred the similarity was
+*"dictated not by copying … but rather by functional constraints of the hardware,
+the architecture, and the need for … compatibility"* (1989 WL 67434 (N.D. Cal.)).
+Identity here is **proof the expression merged with function** — provided the wall
+(§5) is real.
+
+> **The flip side is practical, not legal:** a bit-identical file invites
+> hash-matching DMCA takedowns (a claimant matches a CRC/SHA and files; GitHub
+> doesn't adjudicate merger). The provenance bundle (§Phase 5) is the
+> counter-notice ammunition. Plan for the takedown even though we believe we're right.
+
+### 3.5 Not the cartridge checksum
+
+The SNES *cartridge header* checksum (`$FFDE` + `$FFDC` complement) is a 16-bit
+sum-of-bytes over the **game** ROM on the 65816 side, *"not needed by the SNES
+hardware"* at boot ([nesdev ROM header]) — a different chip, address space, and
+purpose from the SPC700 IPL. Unrelated; the `$FFC0–$FFFF` overlap is coincidental.
+
+---
+
+## 4. Legal strategy — why this can be public
+
+Four independent doctrines stack; we rely on **all**, not any one. (Settled vs
+unsettled flagged; see §Sources for citations.)
+
+1. **Independent creation is a complete defense.** Copyright forbids *copying*, not
+   arriving at the same result independently. Infringement-by-copying is proven
+   circumstantially by **access + substantial similarity**; *independent creation
+   rebuts it* (*Three Boys Music v. Bolton*, 212 F.3d 477 (9th Cir. 2000); *Feist*,
+   499 U.S. 340). The clean room manufactures **provable** independent creation.
+   *(SETTLED.)*
+
+2. **Reverse-engineering to reach functional elements is fair use** — the legal
+   ground for the "dirty team" (§5): *Sony v. Connectix*, 203 F.3d 596 (9th Cir.
+   2000) — **reverse-engineering the PlayStation BIOS to build an emulator was fair
+   use**; the shipped product contained none of Sony's code (the **most on-point**
+   case for us). *Sega v. Accolade*, 977 F.2d 1510 (9th Cir. 1992) — disassembly to
+   find "functional requirements for compatibility … aspects not protected by
+   copyright" is fair use. *(SETTLED.)*
+
+3. **Merger / scènes à faire / abstraction-filtration-comparison.** Elements
+   dictated by external constraints, efficiency, and compatibility are filtered out
+   before any infringement comparison (*Computer Associates v. Altai*, 982 F.2d 693
+   (2d Cir. 1992)); "when there is essentially only one way to express an idea …
+   copyright is no bar." A **64-byte**, interface-dictated boot ROM is at/below the
+   floor of protectable expression (*Baker v. Selden*, 101 U.S. 99; *Lotus v.
+   Borland*, 49 F.3d 807 (1st Cir. 1995), aff'd 4–4, 516 U.S. 233 — method of
+   operation). *(SETTLED doctrine; merger of THIS ROM is a fact question — but the
+   shorter + more interface-forced the code, the stronger it is.)*
+
+4. **Interfaces are functional/reimplementable.** *Google v. Oracle*, 593 U.S. 1
+   (2021) — reimplementing interface declarations to let skills transfer to a new
+   platform is fair use. The CPU↔APU protocol is an interface. *(SETTLED as to the
+   reuse; API copyrightability expressly reserved.)*
+
+### 4.1 The cautionary tale: how a clean room FAILS — *Atari v. Nintendo*
+
+*Atari Games v. Nintendo*, 975 F.2d 832 (Fed. Cir. 1992): "Reverse engineering
+object code to discern the unprotectable ideas … is a fair use" — **but** Atari had
+also obtained Nintendo's **registered 10NES source code from the Copyright Office by
+fraud**, so "any copying … from the Copyright Office does not qualify as a fair
+use." **A clean room is only as clean as its inputs:** tainted *access* to the
+protected expression — even indirect — sinks it. This is the lens for §5's taint
+analysis (and directly the reason an LLM trained on the IPL is risky).
+
+### 4.2 Cases raised by the user — mapped
+
+- **"IBM vs NEC, V20/V30"** → actually **NEC Corp. v. Intel Corp.**, 1989 WL 67434
+  (N.D. Cal. 1989) — the **seminal** clean-room ruling (engineer Davidian wrote V20/
+  V30 microcode "without access to any other microcode"; similarity held compelled
+  by functional constraints). Adversary was **Intel**, not IBM. Backbone of §3.4/§5.
+- **"EA vs Sega / Razorsoft"** → the law-making case is **Sega v. Accolade** (above).
+  EA's Genesis reverse-engineering was resolved by a **business deal**, not a
+  published opinion; **Razorsoft** — no reported copyright opinion located (do not
+  cite as precedent without verification).
+- **"Compaq vs IBM/Microsoft BIOS"** → Compaq's clean-room targeted **IBM's** BIOS
+  copyright (not Microsoft). **Industry-practice** example — the wall was so solid it
+  *deterred* litigation rather than producing a famous opinion.
+- **"Phoenix / AMI BIOS"** → **Phoenix** is the canonical documented two-team clean
+  room (a separate engineer "not exposed to IBM BIOS source code," from a different
+  architecture). **AMI** — no specific clean-room lawsuit located; Phoenix is the one.
+
+---
+
+## 5. Roles, taint, and WHO may implement
+
+A clean room is a **Chinese wall**: people who may study behaviour are walled off
+from people who write code; they communicate only through a lawyer-reviewed
+functional spec. The test for the implementer is **access** — did they have a
+*"reasonable opportunity to view"* the protected work (*Three Boys*, 212 F.3d 477)?
+*Potential* access counts if it's more than a "bare possibility."
 
 | Role | May see | May NOT see | Output |
 |---|---|---|---|
-| **Spec author** (Person A) | Public docs of the CPU↔APU *interface/protocol*; black-box port behaviour; the SPC700 ISA. | Nintendo's ROM image / any disassembly of it. | A behavioural spec (§Phase 1) with **no** Nintendo code. |
-| **Clean implementer** (Person B) | Only Person A's spec; the SPC700 ISA; `spasm` docs. | Nintendo's ROM bytes/disassembly; **must attest non-exposure.** | SPC700 source → 64-byte image. |
-| **Verification lead** (Person C) | Everything behavioural; may run MAME; may do *forensic-only* byte comparison after Phase 3 is frozen. | — (but must not relay Nintendo bytes back to B). | Behavioural PASS/FAIL + provenance bundle. |
+| **Spec author (A)** | Public docs of the CPU↔APU *interface/protocol*; black-box port behaviour; the SPC700 ISA. | Nintendo's ROM image / any disassembly of it. | Behavioural spec (§Phase 1), no Nintendo code. |
+| **Clean implementer (B)** | Only A's lawyer-reviewed spec; the SPC700 ISA; WLA-DX docs. | Nintendo's IPL bytes/disassembly; **must attest non-exposure.** | SPC700 source → 64-byte image. |
+| **Verification lead (C)** | Everything behavioural; runs MAME; *forensic-only* byte comparison after Phase 3 freeze. | (must not relay Nintendo bytes back to B). | Behavioural PASS/FAIL + provenance bundle. |
 
-**A and B must be different people.** One person cannot wall themselves off.
+**A and B must be different people.** Now the three implementer candidates the user
+asked about — answered against the access test (all AI points **UNSETTLED**: no court
+has ruled on LLM-as-clean-implementer):
 
-**Two honest taint warnings:**
+- **A different *instance* of Claude? → No.** The taint is in **training weights, not
+  chat context**; a fresh instance has identical weights → identical access. The
+  64-byte IPL is in training data — it is a *verbatim array* in open-source snes9x
+  ([snes9x `iplrom.cpp`]) and copied across GitHub (so it's also "widely
+  disseminated" → access under *Three Boys*). LLMs demonstrably memorise/regurgitate
+  (Carlini [2012.07805], [2202.07646]; Nasr [2311.17035]; a reproduction study even
+  singled out *"Claude's Opus"* for high baseline memorisation, [2412.06370]). That
+  is *Atari*'s "unauthorized possession," not *Connectix*'s clean access. Resetting
+  context clears only *this conversation's* leakage. **Claude is presumed tainted →
+  Claude does tooling/spec-scaffolding/verification, NOT the boot-ROM bytes.**
+- **A different *model* (Gemma/GPT/Qwen/DeepSeek/…)? → Generally no.** Same test on
+  *that* corpus. The IPL is ubiquitous in code/web scrapes → any frontier model is
+  presumptively tainted, and for proprietary models you **cannot audit** the training
+  set to disprove it. Only a model whose corpus is *documented to exclude* the IPL
+  qualifies — you must *prove the negative*. Footnote: purely AI-authored output may
+  itself be **uncopyrightable** (U.S. Copyright Office 2023, 88 Fed. Reg. 16190;
+  *Thaler v. Perlmutter*, aff'd D.C. Cir. 2025) — irrelevant to non-infringement,
+  moot for forced functional code.
+- **A human who's never used a SNES / seen its docs? → YES, gold standard.** Exactly
+  *NEC v. Intel* (microcode "without access to any other microcode") and *Phoenix/
+  Compaq* (a separate engineer "not exposed to IBM BIOS source code," from a
+  different architecture). Refinements: (1) the wall excludes the **IPL's expression
+  specifically** (bytes/disassembly), **not** general knowledge — B may/must learn
+  the **SPC700 ISA** (unprotected functional facts; *Sega*) and WLA-DX; (2) "never
+  used a SNES" maximises credibility but means you **teach B SPC700 asm** from the
+  public ISA; (3) B works only from A's spec, signs the attestation, audit trail
+  kept (*Altai*, *NEC*). **This is who to recruit.**
 
-- **The LLM (Claude) is presumed tainted.** Models of this class may have the
-  64-byte IPL (it is widely published) in training data, so **Claude must not be
-  the clean implementer (Person B).** Claude's role here is *tooling + scaffolding*:
-  stand up the assembler (Phase 0), build the MAME verification harness (Phase 4),
-  help Person A draft the spec **from public interface docs only**, and assemble the
-  provenance/repo. Claude does **not** write the boot-ROM bytes.
-- **The original author is also likely tainted.** You wrote `spasm`'s SPC700 backend
-  and have decades of SNES work — you have very probably seen Nintendo's IPL
-  disassembly at some point. That makes you an excellent **spec author / verification
-  lead / tooling owner**, but a **poor "clean" implementer.** If we want a strong
-  independent-creation story, **recruit an untainted Person B** (a competent asm
-  programmer who can credibly attest they've never studied the SNES IPL). If no
-  untainted implementer is available, we fall back to leaning on the merger doctrine
-  (§3.2–3.4) and label the clean-room as "best-effort" — weaker, and worth flagging
-  to counsel.
-
----
-
-## 5. The wall — allowed vs forbidden specification sources
-
-The spec (Phase 1) is derived from the **interface contract**, which is functional
-and observable, not from Nintendo's expression:
-
-- **Allowed:** documentation describing *what the main CPU does* to upload to the
-  APU (the mailbox ports `$2140–$2143` ↔ `$F4–$F7`, the readiness signal, the
-  address/counter handshake, the jump); the SPC700 ISA and timing; black-box
-  observation of an APU's port behaviour at reset (treating the chip as a sealed
-  box); our own `spasm` docs. Method-of-operation / interface facts are not
-  protectable expression (cf. the API-as-functional reasoning in *Google v.
-  Oracle*).
-- **Forbidden:** Nintendo's ROM image; any disassembly/annotated listing of it;
-  any source purporting to reproduce its bytes; "reference implementations" that are
-  really transcriptions of the original.
-
-The spec describes **requirements** ("at reset the ROM SHALL signal readiness on
-the mailbox, then service this upload protocol, then jump"), never a byte listing.
+**Honest note on the original author.** You wrote `spasm`'s SPC700 backend and have
+decades of SNES work — you've very likely seen the IPL disassembly, so you're an
+excellent **spec author / verification lead / tooling owner** but a **poor clean
+implementer**. If no untainted B is available, we fall back on merger (§3.4/§4.3) and
+label the clean-room "best-effort" — weaker; flag to counsel.
 
 ---
 
-## 6. Phases
+## 6. The wall — allowed vs forbidden specification sources
 
-### Phase 0 — Stand up a runnable SPC700 `spasm` on Linux  *(blocker; decision needed)*
+- **Allowed:** documentation of *what the main CPU does* to upload to the APU (the
+  mailbox ports, the `$AA/$BB/$CC` handshake, the counter pacing, the jump); the
+  SPC700 ISA and timing; black-box observation of an APU's port behaviour at reset;
+  WLA-DX docs. Interface facts / methods of operation are not protectable expression
+  (*Google v. Oracle*; *Sega*).
+- **Forbidden:** Nintendo's ROM image; any disassembly/annotated listing of it; any
+  "reference implementation" that is really a transcription of the original.
+- **Hard rules:** never look at Nintendo's bytes during spec/implementation; never
+  commit them (or a disassembly) to any repo — including as a test fixture or in this
+  plan; never feed a byte-level comparison back into the implementation (observing
+  coincidence after a Phase-3 freeze is fine as forensic notes; *editing toward*
+  Nintendo's bytes converts independent creation into copying — the *Atari* trap).
+  Correctness is judged **behaviourally** (§Phase 4).
 
-`spasm700.exe` is a 16-bit DOS binary today. Options, cheapest-first:
+---
 
-- **0a — DOSBox-X + vintage toolchain (closest to original).** `apt install
-  dosbox-x`; supply TASM + Borland C (you may have them archived as an original
-  author); run `m7.bat` under DOSBox-X to build `spasm700.exe`; invoke the
-  assembler under DOSBox-X. **Pro:** byte-faithful to the original build. **Con:**
-  needs the proprietary Borland/TASM bits; clumsy in CI.
-- **0b — OpenWatcom V2 (`m.bat` already uses `wmake`).** Build the DOS binary with
-  OpenWatcom (free, scriptable, still emits 16-bit DOS), run under DOSBox-X.
-  **Con:** the asm core is **TASM-syntax**; Watcom's `wasm` is MASM-ish — expect
-  directive friction (`ifdef`, `OFFSET`, segment model).
-- **0c — Native port.** Port the `.cpp` driver + reimplement the asm core's logic
-  in portable C++. **Big** effort (the core *is* 16-bit x86 asm); out of scope for v1.
-- **0d — Modern SPC700 assembler as a *cross-check only*.** WLA-DX `wla-spc700` or
-  byuu's `bass` (both FOSS, SPC700-capable). **Not** the primary per the user's
-  "use drdevtools tooling" instruction, but ideal as the **independent second
-  toolchain** in Phase 5 (two unrelated assemblers agreeing on the bytes is strong
-  evidence).
+## 7. Phases
 
-**Recommendation:** primary = **0a/0b** (own tool, satisfies the instruction);
-reserve **0d** for the Phase-5 cross-check. **Exit:** `spasm700` assembles a
-trivial `.asm` to expected bytes (Phase-0 verification step 1).
+### Phase 0 — Stand up WLA-DX (+ bass)  *(now trivial)*
+
+`apt install wla-dx` (or CMake build from `github.com/vhelin/wla-dx`); confirm
+`wla-spc700` + `wlalink` run. Install `bass` for the Phase-5 cross-check. **Exit:**
+`wla-spc700` assembles a trivial SPC700 `.s` (a `MOV`/`TCALL`/`DBNZ` smoke file) to
+the expected opcodes (verification step 1).
 
 ### Phase 1 — Behavioural specification (Person A, untainted)
 
-Write `spec/ipl-behaviour.md` in the new public repo: a numbered, testable
-specification of the boot ROM's behaviour derived **only** from §5-allowed sources.
-Cover: reset entry/vector requirement; readiness signalling on the mailbox; the
+`spec/ipl-behaviour.md` in the new public repo: a numbered, testable spec derived
+**only** from §6-allowed sources — reset entry/vector; readiness signalling; the
 upload handshake (address setup, counter/echo pacing, multi-block, final jump);
-register/zero-page init obligations; the 64-byte budget. **No byte listings.** Each
-clause gets an ID so Phase 4 tests can cite it.
+zero-page/SP init; the 64-byte budget. **No byte listings.** Each clause gets an ID
+so Phase-4 tests cite it. Lawyer review strips any protected expression.
 
 ### Phase 2 — Clean implementation (Person B, untainted)
 
-From the Phase-1 spec **only**, Person B writes `src/ipl.asm` in SPC700 assembly for
-`spasm700`. Person B signs `ATTESTATION.md` (never studied the SNES IPL; worked
-solely from the spec). Iteration is allowed against the **spec** and against
-**behavioural** test failures — never against Nintendo's bytes.
+From the Phase-1 spec **only**, B writes `src/ipl.s` for `wla-spc700` and signs
+`ATTESTATION.md` (never studied the SNES IPL; worked solely from the spec).
+Iterate against the **spec** and **behavioural** test failures — never Nintendo's
+bytes.
 
 ### Phase 3 — Assemble
 
-`spasm700 src/ipl.asm → build/ipl.bin`. Assert **exactly 64 bytes** and the reset
-vector lands at `$FFFE/$FFFF`. Record the SHA-256 of our image. (We do **not**
-compare it to Nintendo's hash to drive anything; see §3 hard rules.)
+`wla-spc700 src/ipl.s` + `wlalink` → `build/ipl.bin`. Assert **exactly 64 bytes**;
+reset vector at `$FFFE/$FFFF`. Record our SHA-256. (No comparison to Nintendo's hash
+to drive anything — §6.)
 
 ### Phase 4 — Behavioural verification in MAME (Person C)
 
-This is the real correctness oracle. Use the existing drmon SNES Lua bridge
-(`task drmon-snes…`, the SPC700 register + APU-RAM windows from
-[`2026-06-12-spc700-window.md`](2026-06-12-spc700-window.md)):
+The real correctness oracle, via the drmon SNES Lua bridge (SPC700 register +
+APU-RAM windows, [`2026-06-12-spc700-window.md`]):
 
-1. Make MAME use **our** `ipl.bin` instead of its built-in SPC700 IPL (see §7).
+1. Make MAME use **our** `ipl.bin` instead of its built-in `spc700.rom` (§8).
 2. Boot a cart whose audio engine performs a real APU upload.
-3. Via the bridge, confirm: readiness handshake observed → bytes land in APU RAM at
-   the intended addresses → SPC700 PC jumps into the uploaded program → audio engine
-   runs. Cross-check APU-RAM reads + SPC700 regs against expectations.
-4. Regression set: several carts / a purpose-built APU exerciser; multi-block upload;
-   edge cases in the counter handshake.
+3. Via the bridge confirm: readiness handshake → bytes land in APU RAM at intended
+   addresses → SPC700 PC jumps into the uploaded program → audio runs. Cross-check
+   APU-RAM + SPC700 regs.
+4. Regression set: several carts / a purpose-built APU exerciser; multi-block;
+   counter-handshake edge cases.
 
-PASS = real software boots and runs its audio through *our* ROM. No byte-diffing.
+PASS = real software boots and runs through *our* ROM. No byte-diffing.
 
 ### Phase 5 — Independent reproduction + provenance bundle
 
-- **Second toolchain (0d):** assemble the *same* `src/ipl.asm` with `wla-spc700`
-  and/or `bass`; confirm identical bytes. Two unrelated assemblers agreeing
-  documents that the bytes are a function of the source, not a copy.
-- **Provenance bundle** (the counter-notice kit): the Phase-1 spec, Person B's
-  attestation, dated build logs, the two-toolchain reproduction, this plan, and a
-  `PROVENANCE.md` narrating the wall and timeline.
+- **Second toolchain:** assemble the same `src/ipl.s` with `bass`; confirm identical
+  bytes (output is a function of the source, not the assembler).
+- **Provenance bundle (the counter-notice kit):** Phase-1 spec, B's attestation,
+  dated build logs, the two-toolchain reproduction, this plan, and `PROVENANCE.md`
+  narrating the wall + timeline — the §3.4 merger / §4 independent-creation evidence.
 
 ### Phase 6 — Public release  *(GATED on counsel + user go-ahead)*
 
-Stand up the public repo (§8), license it (recommend a permissive code license +
-an explicit "independent reimplementation, see PROVENANCE.md" statement). **Do not
-push until §3's review happens and the user explicitly approves** — publishing is
-irreversible and is the whole risk surface.
+Stand up the public repo (§9), license it (permissive code license + an explicit
+"independent reimplementation, see PROVENANCE.md" statement). **Do not push until §4
+review happens and the user explicitly approves** — publishing is irreversible and is
+the whole risk surface.
 
 ---
 
-## 7. MAME integration specifics  *(verify, don't assume)*
+## 8. MAME integration specifics  *(verify, don't assume)*
 
-- MAME carries the SPC700 IPL internally (commonly the `spc700.rom` region, 64
-  bytes, a fixed expected hash). **Action:** confirm the exact region name + hash +
-  load path in the MAME version drdevtools drives — **don't guess** (CLAUDE.md:
-  "explain the gap"). This is Phase-4 verification step 0.
-- **If our bytes equal Nintendo's** (likely): the file satisfies MAME's hash check
-  and is a literal drop-in.
-- **If our bytes differ:** MAME will reject the hash; we'd either run a MAME built
-  to accept an alternate IPL, or pursue upstreaming an "open IPL" option. Note for
-  realism: MAME upstream generally only ships bit-exact dumps, so a *differing*
-  reimplementation is mainly useful for our own builds + the public repo, with a
-  "how to use with MAME" note — not an automatic MAME-distribution win.
-- Preservation framing: this directly serves the "everyone, not just SNES owners"
-  goal — a freely-distributable IPL removes the "you must dump your own" barrier.
+- Region `"sound_ipl"`, file `spc700.rom`, 64 bytes, `CRC(44bb3a40)
+  SHA1(97e352553e94242ae823547cd853eecda55c20f0)` ([mamedev `s_smp.cpp`]); it lives
+  in parent BIOS sets (e.g. `nss.zip`). **Action:** confirm the exact override path
+  in the MAME build drdevtools drives (Phase-4 step 0).
+- **If our bytes == Nintendo's** (likely, §3.2): the file satisfies MAME's hash → a
+  literal drop-in.
+- **If they differ:** MAME rejects the hash; we'd run a MAME built to accept an
+  alternate IPL, or pursue an upstream "open IPL" option. Realistic note: MAME
+  upstream generally ships only bit-exact dumps, so a *differing* reimplementation is
+  mainly useful for our own builds + the public repo with a "how to use" note.
 
 ---
 
-## 8. Deliverables — public repo layout
+## 9. Deliverables — public repo layout
 
-A **separate, single-purpose public repo** (clean provenance, easy to point a
-license + DMCA counter-notice at), e.g. `snes-ipl-cleanroom`:
+A **separate, single-purpose public repo** (clean provenance), e.g.
+`snes-ipl-cleanroom`:
 
 ```
-README.md            # what it is, what it is NOT (no Nintendo marks), how to use w/ MAME
-LICENSE              # permissive code license
-PROVENANCE.md        # the wall, roles, timeline — the legal narrative
-ATTESTATION.md       # Person B's signed non-exposure statement
-spec/ipl-behaviour.md# Phase-1 behavioural spec (interface-derived)
-src/ipl.asm          # SPC700 source (assembles under spasm700; cross-checks under wla/bass)
-build/ipl.bin        # assembled 64-byte image  ← the "public bytes"
-build/ipl.sha256     # our hash
-build.sh / Taskfile  # reproducible: source → bytes, both toolchains
-tests/               # behavioural MAME harness + exerciser (NO Nintendo bytes)
+README.md             # what it is / is NOT (no Nintendo marks); how to use w/ MAME
+LICENSE               # permissive code license
+PROVENANCE.md         # the wall, roles, timeline — the legal narrative
+ATTESTATION.md        # Person B's signed non-exposure statement
+spec/ipl-behaviour.md # Phase-1 behavioural spec (interface-derived)
+src/ipl.s             # SPC700 source (assembles under wla-spc700; cross-checks under bass)
+build/ipl.bin         # assembled 64-byte image  ← the "public bytes"
+build/ipl.sha256      # our hash
+build.sh / Taskfile   # reproducible: source → bytes, BOTH toolchains (wla + bass)
+tests/                # behavioural MAME harness + exerciser (NO Nintendo bytes)
 ```
 
-Keep the messy tooling (DOSBox build of `spasm700`, MAME bridge) in **drdevtools**;
-ship only the clean artifact + provenance publicly.
+Keep the messy bits (MAME bridge) in **drdevtools**; ship only the clean artifact +
+provenance publicly. The build needs **only FOSS tools** — that is the point of §2.
 
 ---
 
-## 9. Risks & decisions needed before execution
+## 10. Risks & decisions needed before execution
 
-| # | Decision / risk | Default / recommendation |
+| # | Decision / risk | Status / recommendation |
 |---|---|---|
-| D1 | **Phase-0 build path** (0a DOSBox+TASM / 0b OpenWatcom / 0c port). | 0a if you have archived TASM+BCC; else 0b. 0d reserved for the Phase-5 cross-check. |
-| D2 | **Who is the untainted Person B?** | Recruit one. If impossible, lean on merger doctrine and label clean-room "best-effort" (weaker — flag to counsel). |
-| D3 | **Public host / repo name / license.** | New repo `snes-ipl-cleanroom` under a chosen org; permissive license. **User decides.** |
-| D4 | **Counsel review before push?** | **Strongly yes** given the public goal. Non-negotiable in my recommendation. |
+| D1 | Assembler. | **RESOLVED → WLA-DX (`wla-spc700`)** primary; `bass` cross-check (§2). |
+| D2 | **Who is the untainted Person B?** | **Recruit one** (gold standard, §5). Neither the LLM nor (likely) the original author qualifies. Else lean on merger, label "best-effort" — flag to counsel. |
+| D3 | Public host / repo name / license. | New repo `snes-ipl-cleanroom`; permissive license. **User decides.** |
+| D4 | Counsel review before push? | **Strongly yes** given the public goal. Non-negotiable in my recommendation. |
 | R1 | Hash-matching DMCA takedown despite legal merit. | Pre-build the provenance bundle (§5/Phase 5) as counter-notice ammo. |
-| R2 | `spasm` won't build/run cleanly on Linux. | Phase 0 is explicitly the de-risking phase; 0d gives a working assembler regardless. |
-| R3 | MAME won't accept a differing ROM. | §7; acceptable for own-use + public repo; upstreaming is a stretch goal only. |
+| R2 | MAME won't accept a differing ROM. | §8; acceptable for own-use + public repo; upstreaming is a stretch goal. |
+| Q-open | EA v. Sega / Razorsoft specifics. | Not located as reported opinions; dig only if needed (Sega v. Accolade is the precedent). |
 
 ---
 
-## 10. Verification  *(steps are the spec; fill raw output + PASS/FAIL during execution)*
+## 11. Verification  *(steps are the spec; fill raw output + PASS/FAIL during execution)*
 
-> Per `~/SRC/CLAUDE.md`: keep these numbered steps verbatim; paste raw command
-> output in a code block under each; mark PASS/FAIL; write results back here.
+> Per `~/SRC/CLAUDE.md`: keep these numbered steps verbatim; paste raw output under
+> each; mark PASS/FAIL; write results back here.
 
-1. **SPC700 assembler runs.** Build `spasm700` (Phase 0) and assemble a trivial
-   SPC700 `.asm` (e.g. a `MOV`/`TCALL`/`DBNZ` smoke file); confirm it emits the
-   expected opcodes. *(Output: TBD)*
-2. **Image shape.** `spasm700 src/ipl.asm` produces **exactly 64 bytes**; reset
-   vector occupies `$FFFE/$FFFF`. *(Output: TBD)*
-3. **Wall integrity.** `PROVENANCE.md` + `ATTESTATION.md` exist; Person A ≠ Person
-   B; no Nintendo ROM/disassembly anywhere in the repo (`grep`/hash audit). *(Output: TBD)*
-4. **Behavioural boot.** MAME using our `ipl.bin` (§7): a real cart's audio upload
+1. **Assembler runs.** `wla-spc700` (+`wlalink`) assembles a trivial SPC700 `.s`
+   smoke file to expected opcodes. *(Output: TBD)*
+2. **Image shape.** `wla-spc700 src/ipl.s` → **exactly 64 bytes**; reset vector at
+   `$FFFE/$FFFF`. *(Output: TBD)*
+3. **Wall integrity.** `PROVENANCE.md` + `ATTESTATION.md` exist; Person A ≠ B; no
+   Nintendo ROM/disassembly anywhere in the repo (grep/hash audit). *(Output: TBD)*
+4. **Behavioural boot.** MAME using our `ipl.bin` (§8): a real cart's audio upload
    completes, SPC700 jumps into uploaded code, audio runs — confirmed via the drmon
    bridge (APU-RAM + SPC700 regs). *(Output: TBD)*
-5. **Independent reproduction.** A second, unrelated assembler (`wla-spc700`/`bass`)
-   assembles the same source to identical bytes. *(Output: TBD)*
-6. **MAME region facts.** The exact MAME SPC700 IPL region name + expected hash +
-   override path are documented (no guesses). *(Output: TBD)*
+5. **Independent reproduction.** `bass` assembles the same source to **identical
+   bytes**. *(Output: TBD)*
+6. **MAME region facts.** Exact override path for `spc700.rom`/`sound_ipl` in the
+   driven MAME build documented (no guesses). *(Output: TBD)*
+
+---
+
+## Sources
+
+Hardware / boot (retrieved 2026-06-19):
+- nesdev "Booting the SPC700": https://snes.nesdev.org/wiki/Booting_the_SPC700
+- nesdev S-SMP: https://snes.nesdev.org/wiki/S-SMP · ROM header (cart checksum
+  "not needed by the SNES hardware"): https://snes.nesdev.org/wiki/ROM_header
+- SnesLab IPL ROM: https://sneslab.net/wiki/SPC700/IPL_ROM
+- Wikibooks, loading SPC700 programs:
+  https://en.wikibooks.org/wiki/Super_NES_Programming/Loading_SPC700_programs
+- nocash fullsnes: https://problemkaputt.de/fullsnes.htm
+- snes9x `iplrom.cpp` (IPL as verbatim 64-byte array; no check):
+  https://raw.githubusercontent.com/snes9xgit/snes9x/master/apu/bapu/smp/iplrom.cpp
+- bsnes `smp.cpp`: https://raw.githubusercontent.com/bsnes-emu/bsnes/master/bsnes/sfc/smp/smp.cpp
+- ares `smp.cpp`: https://raw.githubusercontent.com/ares-emulator/ares/master/ares/sfc/smp/smp.cpp
+- MAME `s_smp.cpp` (`spc700.rom` CRC 44bb3a40 / SHA1 97e3…):
+  https://github.com/mamedev/mame/blob/master/src/devices/machine/s_smp.cpp
+
+Law — clean room / reverse engineering (SETTLED unless noted):
+- Sony Computer Entertainment v. Connectix, 203 F.3d 596 (9th Cir. 2000) — PlayStation BIOS RE = fair use.
+- Sega Enterprises v. Accolade, 977 F.2d 1510 (9th Cir. 1992).
+- Atari Games v. Nintendo, 975 F.2d 832 (Fed. Cir. 1992) — tainted access killed fair use.
+- NEC Corp. v. Intel Corp., 1989 WL 67434 (N.D. Cal. 1989) — seminal clean-room microcode.
+- Google LLC v. Oracle America, 593 U.S. 1 (2021) — interface reuse fair use (API copyrightability reserved).
+- Computer Associates v. Altai, 982 F.2d 693 (2d Cir. 1992) — abstraction-filtration-comparison.
+- Baker v. Selden, 101 U.S. 99 (1879); Lotus v. Borland, 49 F.3d 807 (1st Cir. 1995), aff'd 4–4, 516 U.S. 233 (1996) — *Lotus binding 1st Cir. only; no national precedent.*
+- Access standard: Three Boys Music v. Bolton, 212 F.3d 477 (9th Cir. 2000); inverse-ratio rule abrogated, Skidmore v. Led Zeppelin, 952 F.3d 1051 (9th Cir. 2020). Originality: Feist, 499 U.S. 340 (1991).
+
+Law / facts — AI (UNSETTLED / empirical):
+- Memorization: Carlini et al. arXiv:2012.07805 (USENIX 2021), arXiv:2202.07646 (ICLR 2023); Nasr et al. arXiv:2311.17035 (2023); reproduction/counter-nuance arXiv:2412.06370 (2024, notes "Claude's Opus" baseline memorization).
+- Litigation (pleading-stage, not merits): NYT v. OpenAI/Microsoft (MDL 1:25-md-03143); Doe v. GitHub (Copilot); Andersen v. Stability; Tremblay v. OpenAI; Kadrey v. Meta; **Bartz v. Anthropic** (N.D. Cal. 2025 — training fair use, pirated library NOT; output-filtering layer; settled $1.5B).
+- Authorship: U.S. Copyright Office, 88 Fed. Reg. 16190 (Mar. 16, 2023); "Zarya of the Dawn" (2023); Thaler v. Perlmutter, 687 F. Supp. 3d 140 (D.D.C. 2023), aff'd No. 23-5233 (D.C. Cir. Mar. 18, 2025).
+
+> **Citation honesty:** summarised by a non-lawyer from sources retrieved 2026-06-19.
+> Some pin-cites (notably *Sega*, a few reporter pages) were high-confidence from
+> retrieved text but not byte-verified against bound reporters; the *NYT v. OpenAI*
+> opinion is image-based and corroborated via secondary sources. Counsel should
+> verify before any public reliance.
 
 ---
 
 ## Appendix — what already exists to build on
 
-- **Assembler:** `tools/spasm` (SPC700 = `opcode70.asm`/`cam700.asm`; build via
-  `m7.bat`). Ours.
-- **SPC700 visibility in MAME:** drmon's SPC700 register window + `MTYPE_SPC`
-  APU-RAM window over the Lua bridge — [`docs/plans/2026-06-12-spc700-window.md`](2026-06-12-spc700-window.md).
-- **MAME SNES bridge:** `task drmon-snes` / `mame_cpu_bridge.lua` (CPU + PPU +
-  SPC700 at a breakpoint).
+- **Assembler (chosen):** WLA-DX `wla-spc700` (FOSS; install in Phase 0). Cross-check:
+  `bass`.
+- **Assembler (verified, not used):** `tools/spasm` SPC700 backend
+  (`opcode70.asm`/`cam700.asm`, `m7.bat`). Ours; off the critical path (§2).
+- **SPC700 visibility in MAME:** drmon's SPC700 register + `MTYPE_SPC` APU-RAM windows
+  over the Lua bridge — [`docs/plans/2026-06-12-spc700-window.md`](2026-06-12-spc700-window.md).
+- **MAME SNES bridge:** `task drmon-snes` / `mame_cpu_bridge.lua`.
