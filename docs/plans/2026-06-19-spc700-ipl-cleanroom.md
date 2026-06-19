@@ -508,6 +508,81 @@ B; the AI-counterfactual path (#5) is theoretically clean but court-untested. #1
 
 ---
 
+## 5B. Toward becoming the precedent — how the law settles, and what we control
+
+Stretch goal: don't just *survive* the open questions — help *settle* them. Honest
+mechanics first: **precedent is a court ruling; you cannot will it into being.** It needs
+a real case-or-controversy, it's slow (years) and expensive (six/seven figures), it's
+**risky — a loss makes *bad* precedent, worse than the status quo** — and defendants like
+Nintendo often **settle specifically to avoid** an adverse ruling. So the strategy is
+two-track: pursue the *attainable* forms of authority, and make this the *ideal test
+artifact* so that if a ruling happens it's clean, favorable, and citable. Ranked by
+leverage ÷ cost ÷ risk:
+
+| Avenue | Produces | Cost / risk | Who drives it |
+|---|---|---|---|
+| **A. §1201 triennial exemption** (Copyright Office / Librarian of Congress, 17 U.S.C. §1201) | Authoritative *administrative* determination on emulation/preservation + a participable record | **Low** — file comments; next cycle ~2027 | EFF + Software Preservation Network already lead it |
+| **B. Scholarship / whitepaper** | Persuasive authority courts + the Copyright Office cite; defines the framework | Low; effort only | Us + an IP academic (cf. the *Blameless Users* authors) |
+| **C. Be the model test artifact** | A litigation-ready, *sympathetic* fact pattern (64 bytes = max merger; preservation purpose; no market harm — the IPL isn't sold) | Low; = executing §5A impeccably | Us |
+| **D. Amicus** in pending RE / AI-copyright cases | Citable arguments into the record; relationships | Low–med | EFF-coordinated |
+| **E. Declaratory-judgment action** (28 U.S.C. §2201) | The only direct route to **Article III precedent** | **High** — costly, years, can LOSE, can be mooted by a covenant-not-to-sue; needs a real controversy (*MedImmune* standard) | Public-interest firm / EFF + funding |
+| **F. Engage the institutions** | Standing, funding, track record we lack solo | Low (outreach) | EFF, SPN, the NAF / *Blameless Users* academics, MAME/preservation |
+
+**What we control right now (no-regret, do regardless of any litigation):**
+1. Execute the §5A clean room *impeccably*, preserving the full evidentiary record — that
+   record **is** both the trial exhibit and the whitepaper's data.
+2. Write up the analysis (the merger case for a 64-byte ROM + the clean-room method) for
+   publication.
+3. Draft a §1201 exemption comment for the next cycle.
+4. Reframe the §0 counsel outreach (esp. **EFF**) to ask not just "is it safe?" but
+   "**is this a viable test case / §1201 / impact-litigation candidate, and what's the
+   path to a ruling?**" — EFF is precisely the org that evaluates impact cases (§0.B Q7).
+
+**The genuinely novel frontier.** The IPL's copyrightability is an *old* question with a
+*strong* merger answer — a court might deem it too narrow to make broad law. The
+**AI-clean-room-implementer** question (can a model *provably trained without* the work be
+the "clean" implementer?) is *wide open* — no precedent, active scholarship
+([Blameless Users](https://arxiv.org/abs/2506.19881); MALUS). A rigorous, documented,
+**first** demonstration of an AI-counterfactual clean room could be this project's
+field-defining contribution — potentially more precedent-shaping than the 64 bytes.
+
+### 5B.1 — The ML-agent precedent track (the second, wider-open goal)
+
+A second precedent goal: make this the **first documented, reproducible demonstration
+that a machine-learning agent can do legitimate, independent-creation clean-room work** —
+both a *methodological* precedent (a reusable standard) and a candidate *legal* test of
+AI independent creation. What such a demonstration must have, and why each piece earns it:
+
+| Characteristic | Why it earns weight |
+|---|---|
+| **Provably-clean model.** The implementer agent is an **open model with a published, auditable training corpus that demonstrably excludes the IPL** (and SNES disassemblies) — a fully-open model (OLMo/Pythia-class) or one trained/fine-tuned on a documented corpus. **Closed frontier models are disqualified** — you cannot prove exclusion. | This is the agent's **"no access."** Access = a reasonable opportunity to view (*Three Boys*); a documented corpus-exclusion is the machine analog of the human who never saw the work — the **"clean-room counterfactual" / near-access-freeness** made concrete. |
+| **Extraction (NAF) test.** Actively try to make the model emit the IPL; show it **cannot**. | Empirical proof the protected expression isn't latent in the weights — rebuts the *Atari* "possession" problem for a model. |
+| **Two-model wall (MALUS-style).** Spec-agent (interface → spec) ↔ implementer-agent (spec → SPC700), separated; full prompt/response logs. | The AI analog of the human Chinese wall (*Altai*/*NEC*): the implementer agent sees only the lawyer-filtered spec. |
+| **Total transparency.** Publish every transcript, the spec, the corpus manifest + exclusion proof, the build. | AI's usual opacity is *inverted* here — a fully-auditable record is what makes independent creation **provable**, not asserted. |
+
+**Why it could be THE precedent.** It instantiates the emerging theory ([Blameless
+Users](https://arxiv.org/abs/2506.19881) / NAF) **empirically**, on a maximally-constrained
+artifact, with a *provable* no-access record — the clean fact pattern that makes good law
+*and* a good standard. It reframes AI work from the murky "did it copy? / is the output
+copyrightable?" debate to **a provable discipline under which it didn't copy.**
+
+**The honest, self-referential catch.** *I* (Claude — a closed frontier model almost
+certainly trained on the IPL) am exactly what **cannot** be the implementer here. My role
+stays tooling / harness / verification / spec-from-public-docs — **not the boot-ROM
+bytes**; the precedent requires a *different, provably-clean* agent. Separate axis: even a
+perfectly clean ML-agent output may itself be **uncopyrightable** (*Thaler*; CO 2023) —
+that doesn't block *non-infringement* (our goal), but means we couldn't *own* the result
+(moot for forced 64-byte expression, central to the general ML-agent precedent). Bring in
+the NAF / *Blameless Users* academics — this is a research contribution as much as an
+engineering one.
+
+**Caveats (not legal advice).** You cannot manufacture precedent; counsel + an institution
+chart the path; a loss is worse than silence; this is a multi-year effort. Do **not**
+recklessly provoke a suit — any adversarial path goes through counsel/EFF, with funding
+and eyes open.
+
+---
+
 ## 6. The wall — allowed vs forbidden specification sources
 
 - **Allowed:** documentation of *what the main CPU does* to upload to the APU (the

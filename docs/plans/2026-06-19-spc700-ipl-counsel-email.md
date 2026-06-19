@@ -117,6 +117,14 @@ functional constraints (*NEC Corp. v. Intel Corp.*, 1989 WL 67434 —
    two-model approach). What "no access" attestation standard would you want — and could
    a provably-untrained model ever suffice?
 6. Any trademark/labeling guidance to keep this clearly non-Nintendo?
+7. **Could this be a *test case*?** Beyond "is it safe to publish" — my goal is to help
+   *settle* these open questions. Is this a viable vehicle for an impact-litigation /
+   declaratory-judgment action (28 U.S.C. §2201) or a §1201 triennial-exemption comment —
+   on a 64-byte ROM's copyrightability, on whether a documented clean room suffices, and
+   on the (wide-open) question of whether an AI *provably trained without* the work can be
+   the clean-room implementer? If so, what would the path look like, and is it something
+   EFF would take interest in? (I understand the risks — that a loss makes bad precedent,
+   and that it needs a real controversy and funding.)
 
 **Logistics.** I understand this may go beyond a pure licensing-FAQ question and may
 call for a formal engagement or a referral — please let me know the right path and any
