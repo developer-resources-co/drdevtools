@@ -69,21 +69,30 @@ clean-room reimplementation exists** — only copies/disassemblies, which carry 
 copyright rather than independent provenance. I don't want to merely re-publish a copy.
 
 **My layperson's understanding of the landscape** (which I'm sure you'll correct):
-independent creation is a complete defense
-([*Three Boys Music v. Bolton*, 212 F.3d 477 (9th Cir. 2000)](https://law.justia.com/cases/federal/appellate-courts/F3/212/477/));
+independent creation is a complete defense (*Three Boys Music v. Bolton*, 212 F.3d 477
+— [Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=212+F.3d+477) ·
+[Justia](https://law.justia.com/cases/federal/appellate-courts/F3/212/477/));
 reverse-engineering a console BIOS to build an emulator has been held fair use
-([*Sony v. Connectix*, 203 F.3d 596 (9th Cir. 2000)](https://law.justia.com/cases/federal/appellate-courts/F3/203/596/);
-[*Sega v. Accolade*, 977 F.2d 1510 (9th Cir. 1992)](https://law.justia.com/cases/federal/appellate-courts/F2/977/1510/));
-a clean room is only as good as its isolation
-([*Atari Games v. Nintendo*, 975 F.2d 832 (Fed. Cir. 1992)](https://law.justia.com/cases/federal/appellate-courts/F2/975/832/),
-where tainted access sank the defense); highly-constrained functional code can merge
-idea and expression
-([*Computer Associates v. Altai*, 982 F.2d 693 (2d Cir. 1992)](https://law.justia.com/cases/federal/appellate-courts/F2/982/693/);
-[*Baker v. Selden*, 101 U.S. 99 (1879)](https://www.law.cornell.edu/supremecourt/text/101/99));
-and the seminal clean-room microcode case treated independently-produced similarity as
-compelled by functional constraints
-([*NEC Corp. v. Intel Corp.*, 1989 WL 67434 (N.D. Cal.)](https://jolt.law.harvard.edu/articles/pdf/v03/03HarvJLTech209.pdf)
-— the opinion itself is Westlaw-only; the link is the Harvard JOLT analysis of it).
+(*Sony v. Connectix*, 203 F.3d 596 —
+[Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=203+F.3d+596) ·
+[Justia](https://law.justia.com/cases/federal/appellate-courts/F3/203/596/);
+*Sega v. Accolade*, 977 F.2d 1510 —
+[Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=977+F.2d+1510) ·
+[Justia](https://law.justia.com/cases/federal/appellate-courts/F2/977/1510/));
+a clean room is only as good as its isolation (*Atari Games v. Nintendo*, 975 F.2d 832
+— [Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=975+F.2d+832) ·
+[Justia](https://law.justia.com/cases/federal/appellate-courts/F2/975/832/), where
+tainted access sank the defense); highly-constrained functional code can merge idea and
+expression (*Computer Associates v. Altai*, 982 F.2d 693 —
+[Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=982+F.2d+693) ·
+[Justia](https://law.justia.com/cases/federal/appellate-courts/F2/982/693/);
+*Baker v. Selden*, 101 U.S. 99 —
+[Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=101+U.S.+99) ·
+[Cornell](https://www.law.cornell.edu/supremecourt/text/101/99)); and the seminal
+clean-room microcode case treated independently-produced similarity as compelled by
+functional constraints (*NEC Corp. v. Intel Corp.*, 1989 WL 67434 —
+[Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=1989+WL+67434) ·
+[JOLT analysis](https://jolt.law.harvard.edu/articles/pdf/v03/03HarvJLTech209.pdf), no free full-text).
 
 **My specific questions:**
 1. Is a 64-byte, interface-forced boot ROM protectable expression, or does merger /
@@ -119,28 +128,37 @@ Best regards,
 
 Technical:
 - snes9x — Nintendo's verbatim 64-byte IPL embedded as a C array:
-  https://raw.githubusercontent.com/snes9xgit/snes9x/master/apu/bapu/smp/iplrom.cpp
+  [iplrom.cpp](https://raw.githubusercontent.com/snes9xgit/snes9x/master/apu/bapu/smp/iplrom.cpp)
 - MAME — IPL pinned by hash (`spc700.rom`, CRC 44bb3a40):
-  https://github.com/mamedev/mame/blob/master/src/devices/machine/s_smp.cpp
-- SNES audio boot protocol: https://snes.nesdev.org/wiki/Booting_the_SPC700 ·
-  https://snes.nesdev.org/wiki/S-SMP
+  [s_smp.cpp](https://github.com/mamedev/mame/blob/master/src/devices/machine/s_smp.cpp)
+- SNES audio boot protocol:
+  [Booting the SPC700](https://snes.nesdev.org/wiki/Booting_the_SPC700) ·
+  [S-SMP](https://snes.nesdev.org/wiki/S-SMP)
 
-Cases (layperson's reading — for your correction):
+Cases (layperson's reading — for your correction; **Westlaw + a free source each**):
 - *Sony Computer Entertainment v. Connectix*, 203 F.3d 596 (9th Cir. 2000) —
-  https://law.justia.com/cases/federal/appellate-courts/F3/203/596/
+  [Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=203+F.3d+596) ·
+  [Justia](https://law.justia.com/cases/federal/appellate-courts/F3/203/596/)
 - *Sega Enterprises v. Accolade*, 977 F.2d 1510 (9th Cir. 1992) —
-  https://law.justia.com/cases/federal/appellate-courts/F2/977/1510/
+  [Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=977+F.2d+1510) ·
+  [Justia](https://law.justia.com/cases/federal/appellate-courts/F2/977/1510/)
 - *Atari Games v. Nintendo*, 975 F.2d 832 (Fed. Cir. 1992) —
-  https://law.justia.com/cases/federal/appellate-courts/F2/975/832/
-- *NEC Corp. v. Intel Corp.*, 1989 WL 67434 (N.D. Cal. 1989) — opinion Westlaw-only;
-  analysis: [Harvard JOLT](https://jolt.law.harvard.edu/articles/pdf/v03/03HarvJLTech209.pdf)
+  [Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=975+F.2d+832) ·
+  [Justia](https://law.justia.com/cases/federal/appellate-courts/F2/975/832/)
+- *NEC Corp. v. Intel Corp.*, 1989 WL 67434 (N.D. Cal. 1989) —
+  [Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=1989+WL+67434) ·
+  [Harvard JOLT analysis](https://jolt.law.harvard.edu/articles/pdf/v03/03HarvJLTech209.pdf) (no free full-text)
 - *Google LLC v. Oracle America*, 593 U.S. 1 (2021) —
-  https://www.law.cornell.edu/supremecourt/text/18-956
+  [Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=593+U.S.+1) ·
+  [Cornell LII](https://www.law.cornell.edu/supremecourt/text/18-956)
 - *Computer Associates v. Altai*, 982 F.2d 693 (2d Cir. 1992) —
-  https://law.justia.com/cases/federal/appellate-courts/F2/982/693/
+  [Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=982+F.2d+693) ·
+  [Justia](https://law.justia.com/cases/federal/appellate-courts/F2/982/693/)
 - *Baker v. Selden*, 101 U.S. 99 (1879) —
-  https://www.law.cornell.edu/supremecourt/text/101/99
+  [Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=101+U.S.+99) ·
+  [Cornell LII](https://www.law.cornell.edu/supremecourt/text/101/99)
 - *Three Boys Music v. Bolton*, 212 F.3d 477 (9th Cir. 2000) —
-  https://law.justia.com/cases/federal/appellate-courts/F3/212/477/
+  [Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=212+F.3d+477) ·
+  [Justia](https://law.justia.com/cases/federal/appellate-courts/F3/212/477/)
 - AI authorship (re: Q5): U.S. Copyright Office guidance, 88 Fed. Reg. 16190 (2023) —
-  https://www.federalregister.gov/documents/2023/03/16/2023-05321/copyright-registration-guidance-works-containing-material-generated-by-artificial-intelligence
+  [Federal Register](https://www.federalregister.gov/documents/2023/03/16/2023-05321/copyright-registration-guidance-works-containing-material-generated-by-artificial-intelligence)
