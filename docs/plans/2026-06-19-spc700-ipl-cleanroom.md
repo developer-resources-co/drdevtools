@@ -74,13 +74,32 @@ source, not the toolchain.
 > — it needs a hand-translated parallel source and compares only at the byte level
 > (still valid evidence, just not "one source, two tools"). **Recommendation:** for
 > the strongest same-source cross-check, prefer **`spcasm`** (a modern Rust SPC700
-> assembler, [github.com/kleinesfilmroellchen/spcasm]; `cargo` is available on this
-> host) which uses canonical mnemonics — evaluate it in Phase 5; keep bass as a
-> byte-level fallback.
+> assembler, [codeberg.org/filmroellchen/spcasm] — moved from GitHub) which uses
+> **canonical Sony mnemonics** — see the evaluation below; keep bass as a byte-level
+> fallback.
+
+> **Phase-0 spcasm evaluation (2026-06-19).**
+> - ✅ **Dialect fit:** spcasm uses canonical Sony SPC700 mnemonics (`mov x,#…`,
+>   `mul ya`, `mov.b A,DSPDATA`) — verified from its own example sources — so it is a
+>   **true one-source-two-tools cross-check** with `wla-spc700` (the instruction body
+>   can be shared; only the tool-specific directive wrapper differs). This is the
+>   intended Phase-5 cross-check tool.
+> - ⚠️ **Taint hazard:** spcasm **bundles the Nintendo IPL disassembly** at
+>   `include/bootrom.s` (byte-annotated, 2001 B). It must be kept **away from Person
+>   A/B** and used **only by Person C** for the Phase-5 cross-check. `wla-spc700`
+>   (what B uses) ships **no** bundled IPL — it is clean. (Yet another tool shipping
+>   the IPL reinforces §5: the expression is widely disseminated.)
+> - 🔧 **Build:** needs `cargo build` of a freshly-cloned third-party repo (runs
+>   build scripts) + a pinned Rust nightly (`nightly-2026-06-18`). The agent's build
+>   was **correctly gated** by the untrusted-code guardrail — **live byte
+>   cross-check is pending explicit build authorization** (the dialect/taint findings
+>   above stand regardless, from source inspection).
 
 > **Phase-0 status — DONE (2026-06-19):** `wla-spc700` v10.6 (apt, foundry pkg) and
 > `bass` v18 (built from source) both smoke-tested and **agree byte-for-byte** on
-> the same logical program. See §11 step 1.
+> the same logical program (`00 cd 12 e8 34 60 cf 6f`). `spcasm` evaluated (canonical
+> dialect ✅, bundles IPL ⚠️); its live byte check awaits build authorization. See
+> §11 step 1.
 
 ---
 
@@ -277,6 +296,10 @@ label the clean-room "best-effort" — weaker; flag to counsel.
   (*Google v. Oracle*; *Sega*).
 - **Forbidden:** Nintendo's ROM image; any disassembly/annotated listing of it; any
   "reference implementation" that is really a transcription of the original.
+  **Concrete hazard (found 2026-06-19):** the `spcasm` assembler **bundles** such a
+  disassembly at `include/bootrom.s`. If spcasm is installed for the Phase-5
+  cross-check (Person C only), **quarantine/delete that file** from any environment
+  Person A or B can see.
 - **Hard rules:** never look at Nintendo's bytes during spec/implementation; never
   commit them (or a disassembly) to any repo — including as a test fixture or in this
   plan; never feed a byte-level comparison back into the implementation (observing
@@ -438,8 +461,11 @@ provenance publicly. The build needs **only FOSS tools** — that is the point o
    bytes**. *Mechanism validated in Phase 0:* bass v18 assembled the byte-equivalent
    program (6502-dialect: `nop/ldx #$12/lda #$34/clc/mul/rts`) to the same
    `00 cd 12 e8 34 60 cf 6f` as wla-spc700 → both agree. *Caveat:* bass needs a
-   hand-translated source (non-canonical dialect, §2); for one-source-two-tools,
-   evaluate `spcasm` instead. *(Re-run on the real `ipl.s` at Phase 5: TBD)*
+   hand-translated source (non-canonical dialect, §2). **`spcasm` evaluated
+   (2026-06-19): canonical Sony dialect ✅ → the chosen one-source-two-tools
+   cross-check, but it bundles the IPL (Person-C-only, §6); its live byte check is
+   pending build authorization (untrusted `cargo build` + pinned nightly).**
+   *(Re-run on the real `ipl.s` at Phase 5: TBD)*
 6. **MAME region facts.** Exact override path for `spc700.rom`/`sound_ipl` in the
    driven MAME build documented (no guesses). *(Output: TBD)*
 
