@@ -343,8 +343,10 @@ Same root constraint (vectors-at-top) + the same design house (Sony/Ricoh) apply
 the same constraint-fenced 6502 conventions → the same magic boundary in two
 otherwise-unrelated address spaces. **Convergent, not coincidental — a fractal of the
 merger thesis (§3.4):** when the constraints are shared, the outputs collide even
-across independent designs. (This is exactly why the *bytes* converge too — now being
-**measured empirically** in the `~/SRC/spc700-ipl-divergence` spike; see §4.3.)
+across independent designs. (This is exactly why the *bytes* converge too — and now
+**measured**: the `~/SRC/spc700-ipl-divergence` spike found a **14% divergence ceiling**
+(9/64 bytes; ~86% forced), with the **algorithm byte-identical** and the max-divergent
+variant **confirmed booting a real game's audio in MAME** — see §4.3.)
 
 ---
 
@@ -433,7 +435,9 @@ version is a **new copyrightable work** we'd own and could dedicate to the publi
 
 **So the divergence measurement (the `~/SRC/spc700-ipl-divergence` spike) picks the
 *strategy*, not a copyright %:**
-- **Divergence ceiling tiny (forced — v01 already moved only 4/64 by reordering):** strong
+- **Divergence ceiling tiny (forced — the spike *measured* a 14% ceiling: 9/64 bytes, all
+  trivial reordering, algorithm byte-identical, max-divergent variant boots a real game's
+  audio):** strong
   merger → the bytes are **unprotectable by anyone → effectively public domain already.**
   Publish; the convergence evidence is the shield. A **CC0** dedication is then a
   *clarifying* signal (you can't dedicate what you don't own — but there's nothing to own
