@@ -1,9 +1,9 @@
 ---
 title: SPC700 IPL boot ROM — clean-room reimplementation for legal MAME use + public release
 date: 2026-06-19
-status: draft / decisions-pending
+status: draft / GATE — IP counsel first (§0) before any Phase 1–6 work
 toolchain: WLA-DX (wla-spc700) — primary; bass — independent cross-check
-revised: 2026-06-19 (research-grounded; switched assembler spasm → WLA-DX)
+revised: 2026-06-19 (research-grounded; assembler spasm → WLA-DX; re-sequenced IP-counsel-first, §0)
 ---
 
 # SPC700 IPL boot ROM — clean-room reimplementation
@@ -24,6 +24,129 @@ revised: 2026-06-19 (research-grounded; switched assembler spasm → WLA-DX)
 > litigant. **Have qualified IP counsel review §4 + the provenance bundle before
 > anything is pushed public.** Citations below are to real sources (§Sources) but
 > are summarised by a non-lawyer; nothing here is a guarantee of non-infringement.
+
+---
+
+## 0. START HERE — consult IP counsel BEFORE any build/spec work
+
+The hardest part of this project is legal, not technical, so the **first action is to
+talk to an IP lawyer** — *before* recruiting a clean-room implementer or writing a
+line of spec. Recommended avenue: **the FSF's counsel** — the Free Software
+Foundation's licensing & compliance lab (<licensing@fsf.org>) and/or the
+[Software Freedom Law Center](https://www.softwarefreedom.org/) (founded by Eben
+Moglen, the FSF's longtime general counsel). That is exactly the right kind of lawyer
+for a free-software copyright / reverse-engineering question.
+
+**Why counsel first (the re-sequencing).** The whole project reduces to one unsettled
+question — *is a 64-byte, interface-forced boot ROM copyrightable at all?* — and the
+answer decides whether the clean room is even needed:
+- Counsel: *"merger clearly applies, ship it"* → done cheaply; **skip Phases 1–6**;
+  optionally publish a bytes-only repo resting on the written opinion.
+- Counsel: *"maybe / yes, it's protectable"* → the clean room is justified **and
+  genuinely additive — nobody has done one (§0.A)** — proceed to Phase 1 with the
+  isolation bar counsel sets.
+
+So we spend a ~1-hour question before any project-sized commitment. **Until counsel
+answers, Phases 1–2 are ON HOLD** (recruiting Person B is premature). Phase 0
+(tooling) was safe regardless and is ✅ done.
+
+### 0.A — Counsel briefing packet  *(self-contained; hand this to the lawyer)*
+
+**Who we are / the goal.** We want to publish — source **and** the assembled 64-byte
+image — an *independently created* SPC700 IPL boot ROM for the Super Nintendo's audio
+subsystem, so that (a) it can replace the copyrighted Nintendo IPL in the
+[MAME](https://github.com/mamedev/mame) emulator (letting anyone run the SNES driver
+without dumping their own console) and (b) the bytes + source can live in a **public**
+repository. "Public" is the whole point.
+
+**The artifact.** A 64-byte boot ROM at `$FFC0–$FFFF` in the SNES audio CPU (Sony
+SPC700). At reset it runs a tiny handshake over four mailbox ports that lets the main
+CPU upload the game's audio code, then jumps to it (mechanism:
+[nesdev "Booting the SPC700"](https://snes.nesdev.org/wiki/Booting_the_SPC700),
+[SnesLab IPL ROM](https://sneslab.net/wiki/SPC700/IPL_ROM)). 64 bytes is the entire
+program.
+
+**Technical finding #1 — the bytes are *functionally forced*, not free.** Within the
+64-byte budget, fixed mailbox-port addresses, and a fixed handshake every commercial
+game depends on, a correct implementation is effectively canonical — essentially one
+sensible way to write it. There is **no checksum** on the IPL in hardware; faithful
+emulators consume the bytes raw with no integrity check
+([snes9x compiles them in as a verbatim array](https://raw.githubusercontent.com/snes9xgit/snes9x/master/apu/bapu/smp/iplrom.cpp);
+[bsnes loads `ipl.rom` with no hash check](https://raw.githubusercontent.com/bsnes-emu/bsnes/master/bsnes/sfc/smp/smp.cpp)).
+**Consequence:** an independent reimplementation will very likely come out
+*byte-identical* to Nintendo's — not by copying, but because the function compels it.
+
+**Technical finding #2 — the only hard byte-match requirement is MAME's romset hash.**
+MAME pins its IPL to a specific checksum
+([mamedev `s_smp.cpp`: `ROM_LOAD("spc700.rom", … CRC(44bb3a40) SHA1(97e352…))`](https://github.com/mamedev/mame/blob/master/src/devices/machine/s_smp.cpp)),
+so a byte-different (even behaviourally perfect) IPL is rejected by MAME's audit —
+distribution/romset management, not a hardware mechanism. (The unrelated SNES
+cartridge-header checksum is *"not needed by the SNES hardware"* —
+[nesdev ROM header](https://snes.nesdev.org/wiki/ROM_header).)
+
+**Legal landscape as we (non-lawyers) understand it.**
+- *Independent creation is a complete defense; copying is proven by access +
+  substantial similarity* —
+  [Three Boys Music v. Bolton, 212 F.3d 477 (9th Cir. 2000)](https://law.justia.com/cases/federal/appellate-courts/F3/212/477/);
+  originality needs only independent creation + minimal creativity
+  ([Feist, 499 U.S. 340 (1991)](https://www.law.cornell.edu/supremecourt/text/499/340)).
+- *Reverse-engineering a console BIOS to build an emulator can be fair use* — squarely
+  on point: [Sony v. Connectix, 203 F.3d 596 (9th Cir. 2000)](https://law.justia.com/cases/federal/appellate-courts/F3/203/596/)
+  (PlayStation BIOS); [Sega v. Accolade, 977 F.2d 1510 (9th Cir. 1992)](https://law.justia.com/cases/federal/appellate-courts/F2/977/1510/).
+- *But a clean room is only as clean as its inputs* — fair use FAILED where the
+  reimplementer had tainted access to the original:
+  [Atari Games v. Nintendo, 975 F.2d 832 (Fed. Cir. 1992)](https://law.justia.com/cases/federal/appellate-courts/F2/975/832/).
+- *Merger / constrained functional code:* where there's essentially one way to express
+  a function, expression merges with idea and isn't protectable; elements dictated by
+  compatibility/efficiency are filtered out —
+  [Computer Associates v. Altai, 982 F.2d 693 (2d Cir. 1992)](https://law.justia.com/cases/federal/appellate-courts/F2/982/693/),
+  [Baker v. Selden, 101 U.S. 99 (1879)](https://www.law.cornell.edu/supremecourt/text/101/99).
+  The seminal clean-room case treated independently-produced *similar* microcode as
+  compelled by "functional constraints … and the need for … compatibility" (**NEC v.
+  Intel**, 1989 WL 67434 (N.D. Cal.) — Westlaw-only). Interfaces are
+  functional/reimplementable:
+  [Google v. Oracle, 593 U.S. 1 (2021)](https://www.law.cornell.edu/supremecourt/text/18-956).
+
+**What already exists — COPIES, not clean rooms.** Everything public is a copy or
+disassembly of Nintendo's original, carrying **Nintendo's copyright, not independent
+provenance**: snes9x's verbatim array (above); spcasm's byte-annotated
+`include/bootrom.s`; and eKid's commented disassembly
+([wiki.superfamicom.org/spc700-reference](https://wiki.superfamicom.org/spc700-reference)).
+A 2026-06-19 web search for a clean-room / public-domain reimplementation found **only
+docs + disassemblies — no documented clean-room IPL.** Trap: **"the bytes are public"
+≠ "the bytes are free to redistribute"** (Nintendo's full game ROMs are public too).
+So the *only* thing a provenance-bearing project adds over the status quo is the
+provenance itself.
+
+**If a clean room is advised — the AI-implementer sub-question.** An AI model can't be
+the "clean" implementer if it was trained on the IPL: LLMs demonstrably memorize
+training data ([Carlini et al. 2021](https://arxiv.org/abs/2012.07805),
+[Nasr et al. 2023](https://arxiv.org/abs/2311.17035)) and the IPL is in training
+corpora (it's a verbatim array in open-source snes9x). A **human who has never seen
+the IPL** is the gold-standard implementer (the classic NEC v. Intel / Phoenix-BIOS
+setup; the U.S. Copyright Office also treats purely AI-authored output as
+[uncopyrightable](https://www.federalregister.gov/documents/2023/03/16/2023-05321/copyright-registration-guidance-works-containing-material-generated-by-artificial-intelligence)).
+
+### 0.B — The precise questions for counsel
+
+1. **Copyrightability:** Is a 64-byte, interface-forced boot ROM protectable
+   expression, or does merger / scènes à faire / thin-copyright remove protection?
+2. **Publish-as-is?** If unprotected, may we publish the bytes (from a clean
+   re-derivation) + source publicly without infringement exposure?
+3. **Clean-room sufficiency:** If protectable, does a documented Chinese-wall process
+   (interface-derived spec → untainted human implementer → provenance bundle) give a
+   defensible independent-creation basis to publish — *even though the bytes will
+   likely be byte-identical* to Nintendo's?
+4. **MAME distribution:** Any added exposure from the result matching MAME's pinned
+   IPL hash (i.e., being a drop-in)?
+5. **Implementer standard:** Confirm the "no access" attestation bar; confirm a human
+   with no IPL exposure (not an AI trained on it) is required.
+6. **Trademark/labeling:** Confirm naming that avoids Nintendo marks.
+
+**Outcomes that change the plan:** "merger applies, ship it" → skip Phases 1–6,
+publish bytes-only + the opinion · "protectable, clean room OK" → proceed Phase 1 at
+counsel's isolation bar · "too risky even with a clean room" → do not publish; stop at
+private/own-use.
 
 ---
 
@@ -160,12 +283,27 @@ Identity here is **proof the expression merged with function** — provided the 
 > doesn't adjudicate merger). The provenance bundle (§Phase 5) is the
 > counter-notice ammunition. Plan for the takedown even though we believe we're right.
 
-### 3.5 Not the cartridge checksum
+### 3.5 Not the cartridge checksum — and the overlap is *convergence*, not coincidence
 
 The SNES *cartridge header* checksum (`$FFDE` + `$FFDC` complement) is a 16-bit
 sum-of-bytes over the **game** ROM on the 65816 side, *"not needed by the SNES
 hardware"* at boot ([nesdev ROM header]) — a different chip, address space, and
-purpose from the SPC700 IPL. Unrelated; the `$FFC0–$FFFF` overlap is coincidental.
+purpose from the SPC700 IPL, and it **does not validate the IPL** (the point that
+matters here). *Functionally* the two are independent.
+
+But the shared `$FFC0–$FFFF` address is **not coincidental** — it is the same
+forced-convergence as the rest of this section, one level up in the *architecture*.
+Both the main CPU (Ricoh 5A22, a 65816 core) and the audio CPU (SPC700) follow the
+**6502 convention of placing CPU vectors at the very top of the 16-bit address space**
+(6502 `$FFFA–$FFFF`; the 65816 extends it to `$FFE0–$FFFF`; the SPC700 reset vector
+sits at `$FFFE/$FFFF`). So *both* chips carve their special region out of the **top 64
+bytes** — `$FFC0 = $10000 − $40` — the 65816 placing the cart header just below its
+forced vectors, the SPC700 making those top 64 bytes its overlay-able IPL ROM. Same
+root constraint (vectors-at-top) + the same design house (Sony/Ricoh) applying the
+same 6502 conventions (themselves constraint-driven) → the same magic boundary in two
+otherwise-unrelated address spaces. **Convergent, not coincidental — a fractal of the
+merger thesis (§3.4):** when the constraints are shared, the outputs collide even
+across independent designs. (This is exactly why the *bytes* converge too.)
 
 ---
 
@@ -311,6 +449,18 @@ label the clean-room "best-effort" — weaker; flag to counsel.
 
 ## 7. Phases
 
+> **Gate — IP counsel (§0) is the FIRST action and BLOCKS Phases 1–6.** Hand counsel
+> the §0.A briefing packet; act on §0.B. Phase 0 (tooling) was independent of the
+> legal question and is already done; everything from Phase 1 on proceeds only if
+> counsel green-lights the clean room (else skip to a bytes-only publish, or stop).
+
+### Phase 1 (gate) — Consult IP counsel  ⛔ DO FIRST
+
+Send the **§0.A briefing packet** to the FSF's licensing/compliance counsel
+(<licensing@fsf.org>) / [SFLC](https://www.softwarefreedom.org/); get a written read on
+the §0.B questions. **This blocks Phases 2–6** (formerly numbered 1–5 below; the spec
+and implementation only start on a green light).
+
 ### Phase 0 — Stand up WLA-DX (+ bass)  ✅ DONE (2026-06-19)
 
 Reproducible recipe used:
@@ -424,9 +574,9 @@ provenance publicly. The build needs **only FOSS tools** — that is the point o
 | # | Decision / risk | Status / recommendation |
 |---|---|---|
 | D1 | Assembler. | **RESOLVED → WLA-DX (`wla-spc700`)** primary; `bass` cross-check (§2). |
-| D2 | **Who is the untainted Person B?** | **Recruit one** (gold standard, §5). Neither the LLM nor (likely) the original author qualifies. Else lean on merger, label "best-effort" — flag to counsel. |
+| D2 | **Who is the untainted Person B?** | **Recruit one** (gold standard, §5) — **but only after §0 counsel green-lights the clean room** (premature otherwise). Neither the LLM nor (likely) the original author qualifies. |
 | D3 | Public host / repo name / license. | New repo `snes-ipl-cleanroom`; permissive license. **User decides.** |
-| D4 | Counsel review before push? | **Strongly yes** given the public goal. Non-negotiable in my recommendation. |
+| D4 | Counsel review — **RE-SEQUENCED → §0: now the FIRST action, not a pre-push gate.** | Send the §0.A briefing packet to FSF/SFLC counsel; act on §0.B. Blocks Phases 1–6. The whole project turns on this answer. |
 | R1 | Hash-matching DMCA takedown despite legal merit. | Pre-build the provenance bundle (§5/Phase 5) as counter-notice ammo. |
 | R2 | MAME won't accept a differing ROM. | §8; acceptable for own-use + public repo; upstreaming is a stretch goal. |
 | Q-open | EA v. Sega / Razorsoft specifics. | Not located as reported opinions; dig only if needed (Sega v. Accolade is the precedent). |
@@ -478,6 +628,7 @@ Hardware / boot (retrieved 2026-06-19):
 - nesdev S-SMP: https://snes.nesdev.org/wiki/S-SMP · ROM header (cart checksum
   "not needed by the SNES hardware"): https://snes.nesdev.org/wiki/ROM_header
 - SnesLab IPL ROM: https://sneslab.net/wiki/SPC700/IPL_ROM
+- eKid's commented SPC700 IPL disassembly (Super Famicom Dev Wiki): https://wiki.superfamicom.org/spc700-reference
 - Wikibooks, loading SPC700 programs:
   https://en.wikibooks.org/wiki/Super_NES_Programming/Loading_SPC700_programs
 - nocash fullsnes: https://problemkaputt.de/fullsnes.htm
