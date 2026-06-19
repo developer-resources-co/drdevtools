@@ -62,6 +62,20 @@ distribution-management checksum, not a hardware mechanism. So I expect to produ
 identical to Nintendo's, *by independent creation*, and I need to understand whether —
 and by what process — that is safe to publish.
 
+**An early empirical check on that "the bytes are forced" claim.** Rather than just
+*assert* the constraints compel the bytes, I've begun what I think of as a "merger by
+experiment": with full knowledge of the reference and *deliberately trying to write a
+**different** working 64-byte IPL*, how far can it actually diverge? So far the only
+divergence I can find is **reordering two independent instructions** (a variant differing
+by 4 of 64 bytes); roughly **94% of the bytes appear forced**, and the divergent variants
+are **confirmed booting in real MAME** through a validated test oracle (with negative
+controls that do fail, so it isn't rubber-stamping). I'm being honest that this is
+early-stage — a handful of data points, not a finished study — but it is a kept,
+version-controlled evidence record, and to my layperson's eye it corroborates the merger
+posture exactly the way *NEC v. Intel* describes (similarity "dictated … by functional
+constraints," not copying). I'd welcome your view on how much weight, if any, such an
+experiment carries.
+
 **What already exists.** Several open-source projects already ship Nintendo's actual
 bytes or a disassembly of them (e.g., the snes9x emulator embeds the verbatim 64 bytes;
 an annotated disassembly is on community wikis). To my knowledge **no documented
@@ -98,7 +112,13 @@ functional constraints (*NEC Corp. v. Intel Corp.*, 1989 WL 67434 —
 1. Is a 64-byte, interface-forced boot ROM protectable expression, or does merger /
    scènes à faire / thin-copyright remove protection?
 2. If it is unprotectable, may I publish the bytes (from a clean re-derivation) plus
-   source publicly without meaningful infringement exposure?
+   source publicly without meaningful infringement exposure? Relatedly, on
+   **licensing**: I intend to dedicate the result to the public domain (CC0), but I
+   suspect the merger argument "cuts both ways" — if the bytes are forced/unprotectable,
+   a CC0 dedication is merely *clarifying* (there's nothing to own *because* it's already
+   free); whereas if they were creatively divergent, only an **independently created**
+   version would be mine to dedicate at all. Is CC0 the right instrument here, and does
+   that reasoning hold?
 3. If it is protectable, does a documented Chinese-wall process (interface-derived
    spec → an implementer with no exposure to the original → a preserved provenance/audit
    trail) give a defensible independent-creation basis to publish — *even though the
@@ -150,6 +170,9 @@ Technical:
 - SNES audio boot protocol:
   [Booting the SPC700](https://snes.nesdev.org/wiki/Booting_the_SPC700) ·
   [S-SMP](https://snes.nesdev.org/wiki/S-SMP)
+- Our "merger-by-experiment" divergence record (early-stage; the kept evidence behind
+  the "~94% of the bytes are forced" / confirmed-booting-in-MAME claim above) — a
+  version-controlled spike I can share in full on request.
 
 Cases (layperson's reading — for your correction; **Westlaw + a free source each**):
 - *Sony Computer Entertainment v. Connectix*, 203 F.3d 596 (9th Cir. 2000) —
