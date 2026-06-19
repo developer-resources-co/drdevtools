@@ -68,6 +68,18 @@ _(none)_
   [investigation](docs/investigations/2026-06-13-llvm-mos-65816-backend.md).
 
 
+## SPC700 IPL — CLEAN-ROOM REIMPLEMENTATION
+
+- [ ] **Clean-room a 64-byte SPC700 IPL boot ROM for legal MAME use + public release.**
+  Independently re-create the SNES APU boot ROM (Chinese-wall: interface-derived spec →
+  untainted implementer → behavioural verification in MAME) so the bytes + source can be
+  committed to a public repo and dropped into MAME. **Assembler verified present** — `tools/spasm`
+  SPC700 backend (`opcode70.asm`/`cam700.asm`, built via `m7.bat` → `spasm700.exe`; we own it,
+  `spasm.cpp:311`). **Phase 0 blocker:** spasm is a 16-bit DOS tool, no DOSBox/Watcom/TASM on this
+  host yet. **Gated:** Person B must be untainted (the LLM and likely the original author are not);
+  no public push without IP-counsel review. [Plan](docs/plans/2026-06-19-spc700-ipl-cleanroom.md).
+
+
 ## VERIFY
 ### implemented; run the plan's verification steps + record, then promote to DONE
 
