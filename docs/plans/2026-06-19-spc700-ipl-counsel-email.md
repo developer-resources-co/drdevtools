@@ -105,9 +105,17 @@ functional constraints (*NEC Corp. v. Intel Corp.*, 1989 WL 67434 —
    output will likely be byte-identical to Nintendo's*?
 4. Does the result matching MAME's published IPL hash (i.e., being a drop-in) add any
    exposure?
-5. For the clean room: what "no access" attestation standard would you want? (I assume
-   an AI model trained on the original cannot serve as the "clean" implementer, and that
-   a human who has never seen the IPL is required — is that right?)
+5. For the clean room — the implementer "no access" standard. I *presume* (grounded in
+   the attached briefing, not bare assumption) that an AI model **trained on** the IPL
+   cannot be the "clean" implementer — LLMs demonstrably memorize and can regurgitate
+   training data, so a model trained on these 64 bytes has in effect *accessed* the
+   protected expression (the *Atari* tainted-access problem) — and that a **human who
+   has never seen the IPL** is the safe choice (the *NEC v. Intel* / Phoenix-BIOS model).
+   I know this is **unsettled** (no precedent squarely on point), and that emerging work
+   argues a model *provably trained without* the work could qualify (the "clean-room
+   counterfactual," [arXiv:2506.19881](https://arxiv.org/abs/2506.19881); the MALUS
+   two-model approach). What "no access" attestation standard would you want — and could
+   a provably-untrained model ever suffice?
 6. Any trademark/labeling guidance to keep this clearly non-Nintendo?
 
 **Logistics.** I understand this may go beyond a pure licensing-FAQ question and may

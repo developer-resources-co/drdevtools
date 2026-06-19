@@ -90,28 +90,44 @@ distribution/romset management, not a hardware mechanism. (The unrelated SNES
 cartridge-header checksum is *"not needed by the SNES hardware"* —
 [nesdev ROM header](https://snes.nesdev.org/wiki/ROM_header).)
 
-**Legal landscape as we (non-lawyers) understand it.**
+**Legal landscape as we (non-lawyers) understand it** (each case: Westlaw + a free
+source):
 - *Independent creation is a complete defense; copying is proven by access +
-  substantial similarity* —
-  [Three Boys Music v. Bolton, 212 F.3d 477 (9th Cir. 2000)](https://law.justia.com/cases/federal/appellate-courts/F3/212/477/);
-  originality needs only independent creation + minimal creativity
-  ([Feist, 499 U.S. 340 (1991)](https://www.law.cornell.edu/supremecourt/text/499/340)).
+  substantial similarity* — Three Boys Music v. Bolton, 212 F.3d 477 (9th Cir. 2000)
+  ([Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=212+F.3d+477) ·
+  [Justia](https://law.justia.com/cases/federal/appellate-courts/F3/212/477/)); originality
+  needs only independent creation + minimal creativity — Feist, 499 U.S. 340 (1991)
+  ([Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=499+U.S.+340) ·
+  [Cornell](https://www.law.cornell.edu/supremecourt/text/499/340)).
 - *Reverse-engineering a console BIOS to build an emulator can be fair use* — squarely
-  on point: [Sony v. Connectix, 203 F.3d 596 (9th Cir. 2000)](https://law.justia.com/cases/federal/appellate-courts/F3/203/596/)
-  (PlayStation BIOS); [Sega v. Accolade, 977 F.2d 1510 (9th Cir. 1992)](https://law.justia.com/cases/federal/appellate-courts/F2/977/1510/).
+  on point: Sony v. Connectix, 203 F.3d 596 (9th Cir. 2000)
+  ([Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=203+F.3d+596) ·
+  [Justia](https://law.justia.com/cases/federal/appellate-courts/F3/203/596/)) (PlayStation
+  BIOS); Sega v. Accolade, 977 F.2d 1510 (9th Cir. 1992)
+  ([Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=977+F.2d+1510) ·
+  [Justia](https://law.justia.com/cases/federal/appellate-courts/F2/977/1510/)).
 - *But a clean room is only as clean as its inputs* — fair use FAILED where the
-  reimplementer had tainted access to the original:
-  [Atari Games v. Nintendo, 975 F.2d 832 (Fed. Cir. 1992)](https://law.justia.com/cases/federal/appellate-courts/F2/975/832/).
+  reimplementer had tainted access to the original: Atari Games v. Nintendo, 975 F.2d
+  832 (Fed. Cir. 1992)
+  ([Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=975+F.2d+832) ·
+  [Justia](https://law.justia.com/cases/federal/appellate-courts/F2/975/832/)).
 - *Merger / constrained functional code:* where there's essentially one way to express
   a function, expression merges with idea and isn't protectable; elements dictated by
-  compatibility/efficiency are filtered out —
-  [Computer Associates v. Altai, 982 F.2d 693 (2d Cir. 1992)](https://law.justia.com/cases/federal/appellate-courts/F2/982/693/),
-  [Baker v. Selden, 101 U.S. 99 (1879)](https://www.law.cornell.edu/supremecourt/text/101/99).
-  The seminal clean-room case treated independently-produced *similar* microcode as
-  compelled by "functional constraints … and the need for … compatibility" (**NEC v.
-  Intel**, 1989 WL 67434 (N.D. Cal.) — Westlaw-only). Interfaces are
-  functional/reimplementable:
-  [Google v. Oracle, 593 U.S. 1 (2021)](https://www.law.cornell.edu/supremecourt/text/18-956).
+  compatibility/efficiency are filtered out — Computer Associates v. Altai, 982 F.2d 693
+  (2d Cir. 1992)
+  ([Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=982+F.2d+693) ·
+  [Justia](https://law.justia.com/cases/federal/appellate-courts/F2/982/693/)); Baker v.
+  Selden, 101 U.S. 99 (1879)
+  ([Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=101+U.S.+99) ·
+  [Cornell](https://www.law.cornell.edu/supremecourt/text/101/99)). The seminal
+  clean-room case treated independently-produced *similar* microcode as compelled by
+  "functional constraints … and the need for … compatibility" — NEC v. Intel, 1989 WL
+  67434 (N.D. Cal.)
+  ([Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=1989+WL+67434) ·
+  [JOLT analysis](https://jolt.law.harvard.edu/articles/pdf/v03/03HarvJLTech209.pdf)).
+  Interfaces are functional/reimplementable — Google v. Oracle, 593 U.S. 1 (2021)
+  ([Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=593+U.S.+1) ·
+  [Cornell](https://www.law.cornell.edu/supremecourt/text/18-956)).
 
 **What already exists — COPIES, not clean rooms.** Everything public is a copy or
 disassembly of Nintendo's original, carrying **Nintendo's copyright, not independent
@@ -327,7 +343,8 @@ across independent designs. (This is exactly why the *bytes* converge too.)
 ## 4. Legal strategy — why this can be public
 
 Four independent doctrines stack; we rely on **all**, not any one. (Settled vs
-unsettled flagged; see §Sources for citations.)
+unsettled flagged; cases are cited by name here — **Westlaw + free links for every one
+are in §0.A and the §Sources table of authorities**.)
 
 1. **Independent creation is a complete defense.** Copyright forbids *copying*, not
    arriving at the same result independently. Infringement-by-copying is proven
@@ -403,8 +420,12 @@ functional spec. The test for the implementer is **access** — did they have a
 | **Verification lead (C)** | Everything behavioural; runs MAME; *forensic-only* byte comparison after Phase 3 freeze. | (must not relay Nintendo bytes back to B). | Behavioural PASS/FAIL + provenance bundle. |
 
 **A and B must be different people.** Now the three implementer candidates the user
-asked about — answered against the access test (all AI points **UNSETTLED**: no court
-has ruled on LLM-as-clean-implementer):
+asked about — answered against the access test. **These are *presumptions* (grounded in
+the memorisation + access + *Atari* evidence below), not bare assumptions — but
+UNSETTLED:** "the doctrine of independent creation predates machine learning … [with]
+no precedent squarely on point," per the recent formalisation of exactly this question
+([Blameless Users in a Clean Room, arXiv:2506.19881](https://arxiv.org/abs/2506.19881),
+June 2025):
 
 - **A different *instance* of Claude? → No.** The taint is in **training weights, not
   chat context**; a fresh instance has identical weights → identical access. The
@@ -416,14 +437,20 @@ has ruled on LLM-as-clean-implementer):
   is *Atari*'s "unauthorized possession," not *Connectix*'s clean access. Resetting
   context clears only *this conversation's* leakage. **Claude is presumed tainted →
   Claude does tooling/spec-scaffolding/verification, NOT the boot-ROM bytes.**
-- **A different *model* (Gemma/GPT/Qwen/DeepSeek/…)? → Generally no.** Same test on
-  *that* corpus. The IPL is ubiquitous in code/web scrapes → any frontier model is
-  presumptively tainted, and for proprietary models you **cannot audit** the training
-  set to disprove it. Only a model whose corpus is *documented to exclude* the IPL
-  qualifies — you must *prove the negative*. Footnote: purely AI-authored output may
-  itself be **uncopyrightable** (U.S. Copyright Office 2023, 88 Fed. Reg. 16190;
-  *Thaler v. Perlmutter*, aff'd D.C. Cir. 2025) — irrelevant to non-infringement,
-  moot for forced functional code.
+- **A different *model* (Gemma/GPT/Qwen/DeepSeek/…)? → Generally no — with one live,
+  untested exception.** Same test on *that* corpus. The IPL is ubiquitous in code/web
+  scrapes → any frontier model is presumptively tainted, and for proprietary models you
+  **cannot audit** the training set to disprove it. **The exception:** a model whose
+  corpus *provably excludes* the IPL — which is precisely the **"clean-room
+  counterfactual"** of recent scholarship ([Blameless Users, arXiv:2506.19881](https://arxiv.org/abs/2506.19881);
+  building on Vyas/Kakade/Barak, *near access-freeness*, ICML 2023). The **MALUS**
+  "clean-room-as-a-service" tool — two LLMs, one writing the spec, one implementing
+  without the source — attempts exactly this ([Marks & Clerk](https://www.marks-clerk.com/insights/latest-insights/102mp7s-can-ai-legally-clone-open-source-unpacking-clean-room-as-a-service/),
+  [Futurism](https://futurism.com/artificial-intelligence/malus-clones-software-copyright)).
+  You must *prove the negative* (corpus exclusion), and it's **untested in court**.
+  Footnote: purely AI-authored output may itself be **uncopyrightable** (U.S. Copyright
+  Office 2023, 88 Fed. Reg. 16190; *Thaler v. Perlmutter*, aff'd D.C. Cir. 2025) —
+  irrelevant to non-infringement, moot for forced functional code.
 - **A human who's never used a SNES / seen its docs? → YES, gold standard.** Exactly
   *NEC v. Intel* (microcode "without access to any other microcode") and *Phoenix/
   Compaq* (a separate engineer "not exposed to IBM BIOS source code," from a
@@ -439,6 +466,45 @@ decades of SNES work — you've very likely seen the IPL disassembly, so you're 
 excellent **spec author / verification lead / tooling owner** but a **poor clean
 implementer**. If no untainted B is available, we fall back on merger (§3.4/§4.3) and
 label the clean-room "best-effort" — weaker; flag to counsel.
+
+---
+
+## 5A. A clean-room design that *should* pass — characteristics + why
+
+Goal: publish a 64-byte IPL that survives a copyright challenge **even though the bytes
+will likely be byte-identical to Nintendo's**. The design **stacks two independent
+defenses** — *no-access independent creation* and *non-protectable merger* — treats the
+unavoidable look-at-the-product step as *fair use*, and rigorously avoids the one move
+that sinks clean rooms (the *Atari* taint). Each characteristic is paired with why it
+earns legal weight. *(Doctrine per §4; not legal advice; counsel signs off at §0.)*
+
+| # | Characteristic | Why it passes (doctrine) |
+|---|---|---|
+| 1 | **Two-person wall:** spec author (A) ≠ clean implementer (B); they communicate *only* through a lawyer-reviewed spec. | Negates the **access** prong of access+similarity (*Three Boys*); the documented wall is what carried *Altai* and *NEC v. Intel*. |
+| 2 | **B has provable no-access** to the IPL's expression (bytes/disassembly) — ideally from a different domain (cf. Phoenix's TMS9900 engineer), with a signed non-exposure attestation. | "Access" = a *reasonable opportunity to view* (*Three Boys*); none → no inference of copying → **independent creation is a complete defense** (*Feist*). |
+| 3 | **Spec derived only from the interface** — the documented CPU↔APU protocol (ports, `$AA/$BB/$CC`, counter pacing), the SPC700 ISA, black-box observation — **never** Nintendo's disassembly; a lawyer filters it. | Interface/functional elements aren't protected and reaching them is fair use (*Connectix*, *Sega*, *Google v. Oracle*); deriving from the *expression* is the **Atari** taint. |
+| 4 | **Clean inputs everywhere:** no Nintendo ROM/disassembly in any participant's hands, the repo, or the toolchain. Assembler ships no IPL (`wla-spc700`); tools that bundle it (`spcasm`'s `bootrom.s`) are quarantined to Person C, post-freeze. | *Atari*: **unauthorized possession** of the protected work — even indirect — defeats fair use and taints the room. |
+| 5 | **No LLM trained on the IPL** in spec or implementation. If AI is used at all, only a model **provably trained without** the IPL, in a two-model wall (MALUS-style). | LLMs memorise/regurgitate → a trained-on model has *accessed* the expression (→ *Atari*). The "clean-room counterfactual"/NAF ([arXiv:2506.19881](https://arxiv.org/abs/2506.19881)) is the only AI-clean theory — **untested**, so prefer a human B. |
+| 6 | **Correctness judged behaviourally** (does it boot real games in MAME?), iterating against the spec + tests — **never** diffing toward Nintendo's bytes; any byte-comparison is post-freeze, by C, forensics only. | Diffing-toward converts independent creation into copying; behavioural equivalence is the legitimate goal (*Connectix*). Preserves #2's independence. |
+| 7 | **Merger documented as the second shield:** record why the 64 bytes are *forced* (size, fixed ports, the protocol games hard-code, the ISA). Convergence with Nintendo's bytes = evidence, not guilt. | *Altai* filtration / §102(b) / *Baker*: forced functional expression is unprotectable. *NEC v. Intel*: independent similarity is "dictated … by functional constraints," not copying. |
+| 8 | **Evidentiary trail:** versioned spec, B's attestation, lawyer sign-off, dated commits, build logs, behavioural results, and **two independent assemblers** reproducing the bytes. | Turns "we created it independently" into **provable** independent creation — the clean room as an *evidentiary machine* (*Altai*, *NEC*). Two toolchains → bytes are a function of the source, not a copy. |
+| 9 | **Distribution hygiene:** label it an independent reimplementation, no Nintendo marks; ship `PROVENANCE.md`; permissive license on our expression. | Trademark separation; the provenance record is **DMCA counter-notice ammunition** for the (non-legal) hash-match takedown risk. |
+| 10 | **Counsel sign-off before publishing** (the §0 gate). | Confirms copyrightability + clean-room sufficiency before the irreversible public step. |
+
+**Why the whole thing passes (the logic).** Infringement-by-copying needs **access +
+substantial similarity** (*Three Boys*); #1–#5 **negate access**, so identical output is
+**independent creation** — a complete defense (*Feist*). If a court still finds access,
+#7 (**merger**; *Altai*/*Baker*/*NEC*) means there's little or no protectable expression
+to infringe, and the convergence is itself merger evidence. The unavoidable contact with
+Nintendo's product (observation) is **fair use** (*Connectix*/*Sega*), and #3–#4 minimise
+even that while dodging the **Atari** taint. #8 makes all of it **provable**, not merely
+asserted. Two independent shields + clean inputs + a documentary trail.
+
+**Honest caveats.** Still **UNSETTLED** — no precedent on a 64-byte ROM's copyrightability
+or on AI-as-implementer; Nintendo litigates hard; and a bit-identical file invites
+hash-match takedowns regardless of merit (hence #9). The strongest build uses a **human**
+B; the AI-counterfactual path (#5) is theoretically clean but court-untested. #10
+(counsel) is non-negotiable before publishing.
 
 ---
 
@@ -656,18 +722,34 @@ Hardware / boot (retrieved 2026-06-19):
 - MAME `s_smp.cpp` (`spc700.rom` CRC 44bb3a40 / SHA1 97e3…):
   https://github.com/mamedev/mame/blob/master/src/devices/machine/s_smp.cpp
 
-Law — clean room / reverse engineering (SETTLED unless noted):
-- Sony Computer Entertainment v. Connectix, 203 F.3d 596 (9th Cir. 2000) — PlayStation BIOS RE = fair use.
-- Sega Enterprises v. Accolade, 977 F.2d 1510 (9th Cir. 1992).
-- Atari Games v. Nintendo, 975 F.2d 832 (Fed. Cir. 1992) — tainted access killed fair use.
-- NEC Corp. v. Intel Corp., 1989 WL 67434 (N.D. Cal. 1989) — seminal clean-room microcode.
-- Google LLC v. Oracle America, 593 U.S. 1 (2021) — interface reuse fair use (API copyrightability reserved).
-- Computer Associates v. Altai, 982 F.2d 693 (2d Cir. 1992) — abstraction-filtration-comparison.
-- Baker v. Selden, 101 U.S. 99 (1879); Lotus v. Borland, 49 F.3d 807 (1st Cir. 1995), aff'd 4–4, 516 U.S. 233 (1996) — *Lotus binding 1st Cir. only; no national precedent.*
-- Access standard: Three Boys Music v. Bolton, 212 F.3d 477 (9th Cir. 2000); inverse-ratio rule abrogated, Skidmore v. Led Zeppelin, 952 F.3d 1051 (9th Cir. 2020). Originality: Feist, 499 U.S. 340 (1991).
+Law — clean room / reverse engineering — **table of authorities (Westlaw + a free
+source each)**; SETTLED unless noted:
+- *Sony Computer Entertainment v. Connectix*, 203 F.3d 596 (9th Cir. 2000) — PlayStation BIOS RE = fair use —
+  [Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=203+F.3d+596) · [Justia](https://law.justia.com/cases/federal/appellate-courts/F3/203/596/)
+- *Sega Enterprises v. Accolade*, 977 F.2d 1510 (9th Cir. 1992) —
+  [Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=977+F.2d+1510) · [Justia](https://law.justia.com/cases/federal/appellate-courts/F2/977/1510/)
+- *Atari Games v. Nintendo*, 975 F.2d 832 (Fed. Cir. 1992) — tainted access killed fair use —
+  [Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=975+F.2d+832) · [Justia](https://law.justia.com/cases/federal/appellate-courts/F2/975/832/)
+- *NEC Corp. v. Intel Corp.*, 1989 WL 67434 (N.D. Cal. 1989) — seminal clean-room microcode —
+  [Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=1989+WL+67434) · [Harvard JOLT analysis](https://jolt.law.harvard.edu/articles/pdf/v03/03HarvJLTech209.pdf) (no free full-text)
+- *Google LLC v. Oracle America*, 593 U.S. 1 (2021) — interface reuse fair use (API copyrightability reserved) —
+  [Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=593+U.S.+1) · [Cornell](https://www.law.cornell.edu/supremecourt/text/18-956)
+- *Computer Associates v. Altai*, 982 F.2d 693 (2d Cir. 1992) — abstraction-filtration-comparison —
+  [Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=982+F.2d+693) · [Justia](https://law.justia.com/cases/federal/appellate-courts/F2/982/693/)
+- *Baker v. Selden*, 101 U.S. 99 (1879) —
+  [Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=101+U.S.+99) · [Cornell](https://www.law.cornell.edu/supremecourt/text/101/99);
+  *Lotus v. Borland*, 49 F.3d 807 (1st Cir. 1995), aff'd 4–4, 516 U.S. 233 (1996) — *binding 1st Cir. only; no national precedent* —
+  [Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=49+F.3d+807) · [Justia](https://law.justia.com/cases/federal/appellate-courts/F3/49/807/)
+- *Three Boys Music v. Bolton*, 212 F.3d 477 (9th Cir. 2000) — access standard —
+  [Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=212+F.3d+477) · [Justia](https://law.justia.com/cases/federal/appellate-courts/F3/212/477/);
+  inverse-ratio rule abrogated, *Skidmore v. Led Zeppelin*, 952 F.3d 1051 (9th Cir. 2020) —
+  [Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=952+F.3d+1051) · [Justia](https://law.justia.com/cases/federal/appellate-courts/F3/952/1051/);
+  originality, *Feist*, 499 U.S. 340 (1991) —
+  [Westlaw](https://www.westlaw.com/Link/Document/FullText?cite=499+U.S.+340) · [Cornell](https://www.law.cornell.edu/supremecourt/text/499/340)
 
 Law / facts — AI (UNSETTLED / empirical):
-- Memorization: Carlini et al. arXiv:2012.07805 (USENIX 2021), arXiv:2202.07646 (ICLR 2023); Nasr et al. arXiv:2311.17035 (2023); reproduction/counter-nuance arXiv:2412.06370 (2024, notes "Claude's Opus" baseline memorization).
+- **AI clean-room / independent creation (the "should it pass" question):** *Blameless Users in a Clean Room — Defining Copyright Protection for Generative Models* (clean-room counterfactual), [arXiv:2506.19881](https://arxiv.org/abs/2506.19881); near access-freeness — Vyas, Kakade & Barak (ICML 2023); **MALUS** "clean-room-as-a-service" — [Marks & Clerk](https://www.marks-clerk.com/insights/latest-insights/102mp7s-can-ai-legally-clone-open-source-unpacking-clean-room-as-a-service/) · [Futurism](https://futurism.com/artificial-intelligence/malus-clones-software-copyright).
+- Memorization: Carlini et al. [arXiv:2012.07805](https://arxiv.org/abs/2012.07805) (USENIX 2021), [arXiv:2202.07646](https://arxiv.org/abs/2202.07646) (ICLR 2023); Nasr et al. [arXiv:2311.17035](https://arxiv.org/abs/2311.17035) (2023); reproduction/counter-nuance [arXiv:2412.06370](https://arxiv.org/abs/2412.06370) (2024, notes "Claude's Opus" baseline memorization).
 - Litigation (pleading-stage, not merits): NYT v. OpenAI/Microsoft (MDL 1:25-md-03143); Doe v. GitHub (Copilot); Andersen v. Stability; Tremblay v. OpenAI; Kadrey v. Meta; **Bartz v. Anthropic** (N.D. Cal. 2025 — training fair use, pirated library NOT; output-filtering layer; settled $1.5B).
 - Authorship: U.S. Copyright Office, 88 Fed. Reg. 16190 (Mar. 16, 2023); "Zarya of the Dawn" (2023); Thaler v. Perlmutter, 687 F. Supp. 3d 140 (D.D.C. 2023), aff'd No. 23-5233 (D.C. Cir. Mar. 18, 2025).
 
