@@ -84,7 +84,11 @@ _(none)_
   smoke-tested, agree byte-for-byte; bass uses a 6502-style dialect (`spcasm` for a same-source
   cross-check). **NEXT (re-sequenced 2026-06-19): IP counsel FIRST (§0)** — the project turns on
   "is a 64-byte forced boot ROM copyrightable?"; send the EFF (info@eff.org) / IP counsel the §0.A packet, act on
-  §0.B. Blocks Phases 1–6 (recruiting Person B is premature until then).
+  §0.B. Blocks Phases 1–6 (recruiting Person B is premature until then). **Stretch goals
+  (2026-06-19):** become the **legal precedent** (a 64-byte forced ROM is non-protectable /
+  a documented clean room suffices) AND the first **ML-agent independent-creation precedent**
+  (provably-clean *open* model + two-model wall; closed frontier models incl. Claude
+  disqualified) — §5B/§5B.1; the precedent track runs parallel to the build.
   [Plan](docs/plans/2026-06-19-spc700-ipl-cleanroom.md).
 
 

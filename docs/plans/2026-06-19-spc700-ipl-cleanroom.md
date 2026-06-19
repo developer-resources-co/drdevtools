@@ -1,7 +1,7 @@
 ---
 title: SPC700 IPL boot ROM — clean-room reimplementation for legal MAME use + public release
 date: 2026-06-19
-status: draft / GATE — IP counsel first (§0) before any Phase 1–6 work
+status: draft / GATE — IP counsel first (§0); scope expanded → legal + ML-agent precedent goals (§5B/§5B.1)
 toolchain: WLA-DX (wla-spc700) — primary; bass — independent cross-check
 revised: 2026-06-19 (research-grounded; assembler spasm → WLA-DX; re-sequenced IP-counsel-first, §0)
 ---
@@ -13,6 +13,13 @@ revised: 2026-06-19 (research-grounded; assembler spasm → WLA-DX; re-sequenced
 > dropped into MAME in place of the copyrighted Nintendo IPL — letting **anyone**
 > run the SNES driver legally, not just owners of real hardware — and (2) **both
 > the source and the assembled bytes can be committed to a public repository.**
+>
+> **Stretch goals (added 2026-06-19; see §5B / §5B.1):** (3) help *settle* the open
+> law — become the **precedent** that a 64-byte, interface-forced ROM is non-protectable
+> and/or that a documented clean room suffices; and (4) be the **first documented
+> precedent for ML-agent independent creation** — a *provably-clean* agent doing the
+> implementation behind a fully-auditable wall. Goals (3)–(4) run *parallel* to the
+> build (§7 Precedent track), not after it; the build's record IS their evidence.
 >
 > **Assembler: WLA-DX (`wla-spc700`)** — FOSS, Linux-native, reproducible by anyone
 > (chosen over the in-house `spasm`; see §2). Verification rides the existing drmon
@@ -686,6 +693,28 @@ Stand up the public repo (§9), license it (permissive code license + an explici
 "independent reimplementation, see PROVENANCE.md" statement). **Do not push until §4
 review happens and the user explicitly approves** — publishing is irreversible and is
 the whole risk surface.
+
+### Precedent track — runs *parallel* to Phases 1–6 (see §5B / §5B.1)
+
+The precedent goals run alongside the build, not after it — the build's evidentiary
+record IS the precedent's exhibit. No-regret steps, all doable regardless of whether
+any litigation ever happens:
+- **P‑1. Build the record.** Execute Phases 1–6 to the §5A standard, preserving the full
+  provenance/audit trail (the trial exhibit + whitepaper data).
+- **P‑2. Test-case framing → EFF.** The §0 counsel outreach asks (email Q7) whether this
+  is a viable impact-litigation / declaratory-judgment / §1201-exemption vehicle.
+- **P‑3. §1201 comment.** Draft a preservation/emulation exemption comment for the next
+  Copyright Office triennial cycle (~2027); coordinate with EFF / the Software
+  Preservation Network.
+- **P‑4. Whitepaper.** Write up the merger analysis + clean-room method for publication;
+  co-author with an IP academic.
+- **P‑5. ML-agent demonstration (§5B.1).** Scout a **provably-clean, corpus-auditable
+  open model** for the implementer (closed frontier models — incl. Claude — are
+  disqualified); build the two-model wall + extraction/NAF test; co-author with the NAF /
+  *Blameless Users* academics. The wide-open, field-defining track.
+
+Only **avenue E** (a declaratory-judgment suit, §5B) is high-cost/high-risk and
+**institution-led (EFF + funding), never a solo move.**
 
 ---
 
