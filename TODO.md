@@ -83,7 +83,7 @@ _(none)_
   the gold standard). **Phase 0 ✅** (2026-06-19): wla-spc700 v10.6 (primary) + bass v18
   smoke-tested, agree byte-for-byte; bass uses a 6502-style dialect (`spcasm` for a same-source
   cross-check). **NEXT (re-sequenced 2026-06-19): IP counsel FIRST (§0)** — the project turns on
-  "is a 64-byte forced boot ROM copyrightable?"; hand FSF/SFLC the §0.A briefing packet, act on
+  "is a 64-byte forced boot ROM copyrightable?"; send the EFF (info@eff.org) / IP counsel the §0.A packet, act on
   §0.B. Blocks Phases 1–6 (recruiting Person B is premature until then).
   [Plan](docs/plans/2026-06-19-spc700-ipl-cleanroom.md).
 

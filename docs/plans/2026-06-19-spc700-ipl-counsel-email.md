@@ -9,21 +9,24 @@ status: DRAFT — fill placeholders, attach the plan, send
 
 **How to use this.** Fill the `[bracketed]` placeholders, attach the plan
 ([`2026-06-19-spc700-ipl-cleanroom.md`](2026-06-19-spc700-ipl-cleanroom.md) — §0.A is
-the self-contained briefing packet), and send. **Recipient:** the FSF licensing &
-compliance lab (<licensing@fsf.org>) per your steer; if they treat this as outside a
-pure GPL/licensing-FAQ scope, the natural alternates for an emulation /
-reverse-engineering copyright question are the **Software Freedom Law Center**
-(softwarefreedom.org), the **Software Freedom Conservancy**, or the **EFF** (which
-litigates emulation/preservation copyright matters). Keep the email itself short; the
+the self-contained briefing packet), and send. **Recipient (revised — EFF first):** the **EFF** (Electronic Frontier Foundation) —
+legal intake <info@eff.org>; its [Coders' Rights Project](https://www.eff.org/issues/coders)
+and [legal-assistance program](https://www.eff.org/pages/legal-assistance) cover exactly
+reverse-engineering / DMCA / fair-use / preservation questions, and EFF drives the DMCA
+§1201 preservation exemptions. Alternates: the **Software Freedom Law Center**
+(<help@softwarefreedom.org> — FLOSS legal advice) or a **private IP/copyright attorney**
+(most reliable for a formal, relied-upon risk opinion). The **FSF** licensing lab
+(<licensing@fsf.org>) is a lower-priority option here — it's GPL/licensing-FAQ–focused,
+not copyright-risk opinions. Keep the email itself short; the
 homework lives in the attached packet.
 
 ---
 
 **Subject:** Copyright question — independently reimplementing a 64-byte SNES audio boot ROM for public release
 
-**To:** [FSF Licensing & Compliance — licensing@fsf.org / your preferred contact]
+**To:** EFF — Electronic Frontier Foundation, legal intake <info@eff.org> *(via [eff.org/pages/legal-assistance](https://www.eff.org/pages/legal-assistance))*
 
-Dear [Name],
+Dear EFF Legal Team,
 
 I'm a software developer working on a free-software preservation project, and I'd
 value your professional read on one copyright question **before** I invest further
@@ -66,13 +69,21 @@ clean-room reimplementation exists** — only copies/disassemblies, which carry 
 copyright rather than independent provenance. I don't want to merely re-publish a copy.
 
 **My layperson's understanding of the landscape** (which I'm sure you'll correct):
-independent creation is a complete defense (*Three Boys Music v. Bolton*); reverse-
-engineering a console BIOS to build an emulator has been held fair use (*Sony v.
-Connectix*; *Sega v. Accolade*); a clean room is only as good as its isolation (*Atari
-v. Nintendo*, where tainted access sank the defense); highly-constrained functional code
-can merge idea and expression (*CA v. Altai*; *Baker v. Selden*); and the seminal
-clean-room microcode case treated independently-produced similarity as compelled by
-functional constraints (*NEC v. Intel*).
+independent creation is a complete defense
+([*Three Boys Music v. Bolton*, 212 F.3d 477 (9th Cir. 2000)](https://law.justia.com/cases/federal/appellate-courts/F3/212/477/));
+reverse-engineering a console BIOS to build an emulator has been held fair use
+([*Sony v. Connectix*, 203 F.3d 596 (9th Cir. 2000)](https://law.justia.com/cases/federal/appellate-courts/F3/203/596/);
+[*Sega v. Accolade*, 977 F.2d 1510 (9th Cir. 1992)](https://law.justia.com/cases/federal/appellate-courts/F2/977/1510/));
+a clean room is only as good as its isolation
+([*Atari Games v. Nintendo*, 975 F.2d 832 (Fed. Cir. 1992)](https://law.justia.com/cases/federal/appellate-courts/F2/975/832/),
+where tainted access sank the defense); highly-constrained functional code can merge
+idea and expression
+([*Computer Associates v. Altai*, 982 F.2d 693 (2d Cir. 1992)](https://law.justia.com/cases/federal/appellate-courts/F2/982/693/);
+[*Baker v. Selden*, 101 U.S. 99 (1879)](https://www.law.cornell.edu/supremecourt/text/101/99));
+and the seminal clean-room microcode case treated independently-produced similarity as
+compelled by functional constraints
+([*NEC Corp. v. Intel Corp.*, 1989 WL 67434 (N.D. Cal.)](https://jolt.law.harvard.edu/articles/pdf/v03/03HarvJLTech209.pdf)
+— the opinion itself is Westlaw-only; the link is the Harvard JOLT analysis of it).
 
 **My specific questions:**
 1. Is a 64-byte, interface-forced boot ROM protectable expression, or does merger /
@@ -95,8 +106,8 @@ call for a formal engagement or a referral — please let me know the right path
 fee. I'm happy to send the full technical-and-case briefing (a few pages, fully sourced)
 and the project plan; I've attached them and kept this email to the essentials.
 
-This is squarely a free-software / preservation effort, which is why I thought of
-[the FSF / SFLC] first. Thank you for considering it.
+This is squarely a software-preservation and digital-rights effort, which is why I
+thought of [the EFF] first. Thank you for considering it.
 
 Best regards,
 [Your name]
@@ -104,7 +115,7 @@ Best regards,
 
 ---
 
-### References (for verification; full set in the attached briefing)
+### References & sources (so you can check my citations; full set in the attached briefing)
 
 Technical:
 - snes9x — Nintendo's verbatim 64-byte IPL embedded as a C array:
@@ -121,7 +132,8 @@ Cases (layperson's reading — for your correction):
   https://law.justia.com/cases/federal/appellate-courts/F2/977/1510/
 - *Atari Games v. Nintendo*, 975 F.2d 832 (Fed. Cir. 1992) —
   https://law.justia.com/cases/federal/appellate-courts/F2/975/832/
-- *NEC Corp. v. Intel Corp.*, 1989 WL 67434 (N.D. Cal. 1989) — (Westlaw)
+- *NEC Corp. v. Intel Corp.*, 1989 WL 67434 (N.D. Cal. 1989) — opinion Westlaw-only;
+  analysis: [Harvard JOLT](https://jolt.law.harvard.edu/articles/pdf/v03/03HarvJLTech209.pdf)
 - *Google LLC v. Oracle America*, 593 U.S. 1 (2021) —
   https://www.law.cornell.edu/supremecourt/text/18-956
 - *Computer Associates v. Altai*, 982 F.2d 693 (2d Cir. 1992) —

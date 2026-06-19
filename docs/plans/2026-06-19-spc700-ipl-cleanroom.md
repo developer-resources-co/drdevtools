@@ -31,11 +31,15 @@ revised: 2026-06-19 (research-grounded; assembler spasm → WLA-DX; re-sequenced
 
 The hardest part of this project is legal, not technical, so the **first action is to
 talk to an IP lawyer** — *before* recruiting a clean-room implementer or writing a
-line of spec. Recommended avenue: **the FSF's counsel** — the Free Software
-Foundation's licensing & compliance lab (<licensing@fsf.org>) and/or the
-[Software Freedom Law Center](https://www.softwarefreedom.org/) (founded by Eben
-Moglen, the FSF's longtime general counsel). That is exactly the right kind of lawyer
-for a free-software copyright / reverse-engineering question. **A ready-to-send draft
+line of spec. Recommended avenue (revised 2026-06-19 — **EFF first**): the **EFF**
+(Electronic Frontier Foundation, legal intake <info@eff.org>) — emulation,
+reverse-engineering, fair use, and preservation copyright are squarely its wheelhouse
+(its [Coders' Rights Project](https://www.eff.org/issues/coders) litigates these and EFF
+drives the DMCA §1201 preservation exemptions). Alternates: the
+[Software Freedom Law Center](https://softwarefreedom.org/about/contact/)
+(<help@softwarefreedom.org>) or a private IP/copyright attorney for a formal,
+relied-upon opinion; the **FSF** licensing lab (<licensing@fsf.org>) is lower-priority
+here (GPL/licensing-FAQ–focused, not copyright-risk opinions). **A ready-to-send draft
 cover email is at [`2026-06-19-spc700-ipl-counsel-email.md`](2026-06-19-spc700-ipl-counsel-email.md)**
 — fill the placeholders and attach this plan (§0.A is the briefing packet).
 
@@ -589,7 +593,7 @@ provenance publicly. The build needs **only FOSS tools** — that is the point o
 | D1 | Assembler. | **RESOLVED → WLA-DX (`wla-spc700`)** primary; `bass` cross-check (§2). |
 | D2 | **Who is the untainted Person B?** | **Recruit one** (gold standard, §5) — **but only after §0 counsel green-lights the clean room** (premature otherwise). Neither the LLM nor (likely) the original author qualifies. |
 | D3 | Public host / repo name / license. | New repo `snes-ipl-cleanroom`; permissive license. **User decides.** |
-| D4 | Counsel review — **RE-SEQUENCED → §0: now the FIRST action, not a pre-push gate.** | Send the §0.A briefing packet to FSF/SFLC counsel; act on §0.B. Blocks Phases 1–6. The whole project turns on this answer. |
+| D4 | Counsel review — **RE-SEQUENCED → §0: now the FIRST action, not a pre-push gate.** | Send the §0.A briefing packet to **EFF** (info@eff.org) / IP counsel; act on §0.B. Blocks Phases 1–6. The whole project turns on this answer. |
 | R1 | Hash-matching DMCA takedown despite legal merit. | Pre-build the provenance bundle (§5/Phase 5) as counter-notice ammo. |
 | R2 | MAME won't accept a differing ROM. | §8; acceptable for own-use + public repo; upstreaming is a stretch goal. |
 | Q-open | EA v. Sega / Razorsoft specifics. | Not located as reported opinions; dig only if needed (Sega v. Accolade is the precedent). |
