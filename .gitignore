@@ -37,3 +37,7 @@ __pycache__/
 
 # User-supplied ROMs (copyrighted; never commit)
 roms/
+
+# Claude per-project memory
+.claude/*
+!.claude/memory/
