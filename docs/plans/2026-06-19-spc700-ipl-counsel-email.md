@@ -13,9 +13,11 @@ the self-contained briefing packet), and send. **Recipient (revised — EFF firs
 legal intake <info@eff.org>; its [Coders' Rights Project](https://www.eff.org/issues/coders)
 and [legal-assistance program](https://www.eff.org/pages/legal-assistance) cover exactly
 reverse-engineering / DMCA / fair-use / preservation questions, and EFF drives the DMCA
-§1201 preservation exemptions. Alternates: the **Software Freedom Law Center**
-(<help@softwarefreedom.org> — FLOSS legal advice) or a **private IP/copyright attorney**
-(most reliable for a formal, relied-upon risk opinion). The **FSF** licensing lab
+§1201 preservation exemptions. Alternates, all free: the **Software Freedom Law Center**
+(help@softwarefreedom.org — FLOSS legal advice) or a **law-school IP/cyberlaw clinic**
+(e.g. Harvard Cyberlaw, Stanford Juelsgaard). A **private IP/copyright attorney** would
+give the most reliable formal, relied-upon risk opinion, but that means fees — off-table
+for now given no budget. The **FSF** licensing lab
 (<licensing@fsf.org>) is a lower-priority option here — it's GPL/licensing-FAQ–focused,
 not copyright-risk opinions. Keep the email itself short; the
 homework lives in the attached packet.
@@ -49,7 +51,7 @@ copyrightable at all?* Everything downstream follows from your answer:
   reimplementation, and I need to know whether that gives a defensible basis to
   publish.
 
-I'd much rather pay for an hour on this threshold question now than build the whole
+I'd much rather get this one threshold question right before I build the whole
 thing on a wrong assumption.
 
 **The wrinkle that makes this unusual.** The ROM is so constrained — 64 bytes, fixed
@@ -146,10 +148,14 @@ functional constraints (*NEC Corp. v. Intel Corp.*, 1989 WL 67434 —
    EFF would take interest in? (I understand the risks — that a loss makes bad precedent,
    and that it needs a real controversy and funding.)
 
-**Logistics.** I understand this may go beyond a pure licensing-FAQ question and may
-call for a formal engagement or a referral — please let me know the right path and any
-fee. I'm happy to send the full technical-and-case briefing (a few pages, fully sourced)
-and the project plan; I've attached them and kept this email to the essentials.
+**Logistics.** I should be upfront that this is an unfunded, non-commercial
+preservation project — I'm a developer doing this in my own time, with no budget to
+retain counsel, so I'm not looking for (and couldn't take on) a paid engagement. If this
+fits the kind of question EFF's legal-assistance program / Coders' Rights Project can
+weigh in on, I'd be grateful for whatever guidance you can offer; if it falls outside
+your scope, even a pointer to a free resource or a referral would help enormously. I've
+attached the full technical-and-case briefing (a few pages, fully sourced) and the
+project plan, and kept this email itself to the essentials.
 
 This is squarely a software-preservation and digital-rights effort, which is why I
 thought of [the EFF] first. Thank you for considering it.
