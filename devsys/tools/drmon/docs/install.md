@@ -24,7 +24,7 @@ for tuning see [Configuration](configuration.md).
 
 ## Build and run with `task` (recommended)
 
-From the repo root (`~/SRC/drdevtools`):
+From the repo root (`~/drdevtools`):
 
 ```bash
 task image     # 1. build the throwaway toolchain image (once; cached thereafter)

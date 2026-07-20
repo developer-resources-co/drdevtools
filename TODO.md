@@ -97,7 +97,7 @@ _(none)_
 - [ ] **Spike: free SPC700/SNES sound demos** — find/collect freely-licensed homebrew music
   ROMs/demos as (a) real audio test content to *hear* the IPL working in MAME (play through the
   variant IPL → `-wavwrite`), and (b) reference material for the C-port above.
-  See `~/SRC/spc700-ipl-divergence`.
+  See `~/spc700-ipl-divergence`.
 
 
 ## VERIFY
