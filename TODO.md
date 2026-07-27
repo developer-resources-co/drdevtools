@@ -12,7 +12,7 @@ Plan-first: non-trivial work gets a `docs/plans/YYYY-MM-DD-<topic>.md` and a TOD
 
 ## DRMON — DEBUGGER BACKEND
 
-- [wip] **Phase 3 — DAP front end (Tiers 1–3 complete; live-MAME V3–V6 PASS; only VS Code GUI panes remain).**
+- [wip T4] **Phase 3 — DAP front end (Tiers 1–3 complete; live-MAME V3–V6 PASS; only VS Code GUI panes remain).**
   `drmon-dap-snes` / `drmon-dap-gen` DAP adapters: attach/continue/pause/step/registers/readMemory/instruction
   breakpoints/disassembly/symbol-file loading (binary `.sld` + Sierra COFF). VS Code setup doc at
   `docs/dap-setup.md`. **Live-MAME V3–V6 now automated + PASS (2026-06-18, `task test-dap` →
@@ -41,7 +41,7 @@ _(none)_
 
 ## DRMON — INVESTIGATIONS
 
-- [ ] **IDA Pro + Ghidra 65816 RSP against MAME gdbstub — BLOCKED (commercial license).** The
+- [T3] **IDA Pro + Ghidra 65816 RSP against MAME gdbstub — BLOCKED (commercial license).** The
   free part is done: the connection recipe + wire-format proof (`target.xml` + `g`-packet layout
   match what IDA's gdb client consumes, per [idapro_m6502](https://github.com/LucienMP/idapro_m6502))
   are written up in the investigation's `clients.md`. The remaining "does IDA actually attach" GUI
@@ -50,10 +50,10 @@ _(none)_
   plugin work, not config). Unblocks only with an IDA Pro license — recipe is ready if that happens.
   Depends on the Tier‑1 endpoint below for a live target.
   [Plan](docs/plans/2026-06-13-65816-rsp-clients-ida-ghidra.md) · [investigation](docs/investigations/2026-06-11-65816-gdbstub.md)
-- [wip] **Upstream MAME 65816/5A22 register map to `debuggdbstub.cpp`** (~35 lines; prove via Lua plugin
+- [wip T2] **Upstream MAME 65816/5A22 register map to `debuggdbstub.cpp`** (~35 lines; prove via Lua plugin
   first; propose arch name `w65c816`). See [65816 gdbstub investigation](docs/investigations/2026-06-11-65816-gdbstub.md).
   [Plan](docs/plans/2026-06-13-mame-65816-gdbstub-map.md) — Tier 1 (Lua, no rebuild) runnable now; Tier 2 (C++) authored, build‑verify disk‑gated.
-- [wip] **llvm-mos 65816 C compiler backend — upstream contribution.** Now its own repo:
+- [wip T4] **llvm-mos 65816 C compiler backend — upstream contribution.** Now its own repo:
   **[`wbniv/llvm-mos-65816`](https://github.com/wbniv/llvm-mos-65816)** (private; SNES platform +
   containerized harness + living roadmap). llvm-mos ships a production 65816 *assembler + linker* but
   no C codegen and has **no active implementer**; the SNES SDK target didn't exist
@@ -70,7 +70,7 @@ _(none)_
 
 ## SPC700 IPL — CLEAN-ROOM REIMPLEMENTATION
 
-- [ ] **Clean-room a 64-byte SPC700 IPL boot ROM for legal MAME use + public release.**
+- [T4] **Clean-room a 64-byte SPC700 IPL boot ROM for legal MAME use + public release.**
   Independently re-create the SNES APU boot ROM (Chinese-wall: interface-derived spec →
   untainted implementer → behavioural verification in MAME) so the bytes + source can be
   committed to a public repo and dropped into MAME. **Assembler = WLA-DX `wla-spc700`** (FOSS,
@@ -90,11 +90,11 @@ _(none)_
   (provably-clean *open* model + two-model wall; closed frontier models incl. Claude
   disqualified) — §5B/§5B.1; the precedent track runs parallel to the build.
   [Plan](docs/plans/2026-06-19-spc700-ipl-cleanroom.md).
-- [ ] **Port audio algorithms to SNES/SPC700 in C** — *gated on `../llvm-mos-65816` landing*
+- [T4] **Port audio algorithms to SNES/SPC700 in C** — *gated on `../llvm-mos-65816` landing*
   (SPC700 ≈ 6502, so an llvm-mos SPC700 backend is a **port**, not from-scratch). Candidates:
   BRR encode/decode, ADSR/envelopes, echo/reverb (the S-DSP FIR), mixing, tracker/sequence
   replay, softsynth — i.e. write SNES audio in C instead of hand SPC700 asm.
-- [ ] **Spike: free SPC700/SNES sound demos** — find/collect freely-licensed homebrew music
+- [T1] **Spike: free SPC700/SNES sound demos** — find/collect freely-licensed homebrew music
   ROMs/demos as (a) real audio test content to *hear* the IPL working in MAME (play through the
   variant IPL → `-wavwrite`), and (b) reference material for the C-port above.
   See `~/spc700-ipl-divergence`.
