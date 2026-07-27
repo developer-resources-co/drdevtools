@@ -9,8 +9,9 @@ not yet run+recorded (run the linked plan's verification steps, paste raw output
 back into the plan, then promote to `[x]`) · `[x]` done (moved to DONE, one tight line).
 Plan-first: non-trivial work gets a `docs/plans/YYYY-MM-DD-<topic>.md` and a TODO entry.
 
+## Open
 
-## DRMON — DEBUGGER BACKEND
+### DRMON — DEBUGGER BACKEND
 
 - [wip T4] **Phase 3 — DAP front end (Tiers 1–3 complete; live-MAME V3–V6 PASS; only VS Code GUI panes remain).**
   `drmon-dap-snes` / `drmon-dap-gen` DAP adapters: attach/continue/pause/step/registers/readMemory/instruction
@@ -24,32 +25,20 @@ Plan-first: non-trivial work gets a `docs/plans/YYYY-MM-DD-<topic>.md` and a TOD
   [Tier 2 plan](docs/plans/2026-06-12-phase-3-drmon-dap-tier-2-disassembly-view.md) ·
   [Tier 3 plan](docs/plans/2026-06-12-phase-3-drmon-dap-tier-3-symbol-loading.md).
 
-
-## DRMON — UI / UX
-
-_(none)_
-
-## DRMON — CLEANUP
+### DRMON — UI / UX
 
 _(none)_
 
-
-## DRMON — DOCS
+### DRMON — CLEANUP
 
 _(none)_
 
+### DRMON — DOCS
 
-## DRMON — INVESTIGATIONS
+_(none)_
 
-- [T3] **IDA Pro + Ghidra 65816 RSP against MAME gdbstub — BLOCKED (commercial license).** The
-  free part is done: the connection recipe + wire-format proof (`target.xml` + `g`-packet layout
-  match what IDA's gdb client consumes, per [idapro_m6502](https://github.com/LucienMP/idapro_m6502))
-  are written up in the investigation's `clients.md`. The remaining "does IDA actually attach" GUI
-  step needs **IDA Pro Essential (~$1,099/yr)** + a third-party 65816 processor module (IDA
-  Free/Home can't load custom procmods); **Ghidra** needs a custom TraceRMI/SLEIGH connector (real
-  plugin work, not config). Unblocks only with an IDA Pro license — recipe is ready if that happens.
-  Depends on the Tier‑1 endpoint below for a live target.
-  [Plan](docs/plans/2026-06-13-65816-rsp-clients-ida-ghidra.md) · [investigation](docs/investigations/2026-06-11-65816-gdbstub.md)
+### DRMON — INVESTIGATIONS
+
 - [wip T2] **Upstream MAME 65816/5A22 register map to `debuggdbstub.cpp`** (~35 lines; prove via Lua plugin
   first; propose arch name `w65c816`). See [65816 gdbstub investigation](docs/investigations/2026-06-11-65816-gdbstub.md).
   [Plan](docs/plans/2026-06-13-mame-65816-gdbstub-map.md) — Tier 1 (Lua, no rebuild) runnable now; Tier 2 (C++) authored, build‑verify disk‑gated.
@@ -67,8 +56,7 @@ _(none)_
   [Plan](docs/plans/2026-06-13-llvm-mos-65816-backend.md) ·
   [investigation](docs/investigations/2026-06-13-llvm-mos-65816-backend.md).
 
-
-## SPC700 IPL — CLEAN-ROOM REIMPLEMENTATION
+### SPC700 IPL — CLEAN-ROOM REIMPLEMENTATION
 
 - [T4] **Clean-room a 64-byte SPC700 IPL boot ROM for legal MAME use + public release.**
   Independently re-create the SNES APU boot ROM (Chinese-wall: interface-derived spec →
@@ -90,23 +78,45 @@ _(none)_
   (provably-clean *open* model + two-model wall; closed frontier models incl. Claude
   disqualified) — §5B/§5B.1; the precedent track runs parallel to the build.
   [Plan](docs/plans/2026-06-19-spc700-ipl-cleanroom.md).
-- [T4] **Port audio algorithms to SNES/SPC700 in C** — *gated on `../llvm-mos-65816` landing*
-  (SPC700 ≈ 6502, so an llvm-mos SPC700 backend is a **port**, not from-scratch). Candidates:
-  BRR encode/decode, ADSR/envelopes, echo/reverb (the S-DSP FIR), mixing, tracker/sequence
-  replay, softsynth — i.e. write SNES audio in C instead of hand SPC700 asm.
 - [T1] **Spike: free SPC700/SNES sound demos** — find/collect freely-licensed homebrew music
   ROMs/demos as (a) real audio test content to *hear* the IPL working in MAME (play through the
   variant IPL → `-wavwrite`), and (b) reference material for the C-port above.
   See `~/spc700-ipl-divergence`.
 
-
-## VERIFY
-### implemented; run the plan's verification steps + record, then promote to DONE
+### VERIFY
+#### implemented; run the plan's verification steps + record, then promote to DONE
 
 _(none)_
 
 
-## DONE
+## Watch
+
+_(none)_
+
+
+## Parked
+
+### DRMON — INVESTIGATIONS
+
+- **IDA Pro + Ghidra 65816 RSP against MAME gdbstub — BLOCKED (commercial license).** The
+  free part is done: the connection recipe + wire-format proof (`target.xml` + `g`-packet layout
+  match what IDA's gdb client consumes, per [idapro_m6502](https://github.com/LucienMP/idapro_m6502))
+  are written up in the investigation's `clients.md`. The remaining "does IDA actually attach" GUI
+  step needs **IDA Pro Essential (~$1,099/yr)** + a third-party 65816 processor module (IDA
+  Free/Home can't load custom procmods); **Ghidra** needs a custom TraceRMI/SLEIGH connector (real
+  plugin work, not config). Unblocks only with an IDA Pro license — recipe is ready if that happens.
+  Depends on the Tier‑1 endpoint below for a live target.
+  [Plan](docs/plans/2026-06-13-65816-rsp-clients-ida-ghidra.md) · [investigation](docs/investigations/2026-06-11-65816-gdbstub.md)
+
+### SPC700 IPL — CLEAN-ROOM REIMPLEMENTATION
+
+- **Port audio algorithms to SNES/SPC700 in C** — *gated on `../llvm-mos-65816` landing*
+  (SPC700 ≈ 6502, so an llvm-mos SPC700 backend is a **port**, not from-scratch). Candidates:
+  BRR encode/decode, ADSR/envelopes, echo/reverb (the S-DSP FIR), mixing, tracker/sequence
+  replay, softsynth — i.e. write SNES audio in C instead of hand SPC700 asm.
+
+
+## Done
 
 - 2026-06-14 — [genesis-lua-bridge] Folded the Genesis M68K into the Lua bridge (dropped gdbstub) so VDP/CRAM/VSRAM/Z80 read at a breakpoint: shared `mame_cpu_bridge.lua` core + thin SNES/Genesis wrappers, genmon unified on `sliomame.cpp`, native 68000 single-step. Verified: SNES 27/27 (no regression), Genesis 15/15 + non-zero VDP/Z80 data + native step holds. Branch `genesis-lua-bridge-m68k` pushed — [plan](docs/plans/2026-06-14-genesis-backend-fold-the-m68k-into-the-lua-bridge.md)
 - 2026-06-13 — [ca65-sym] ca65 `.dbg` + WLA-DX `.sym` importers: shared `symfmt.{hpp,cpp}` parser behind DAP `SymbolTable` + TUI `_symbolList`; `task test-symbols` 12+11 tests PASS — [plan](docs/plans/2026-06-11-ca65-dbg-wla-dx-sym-symbol-importers-for-drmon.md)
